@@ -1,0 +1,3134 @@
+{
+"v": 1,
+"name": "Market power reading plan",
+"note": "610 must-read papers (569 from the bibliography plus 41 foundations) in 14 phases, in study order.",
+"depth": {
+"deep": "Deep · about 5 h: rebuild the model, reproduce a result",
+"std": "Standard · about 2 h: intro, main model or table, conclusion",
+"skim": "Skim · about 30 min: abstract, intro, conclusion"
+},
+"phases": [
+{
+"title": "Orientation",
+"about": "Get the map of the field before the details.",
+"task": "Write a one-page glossary: Lerner index, conduct parameter, HHI, markup, markdown, foreclosure, contestability."
+},
+{
+"title": "Foundations of imperfect competition",
+"about": "Monopoly, monopolistic competition and the debates of the 1920s–50s.",
+"task": "Derive the Cournot, Bertrand and Hotelling equilibria from scratch, then explain in a paragraph why Bertrand with identical firms gives P = MC."
+},
+{
+"title": "Oligopoly and strategic behavior",
+"about": "Commitment, entry deterrence, predation, product differentiation.",
+"task": "Solve Dixit (1979) on paper: when does the incumbent deter, accommodate or blockade entry?"
+},
+{
+"title": "Collusion and cartels",
+"about": "Repeated games, cartel stability, detection, leniency.",
+"task": "Compute the critical discount factor for collusion under Bertrand and under Cournot trigger strategies. Then read a cartel case decision and spot the facilitating practices."
+},
+{
+"title": "Measuring market power",
+"about": "SCP regressions, then demand estimation, production functions and markups.",
+"task": "Estimate logit and random-coefficients demand on the pyblp tutorial data, recover markups, and compare them with a production-function markup."
+},
+{
+"title": "Pricing strategies",
+"about": "Price discrimination, screening, bundling, durable goods.",
+"task": "Solve the two-type Mussa–Rosen model and show the 'no distortion at the top' result."
+},
+{
+"title": "Vertical relations and exclusion",
+"about": "Double marginalization, restraints, foreclosure, bargaining.",
+"task": "Work a double-marginalization numerical example, then write a one-page memo for or against a real vertical merger."
+},
+{
+"title": "Mergers and antitrust",
+"about": "Merger theory, simulation, retrospectives, market definition, enforcement.",
+"task": "Compute UPP and GUPPI for a hypothetical merger with given diversion ratios and margins, then write a two-page mock merger review."
+},
+{
+"title": "Innovation, networks and platforms",
+"about": "Schumpeter vs Arrow, patents, network effects, two-sided markets, Big Tech.",
+"task": "Write a two-page essay: does platform market power slow innovation? Cite at least eight papers from this phase on both sides."
+},
+{
+"title": "Natural monopoly and regulation",
+"about": "Cost tests, Ramsey pricing, incentive regulation, capture.",
+"task": "Solve the two-type Baron–Myerson model and explain the information-rent / efficiency trade-off in plain words."
+},
+{
+"title": "Welfare, political economy and macro",
+"about": "Deadweight loss, rent-seeking, rising markups, labor share.",
+"task": "Redo Harberger's back-of-envelope with modern markup estimates (De Loecker–Eeckhout–Unger) and explain why the answers differ so much."
+},
+{
+"title": "Labor market power",
+"about": "Monopsony, wage-setting, concentration, minimum wages.",
+"task": "Derive the monopsony markdown w/MRPL = ε/(1+ε) and compute it for the elasticities in Sokolova–Sorensen."
+},
+{
+"title": "Trade and development",
+"about": "Strategic trade, pro-competitive gains, markets in poor countries.",
+"task": "Explain in one page how trade liberalization changes markups, using two papers from this phase."
+},
+{
+"title": "Applied fields",
+"about": "Health, finance, economic history, media, sports.",
+"task": "Pick one field and write a three-page literature review. This is the seed of a thesis or research project."
+}
+],
+"order": [
+{
+"id": "mp0325",
+"ph": 0,
+"d": "skim"
+},
+{
+"id": "mp0383",
+"ph": 0,
+"d": "std"
+},
+{
+"id": "mp1356",
+"ph": 0,
+"d": "deep"
+},
+{
+"id": "mp6104",
+"ph": 0,
+"d": "deep"
+},
+{
+"id": "fd01",
+"ph": 1,
+"d": "deep"
+},
+{
+"id": "fd02",
+"ph": 1,
+"d": "deep"
+},
+{
+"id": "fd03",
+"ph": 1,
+"d": "deep"
+},
+{
+"id": "fd04",
+"ph": 1,
+"d": "deep"
+},
+{
+"id": "fd05",
+"ph": 1,
+"d": "deep"
+},
+{
+"id": "mp0001",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0002",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0003",
+"ph": 1,
+"d": "deep"
+},
+{
+"id": "mp0032",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0037",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0042",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0057",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0058",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0076",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0081",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0086",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0099",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0103",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0130",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0137",
+"ph": 1,
+"d": "deep"
+},
+{
+"id": "mp0161",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0173",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0175",
+"ph": 1,
+"d": "deep"
+},
+{
+"id": "mp0177",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0178",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0184",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0190",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0200",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0206",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0213",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0225",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0247",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0249",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0250",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0265",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp0272",
+"ph": 1,
+"d": "skim"
+},
+{
+"id": "mp1100",
+"ph": 2,
+"d": "deep"
+},
+{
+"id": "mp1115",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1124",
+"ph": 2,
+"d": "deep"
+},
+{
+"id": "mp1128",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1135",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1140",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1141",
+"ph": 2,
+"d": "deep"
+},
+{
+"id": "mp1160",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1179",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1180",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1187",
+"ph": 2,
+"d": "deep"
+},
+{
+"id": "mp1189",
+"ph": 2,
+"d": "skim"
+},
+{
+"id": "mp1190",
+"ph": 2,
+"d": "skim"
+},
+{
+"id": "mp1195",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1197",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1200",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1206",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1208",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1214",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1217",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1218",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1220",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1226",
+"ph": 2,
+"d": "deep"
+},
+{
+"id": "mp1240",
+"ph": 2,
+"d": "deep"
+},
+{
+"id": "mp1246",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1254",
+"ph": 2,
+"d": "deep"
+},
+{
+"id": "mp1282",
+"ph": 2,
+"d": "deep"
+},
+{
+"id": "mp1284",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1289",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1291",
+"ph": 2,
+"d": "deep"
+},
+{
+"id": "mp1297",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1314",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1339",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1350",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1351",
+"ph": 2,
+"d": "std"
+},
+{
+"id": "mp1352",
+"ph": 2,
+"d": "deep"
+},
+{
+"id": "fd06",
+"ph": 3,
+"d": "deep"
+},
+{
+"id": "fd07",
+"ph": 3,
+"d": "deep"
+},
+{
+"id": "fd08",
+"ph": 3,
+"d": "deep"
+},
+{
+"id": "fd09",
+"ph": 3,
+"d": "deep"
+},
+{
+"id": "mp1363",
+"ph": 3,
+"d": "deep"
+},
+{
+"id": "mp1375",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1376",
+"ph": 3,
+"d": "deep"
+},
+{
+"id": "mp1377",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1381",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1384",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1387",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1388",
+"ph": 3,
+"d": "deep"
+},
+{
+"id": "mp1392",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1401",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1403",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1409",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1412",
+"ph": 3,
+"d": "skim"
+},
+{
+"id": "mp1414",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1435",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1447",
+"ph": 3,
+"d": "skim"
+},
+{
+"id": "mp1455",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1498",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1503",
+"ph": 3,
+"d": "deep"
+},
+{
+"id": "mp1504",
+"ph": 3,
+"d": "deep"
+},
+{
+"id": "mp1512",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1517",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1535",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1540",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1551",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1552",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1558",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1576",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1586",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1587",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1600",
+"ph": 3,
+"d": "deep"
+},
+{
+"id": "mp1602",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1614",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1643",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1652",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1673",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1730",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1736",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1740",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1751",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1753",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "mp1765",
+"ph": 3,
+"d": "std"
+},
+{
+"id": "fd10",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "fd11",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "fd12",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "fd13",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "fd14",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "fd15",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "mp0379",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0384",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0389",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0390",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0391",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0393",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0394",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0395",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0406",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0411",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0413",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0463",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0467",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "mp0469",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0474",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0475",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0481",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0488",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0493",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0500",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0502",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "mp0534",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0570",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0599",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0608",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0616",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0657",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0661",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "mp0687",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0709",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "mp0726",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0730",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "mp0743",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0767",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0778",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0789",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0799",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp0801",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2207",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2208",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2209",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "mp2216",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2217",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2222",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2223",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2248",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "mp2251",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "mp2252",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2259",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2265",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2266",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "mp2267",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2275",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "mp2276",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "mp2280",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2286",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2299",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "mp2300",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "mp2312",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2316",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2319",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "mp2329",
+"ph": 4,
+"d": "deep"
+},
+{
+"id": "mp2334",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2337",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2349",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2350",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2378",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2381",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2386",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2399",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2400",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "mp2407",
+"ph": 4,
+"d": "std"
+},
+{
+"id": "fd16",
+"ph": 5,
+"d": "deep"
+},
+{
+"id": "fd17",
+"ph": 5,
+"d": "deep"
+},
+{
+"id": "fd18",
+"ph": 5,
+"d": "deep"
+},
+{
+"id": "mp4592",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4597",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4599",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4600",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4610",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4620",
+"ph": 5,
+"d": "deep"
+},
+{
+"id": "mp4631",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4642",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4649",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4654",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4657",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4662",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4663",
+"ph": 5,
+"d": "deep"
+},
+{
+"id": "mp4664",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4701",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4731",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4747",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4758",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4776",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4788",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4797",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "mp4808",
+"ph": 5,
+"d": "std"
+},
+{
+"id": "fd19",
+"ph": 6,
+"d": "deep"
+},
+{
+"id": "fd20",
+"ph": 6,
+"d": "deep"
+},
+{
+"id": "mp1804",
+"ph": 6,
+"d": "deep"
+},
+{
+"id": "mp1810",
+"ph": 6,
+"d": "deep"
+},
+{
+"id": "mp1826",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp1837",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp1846",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp1855",
+"ph": 6,
+"d": "deep"
+},
+{
+"id": "mp1860",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp1902",
+"ph": 6,
+"d": "deep"
+},
+{
+"id": "mp1914",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp1948",
+"ph": 6,
+"d": "skim"
+},
+{
+"id": "mp1951",
+"ph": 6,
+"d": "skim"
+},
+{
+"id": "mp1953",
+"ph": 6,
+"d": "skim"
+},
+{
+"id": "mp1968",
+"ph": 6,
+"d": "deep"
+},
+{
+"id": "mp1970",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp1990",
+"ph": 6,
+"d": "deep"
+},
+{
+"id": "mp1993",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp1998",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp2003",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp2046",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp2057",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp2060",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp2070",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp2073",
+"ph": 6,
+"d": "deep"
+},
+{
+"id": "mp2074",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp2097",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp2111",
+"ph": 6,
+"d": "deep"
+},
+{
+"id": "mp2122",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp2154",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp2163",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp2170",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp2174",
+"ph": 6,
+"d": "deep"
+},
+{
+"id": "mp2175",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp2179",
+"ph": 6,
+"d": "std"
+},
+{
+"id": "mp2182",
+"ph": 6,
+"d": "skim"
+},
+{
+"id": "mp2190",
+"ph": 6,
+"d": "skim"
+},
+{
+"id": "mp2194",
+"ph": 6,
+"d": "skim"
+},
+{
+"id": "mp2196",
+"ph": 6,
+"d": "skim"
+},
+{
+"id": "fd21",
+"ph": 7,
+"d": "deep"
+},
+{
+"id": "fd22",
+"ph": 7,
+"d": "deep"
+},
+{
+"id": "fd23",
+"ph": 7,
+"d": "deep"
+},
+{
+"id": "mp2899",
+"ph": 7,
+"d": "skim"
+},
+{
+"id": "mp2918",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp2926",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp2928",
+"ph": 7,
+"d": "skim"
+},
+{
+"id": "mp2929",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp2952",
+"ph": 7,
+"d": "deep"
+},
+{
+"id": "mp2974",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp2979",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp2980",
+"ph": 7,
+"d": "skim"
+},
+{
+"id": "mp3029",
+"ph": 7,
+"d": "skim"
+},
+{
+"id": "mp3034",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3035",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3043",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3048",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3051",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3090",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3091",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3107",
+"ph": 7,
+"d": "skim"
+},
+{
+"id": "mp3108",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3109",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3140",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3145",
+"ph": 7,
+"d": "deep"
+},
+{
+"id": "mp3146",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3151",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3180",
+"ph": 7,
+"d": "deep"
+},
+{
+"id": "mp3181",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3182",
+"ph": 7,
+"d": "deep"
+},
+{
+"id": "mp3219",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3221",
+"ph": 7,
+"d": "deep"
+},
+{
+"id": "mp3282",
+"ph": 7,
+"d": "deep"
+},
+{
+"id": "mp3309",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3310",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3347",
+"ph": 7,
+"d": "deep"
+},
+{
+"id": "mp3385",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3387",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3407",
+"ph": 7,
+"d": "skim"
+},
+{
+"id": "mp3409",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3455",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3470",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3476",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3487",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3503",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3510",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp3519",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "mp6112",
+"ph": 7,
+"d": "std"
+},
+{
+"id": "fd24",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "fd25",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "fd26",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "fd27",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "fd28",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "mp3529",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3531",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "mp3535",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "mp3542",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3561",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3571",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "mp3577",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3581",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3605",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3618",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3620",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3621",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "mp3628",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "mp3646",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3668",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3671",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "mp3702",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3706",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3724",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3741",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "mp3774",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3792",
+"ph": 8,
+"d": "skim"
+},
+{
+"id": "mp3801",
+"ph": 8,
+"d": "skim"
+},
+{
+"id": "mp3817",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3834",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3842",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3874",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3895",
+"ph": 8,
+"d": "skim"
+},
+{
+"id": "mp3896",
+"ph": 8,
+"d": "skim"
+},
+{
+"id": "mp3904",
+"ph": 8,
+"d": "skim"
+},
+{
+"id": "mp3905",
+"ph": 8,
+"d": "skim"
+},
+{
+"id": "mp3916",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3939",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3944",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3955",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3963",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "mp3969",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "mp3971",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "mp3975",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3976",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp3987",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4019",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4040",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "mp4046",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4047",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4055",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4077",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4089",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4137",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "mp4149",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4175",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4190",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4222",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4236",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4239",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4247",
+"ph": 8,
+"d": "deep"
+},
+{
+"id": "mp4277",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4281",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4283",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4285",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4289",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4292",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4293",
+"ph": 8,
+"d": "skim"
+},
+{
+"id": "mp4307",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "mp4323",
+"ph": 8,
+"d": "std"
+},
+{
+"id": "fd29",
+"ph": 9,
+"d": "deep"
+},
+{
+"id": "fd30",
+"ph": 9,
+"d": "deep"
+},
+{
+"id": "fd31",
+"ph": 9,
+"d": "deep"
+},
+{
+"id": "fd32",
+"ph": 9,
+"d": "deep"
+},
+{
+"id": "mp4331",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4344",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4348",
+"ph": 9,
+"d": "deep"
+},
+{
+"id": "mp4349",
+"ph": 9,
+"d": "deep"
+},
+{
+"id": "mp4355",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4356",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4358",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4367",
+"ph": 9,
+"d": "skim"
+},
+{
+"id": "mp4371",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4375",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4378",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4393",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4394",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4401",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4411",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4412",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4431",
+"ph": 9,
+"d": "deep"
+},
+{
+"id": "mp4435",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4439",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4441",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4442",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4452",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4455",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4457",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4463",
+"ph": 9,
+"d": "deep"
+},
+{
+"id": "mp4486",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4499",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4518",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "mp4555",
+"ph": 9,
+"d": "std"
+},
+{
+"id": "fd33",
+"ph": 10,
+"d": "deep"
+},
+{
+"id": "fd34",
+"ph": 10,
+"d": "deep"
+},
+{
+"id": "fd35",
+"ph": 10,
+"d": "deep"
+},
+{
+"id": "fd36",
+"ph": 10,
+"d": "deep"
+},
+{
+"id": "fd37",
+"ph": 10,
+"d": "deep"
+},
+{
+"id": "mp0836",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0838",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0857",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0863",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0868",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0876",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0884",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0888",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0890",
+"ph": 10,
+"d": "skim"
+},
+{
+"id": "mp0925",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0927",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0931",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0937",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0938",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0939",
+"ph": 10,
+"d": "deep"
+},
+{
+"id": "mp0951",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0953",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0954",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0956",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0958",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0959",
+"ph": 10,
+"d": "deep"
+},
+{
+"id": "mp0965",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0981",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0985",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0991",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp0993",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp1002",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp1007",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp1011",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp1013",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp1020",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp1021",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp1024",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp1034",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp1042",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp1051",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp1052",
+"ph": 10,
+"d": "skim"
+},
+{
+"id": "mp1054",
+"ph": 10,
+"d": "skim"
+},
+{
+"id": "mp2409",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp2411",
+"ph": 10,
+"d": "deep"
+},
+{
+"id": "mp2432",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp2449",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp2462",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp2476",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp2477",
+"ph": 10,
+"d": "deep"
+},
+{
+"id": "mp2490",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp2498",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp2520",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp2526",
+"ph": 10,
+"d": "deep"
+},
+{
+"id": "mp2534",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp2535",
+"ph": 10,
+"d": "deep"
+},
+{
+"id": "mp2548",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp2551",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp2555",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp2566",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp2567",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp2572",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp2577",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "mp2579",
+"ph": 10,
+"d": "std"
+},
+{
+"id": "fd38",
+"ph": 11,
+"d": "deep"
+},
+{
+"id": "fd39",
+"ph": 11,
+"d": "deep"
+},
+{
+"id": "mp2592",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2599",
+"ph": 11,
+"d": "deep"
+},
+{
+"id": "mp2632",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2633",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2642",
+"ph": 11,
+"d": "deep"
+},
+{
+"id": "mp2652",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2669",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2670",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2681",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2692",
+"ph": 11,
+"d": "skim"
+},
+{
+"id": "mp2698",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2722",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2726",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2749",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2754",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2762",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2776",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2784",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2791",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2800",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2819",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "mp2837",
+"ph": 11,
+"d": "std"
+},
+{
+"id": "fd40",
+"ph": 12,
+"d": "deep"
+},
+{
+"id": "fd41",
+"ph": 12,
+"d": "deep"
+},
+{
+"id": "mp5544",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5547",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5558",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5568",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5573",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5577",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5580",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5581",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5605",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5609",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5610",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5612",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5622",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5626",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5630",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5654",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5655",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5661",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5665",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5681",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5682",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5689",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5707",
+"ph": 12,
+"d": "std"
+},
+{
+"id": "mp5717",
+"ph": 12,
+"d": "skim"
+},
+{
+"id": "mp5721",
+"ph": 12,
+"d": "skim"
+},
+{
+"id": "mp5733",
+"ph": 12,
+"d": "skim"
+},
+{
+"id": "mp5739",
+"ph": 12,
+"d": "skim"
+},
+{
+"id": "mp5742",
+"ph": 12,
+"d": "skim"
+},
+{
+"id": "mp5747",
+"ph": 12,
+"d": "skim"
+},
+{
+"id": "mp5752",
+"ph": 12,
+"d": "skim"
+},
+{
+"id": "mp5762",
+"ph": 12,
+"d": "skim"
+},
+{
+"id": "mp5776",
+"ph": 12,
+"d": "skim"
+},
+{
+"id": "mp5799",
+"ph": 12,
+"d": "skim"
+},
+{
+"id": "mp5803",
+"ph": 12,
+"d": "skim"
+},
+{
+"id": "mp5806",
+"ph": 12,
+"d": "deep"
+},
+{
+"id": "mp5813",
+"ph": 12,
+"d": "skim"
+},
+{
+"id": "mp5830",
+"ph": 12,
+"d": "skim"
+},
+{
+"id": "mp4835",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp4836",
+"ph": 13,
+"d": "deep"
+},
+{
+"id": "mp4861",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp4873",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp4875",
+"ph": 13,
+"d": "deep"
+},
+{
+"id": "mp4878",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp4891",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp4893",
+"ph": 13,
+"d": "deep"
+},
+{
+"id": "mp4895",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp4951",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp4952",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp4954",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp4973",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp4987",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5021",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5029",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5032",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5040",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5043",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5074",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5119",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5126",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5140",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5141",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5147",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5153",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5162",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5180",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5183",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5186",
+"ph": 13,
+"d": "deep"
+},
+{
+"id": "mp5192",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5213",
+"ph": 13,
+"d": "deep"
+},
+{
+"id": "mp5223",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5252",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5279",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5285",
+"ph": 13,
+"d": "deep"
+},
+{
+"id": "mp5300",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5301",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5308",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5312",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5323",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5339",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5341",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5356",
+"ph": 13,
+"d": "std"
+},
+{
+"id": "mp5366",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5368",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5377",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5388",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5400",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5421",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5438",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5502",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5506",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5514",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5532",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5538",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5879",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5880",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5882",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5889",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5893",
+"ph": 13,
+"d": "deep"
+},
+{
+"id": "mp5902",
+"ph": 13,
+"d": "deep"
+},
+{
+"id": "mp5904",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5979",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp5998",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp6017",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp6022",
+"ph": 13,
+"d": "skim"
+},
+{
+"id": "mp6075",
+"ph": 13,
+"d": "skim"
+}
+]
+}

@@ -30,6 +30,12 @@
   <nav id="sidebar" class="sidebar" aria-label="Fields and topics"></nav>
   <div class="scrim" id="scrim" hidden></div>
   <main class="main" id="main">
+    <div class="savebanner" id="saveBanner" hidden>
+      <span id="saveBannerText">Your changes are only saved in this browser.</span>
+      <button type="button" class="pill" id="saveBannerBtn">Connect GitHub</button>
+    </div>
+    <div id="nextView" hidden></div>
+    <div id="listView">
     <section class="hero" id="hero">
       <div class="crumb" id="crumb"></div>
       <h1 id="scopeTitle">All papers</h1>
@@ -54,6 +60,7 @@
     <div class="legend" aria-hidden="true" id="legend"></div>
     <div id="list" class="list"></div>
     <div class="more"><button class="pill" id="moreBtn" type="button" hidden>Show more</button></div>
+    </div>
   </main>
 </div>
 

@@ -42,6 +42,19 @@ The repo, and so your progress and notes, is public. GitHub Pages on a private r
 - **+ New field**, **+ New area** and **+ New topic** in the sidebar create groups. An area is optional: a topic can sit directly under a field.
 - **⋯** on any paper sets or fixes its link, a research link (for example the repo where you did the research), notes, or moves it to another field, area or topic.
 
+## Next up
+
+**Next up** (top of the sidebar, and the page the site opens on) takes you through papers one at a time, in order:
+
+- **Reading plan:** the 610 must-reads in 14 phases, in the order they're best studied (`data/plan.json`). Each paper shows how deeply to read it, and the last paper of each phase shows that phase's task.
+- **Oldest first:** every paper in the archive, by year.
+
+For each paper, the steps go in order: **Printed → Read → Notes → Researched**. Only the next step can be ticked and only the latest one can be undone, both here and in the full lists. When the fourth step is done, the next paper comes up. The Researched step takes the link to your research repo.
+
+## Saving
+
+Every click saves to the browser at once, then to GitHub about two seconds later. It also saves straight away when you switch tabs, lock your phone or close the page, and the site warns you if you try to close it mid-save. Until a token is set on a device, a yellow banner says how many changes are only in that browser. Once you add the token, they're pushed automatically.
+
 ## Learning guides
 
 Every paper has a **Learn** button. A paper with an interactive guide shows it filled in colour, and clicking it opens the guide. So far only Dupuit (1844) has one: *Dupuit's Bridge*, `learn/mp0001.html`. On a paper with no guide yet, the button shows a ready-made prompt to paste into an AI assistant to make one.

@@ -39,7 +39,8 @@ const S = {
   messages: [],                         // commit message fragments
   cfg: Object.assign({ owner: '', repo: '', branch: 'main', token: '' }, store.get(CFG_KEY) || {}),
   guides: {},
-  view: Object.assign({ field: null, area: null, topic: null, status: 'any', stars: '0', sort: 'order' }, store.get(VIEW_KEY) || {}),
+  plan: null,
+  view: Object.assign({ mode: 'next', path: 'plan', field: null, area: null, topic: null, status: 'any', stars: '0', sort: 'order' }, store.get(VIEW_KEY) || {}),
   shown: PAGE,
   papers: [], byId: new Map(),
 };
@@ -90,7 +91,9 @@ async function ghGet(path) {
 async function ghPut(path, obj, sha, message) {
   const body = { message, content: b64encode(JSON.stringify(obj, null, 1) + '\n'), branch: S.cfg.branch || 'main' };
   if (sha) body.sha = sha;
-  const r = await fetch(apiUrl(path), { method: 'PUT', headers: { ...headers(), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const json = JSON.stringify(body);
+  // keepalive lets the save finish even if the tab is closing (browsers cap it at 64 KB)
+  const r = await fetch(apiUrl(path), { method: 'PUT', headers: { ...headers(), 'Content-Type': 'application/json' }, body: json, keepalive: json.length < 60000 });
   if (!r.ok) throw new GhError(r.status, await errText(r));
   return (await r.json()).content.sha;
 }
@@ -168,7 +171,7 @@ function commitMessage() {
   const m = S.messages;
   if (m.length === 1) return m[0];
   if (!m.length) return 'Update archive';
-  return `Update ${m.length} papers\n\n${m.slice(0, 40).map((x) => '- ' + x).join('\n')}`;
+  return `Update archive (${m.length} changes)\n\n${m.slice(0, 40).map((x) => '- ' + x).join('\n')}`;
 }
 async function sync() {
   if (!canWrite() || !(S.dirty.progress || S.dirty.library)) return;
@@ -206,6 +209,7 @@ async function sync() {
   }
 }
 function setSync(text, warn) {
+  if ($('saveBanner')) renderBanner();
   const el = $('syncDot');
   const kind = warn ? 'warn' : /^(Saving|Unsaved)/.test(text) ? 'busy' : /GitHub/.test(text) ? 'ok' : 'local';
   el.className = 'dot ' + kind; el.title = text; el.setAttribute('aria-label', text);
@@ -298,18 +302,34 @@ const ICONS = {
 };
 const MORE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg>';
 
-function render() { renderNav(); renderMain(); renderLists(); }
+function render() {
+  renderNav();
+  const next = S.view.mode === 'next' && !$('search').value.trim();
+  $('nextView').hidden = !next; $('listView').hidden = next;
+  if (next) renderNext(); else renderMain();
+  renderLists(); renderBanner();
+}
+function renderBanner() {
+  const pending = (S.dirty.progress || 0) + (S.dirty.library || 0);
+  const show = !canWrite();
+  $('saveBanner').hidden = !show;
+  if (show) $('saveBannerText').textContent = pending
+    ? `${pending} change${pending === 1 ? ' is' : 's are'} saved only in this browser. Add your GitHub token so everything saves to your repo and shows on every device.`
+    : 'Changes are saved only in this browser until you add your GitHub token. Then everything saves to your repo automatically.';
+}
 const isDone = (id) => STATUSES.every(([s]) => prog(id)[s]);
 
 function renderNav() {
   const tree = fieldTree();
   const searching = !!$('search').value.trim();
   const V = S.view;
-  const cur = (f, ar, t) => (!searching && V.field === f && (V.area ?? null) === ar && V.topic === t ? ' aria-current="true"' : '');
+  const cur = (f, ar, t) => (!searching && V.mode === 'list' && V.field === f && (V.area ?? null) === ar && V.topic === t ? ' aria-current="true"' : '');
   const data = (f, ar, t) => `data-f="${esc(f || '')}" data-a="${ar == null ? '' : esc(ar)}" data-hasa="${ar == null ? 0 : 1}" data-t="${esc(t || '')}"`;
   const count = (c) => `${c.rd}/${c.n.toLocaleString()}`;
   const all = { n: S.papers.length, rd: S.papers.filter((p) => prog(p.id).rd).length };
-  let h = `<button class="nav" style="--c:#4a4470" ${data(null, null, null)}${cur(null, null, null)}><span class="sw"></span><span class="nm">All papers</span><span class="ct">${count(all)}</span></button>`;
+  const nx = nextInfo();
+  let h = `<button class="nav nextnav" style="--c:#0e9f6e" data-next="1"${S.view.mode === 'next' && !searching ? ' aria-current="true"' : ''}><span class="sw"></span><span class="nm">Next up</span><span class="ct">${nx.total ? `${nx.doneCount}/${nx.total}` : ''}</span></button>`;
+  h += `<button class="nav" style="--c:#4a4470" ${data(null, null, null)}${S.view.mode === 'list' ? cur(null, null, null) : ''}><span class="sw"></span><span class="nm">All papers</span><span class="ct">${count(all)}</span></button>`;
   h += '<div class="navlabel">Fields</div>';
   const fields = [...tree.keys()].sort((a, b) => (a === 'Economics' ? -1 : b === 'Economics' ? 1 : a.localeCompare(b)));
   const topicBtns = (f, ar, topics) => [...topics].map(([t, c]) =>
@@ -373,8 +393,11 @@ function paperRow(p, showWhere) {
   const meta = [firstAuthor ? firstAuthor + others : '', p.y].filter(Boolean).map(esc).join(' · ');
   const btns = STATUSES.map(([s, label]) => {
     const on = g[s];
-    const tip = on ? `${label} on ${on}. Click to undo.` : `Mark as ${label.toLowerCase()}`;
-    return `<button type="button" class="st ${s}" data-st="${s}" aria-pressed="${on ? 'true' : 'false'}" aria-label="${label}" title="${tip}">${ICONS[s]}</button>`;
+    const { next } = stepState(p.id);
+    const idx = STATUSES.findIndex(([k]) => k === s);
+    const locked = !on && idx !== next;
+    const tip = on ? `${label} on ${on}` : locked ? `${STATUSES[next][1]} comes first` : `Mark as ${label.toLowerCase()}`;
+    return `<button type="button" class="st ${s}${locked ? ' locked' : ''}" data-st="${s}" aria-pressed="${on ? 'true' : 'false'}" aria-label="${label}" title="${tip}">${ICONS[s]}</button>`;
   }).join('');
   return `<article class="paper${isDone(p.id) ? ' done' : ''}" data-id="${esc(p.id)}">
     <div class="pmain"><a class="ptitle" href="${esc(link)}" target="_blank" rel="noopener" title="${p.link ? 'Open paper' : 'Search Google Scholar'}">${esc(p.t)}</a>
@@ -440,11 +463,136 @@ function renderLists() {
   $('subList').innerHTML = opts(new Set(S.papers.filter((p) => p.f === f && (p.ar || '') === ar && p.tp === t).map((p) => p.st)));
 }
 
+/* ---------- Next up: one paper at a time, in order ---------- */
+const STEP_HELP = {
+  pr: 'Print it out.',
+  rd: null, // filled from the paper's depth
+  nt: 'Write your notes: the question, the method, the main finding, why it mattered, and which paper it links to.',
+  rs: 'Research it with an AI assistant (the Learn button has a ready-made prompt), push the work to a repo, and paste the link below.',
+};
+function pathOrder() {
+  if (S.view.path === 'plan' && S.plan) return S.plan.order.filter((o) => S.byId.has(o.id));
+  const yr = (p) => parseInt(p.y, 10) || 9999;
+  return [...S.papers].sort((a, b) => yr(a) - yr(b) || a.o - b.o).map((p) => ({ id: p.id, ph: null, d: null }));
+}
+function nextInfo() {
+  const order = S.byId.size ? pathOrder() : [];
+  const i = order.findIndex((o) => !isDone(o.id));
+  return { order, i, total: order.length, doneCount: order.filter((o) => isDone(o.id)).length };
+}
+function renderNext() {
+  const { order, i, total, doneCount } = nextInfo();
+  const planOn = S.view.path === 'plan' && S.plan;
+  const pathBar = `<div class="pathbar" role="group" aria-label="Which order to follow">
+      <span>Order</span>
+      <button type="button" class="chip" data-path="plan" aria-pressed="${S.view.path === 'plan'}">Reading plan · ${S.plan ? S.plan.order.length : 0} must-reads</button>
+      <button type="button" class="chip" data-path="year" aria-pressed="${S.view.path === 'year'}">Oldest first · all ${S.papers.length.toLocaleString()}</button>
+    </div>`;
+  document.documentElement.style.setProperty('--fc', '#0e9f6e');
+  if (i < 0) {
+    $('nextView').innerHTML = `<section class="hero"><div class="crumb">Next up</div><h1>All done</h1><div class="progress"><div class="pstats"><span>Every paper on this path has all four steps ticked.</span></div></div></section>${pathBar}`;
+    return;
+  }
+  const cur = order[i], p = S.byId.get(cur.id);
+  const phase = planOn && cur.ph != null ? S.plan.phases[cur.ph] : null;
+  const { g, next } = stepState(p.id);
+  const depth = planOn && cur.d ? S.plan.depth[cur.d] : null;
+  const help = Object.assign({}, STEP_HELP, { rd: depth ? `Read it. ${depth}.` : 'Read it.' });
+  const link = p.link || `https://scholar.google.com/scholar?q=${encodeURIComponent(`${p.t} ${(p.a || '').split(',')[0]}`)}`;
+  const phaseEnd = planOn && (i === order.length - 1 || order[i + 1].ph !== cur.ph);
+  const steps = STATUSES.map(([k, label], n) => {
+    const on = g[k], isNext = n === next;
+    return `<li class="step ${k}${on ? ' done' : ''}${isNext ? ' now' : ''}">
+      <span class="dotn">${on ? '✓' : n + 1}</span>
+      <span class="sl"><b>${label}</b><small>${on ? on : isNext ? 'Next' : ''}</small></span></li>`;
+  }).join('');
+  const nk = STATUSES[next];
+  const doIt = nk ? `<div class="doit">
+      <p>${esc(help[nk[0]])}</p>
+      ${nk[0] === 'rs' ? `<label class="rsin">Research link<input id="rsLink" type="url" placeholder="https://github.com/…" value="${esc(p.research || '')}"></label>` : ''}
+      <div class="doit-btns">
+        <button type="button" class="pill go ${nk[0]}" data-step="${nk[0]}">${ICONS[nk[0]]} Mark as ${nk[1].toLowerCase()}</button>
+        ${next > 0 ? `<button type="button" class="linkbtn" data-undo="1">Undo ${STATUSES[next - 1][1].toLowerCase()}</button>` : ''}
+      </div></div>` : '';
+  const upcoming = order.slice(i + 1, i + 9).map((o, n) => {
+    const q = S.byId.get(o.id);
+    const newPhase = planOn && o.ph !== (n === 0 ? cur.ph : order[i + n].ph);
+    return `${newPhase ? `<li class="phasemark">Phase ${o.ph}: ${esc(S.plan.phases[o.ph].title)}</li>` : ''}
+      <li class="up"><span class="upn">${i + n + 2}</span><span class="upt"><b>${esc(q.t)}</b><small>${esc(((q.a || '').split(/,|&/)[0] || '').trim())}${q.y ? ' · ' + esc(q.y) : ''}${o.d ? ' · ' + { deep: 'Deep', std: 'Standard', skim: 'Skim' }[o.d] : ''}</small></span>
+      <span class="upd">${STATUSES.map(([k]) => `<i class="${prog(q.id)[k] ? 'on ' + k : ''}"></i>`).join('')}</span></li>`;
+  }).join('');
+  const recent = order.slice(0, i).filter((o) => isDone(o.id)).slice(-3).reverse().map((o) => {
+    const q = S.byId.get(o.id);
+    return `<li class="up donep"><span class="upn">✓</span><span class="upt"><b>${esc(q.t)}</b><small>${esc(((q.a || '').split(/,|&/)[0] || '').trim())}${q.y ? ' · ' + esc(q.y) : ''}</small></span></li>`;
+  }).join('');
+  $('nextView').innerHTML = `
+    <section class="hero">
+      <div class="crumb">Next up · ${planOn ? 'Reading plan' : 'Oldest first'}</div>
+      <h1>${phase ? `Phase ${cur.ph}: ${esc(phase.title)}` : 'Oldest papers first'}</h1>
+      <div class="progress">
+        <div class="pbar"><i style="width:${(100 * doneCount) / (total || 1)}%"></i></div>
+        <div class="pstats"><span>Paper <b>${i + 1}</b>&nbsp;of ${total.toLocaleString()}</span><span><b>${doneCount}</b>&nbsp;finished</span>${phase ? `<span>${esc(phase.about)}</span>` : ''}</div>
+      </div>
+    </section>
+    ${pathBar}
+    <article class="now" data-id="${esc(p.id)}">
+      <div class="now-top"><span class="nowtag">#${i + 1}${depth ? ' · ' + esc(depth.split(' · ')[0]) : ''}</span>${p.s ? `<span class="s">${'★'.repeat(p.s)}</span>` : ''}</div>
+      <a class="nowtitle" href="${esc(link)}" target="_blank" rel="noopener">${esc(p.t)}</a>
+      <div class="nowmeta">${esc(p.a || '')}${p.y ? ' · ' + esc(p.y) : ''}${p.v ? ' · ' + md(p.v) : ''}</div>
+      <div class="nowlinks"><a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? 'Open paper' : 'Search Scholar'} ↗</a>${learnBtn(p)}</div>
+      <ol class="steps">${steps}</ol>
+      ${doIt}
+      ${phaseEnd && phase ? `<div class="phasetask"><b>End of phase ${cur.ph}.</b> Before moving on: ${esc(phase.task)}</div>` : ''}
+    </article>
+    ${upcoming ? `<h2 class="nexth">Coming up</h2><ol class="uplist">${upcoming}</ol>` : ''}
+    ${recent ? `<h2 class="nexth">Recently finished</h2><ol class="uplist">${recent}</ol>` : ''}`;
+}
+function nextClick(e) {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.path) { S.view.path = b.dataset.path; saveView(); render(); return; }
+  if (b.dataset.learn) return openLearn(b.closest('.now').dataset.id);
+  const card = b.closest('.now'); if (!card) return;
+  const id = card.dataset.id;
+  if (b.dataset.step) {
+    if (b.dataset.step === 'rs') {
+      const url = cleanUrl(($('rsLink') || {}).value || '');
+      const pp = S.byId.get(id);
+      if (url && url !== (pp.research || '')) setResearch(pp, url);
+    }
+    const wasLast = b.dataset.step === 'rs';
+    toggle(id, b.dataset.step);
+    if (wasLast) toast('Paper finished. On to the next one.');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (b.dataset.undo) {
+    const { last } = stepState(id);
+    if (last >= 0) toggle(id, STATUSES[last][0]);
+  }
+}
+function setResearch(p, url) {
+  const lib = S.library;
+  if (p.added) { const a = lib.added.find((x) => x.id === p.id); a.research = url; a.u = Date.now(); }
+  else lib.edits[p.id] = Object.assign({}, lib.edits[p.id], { research: url, u: Date.now() });
+  S.dirty.library++; S.messages.push(`Research link: ${p.t.slice(0, 80)}`);
+}
+
 /* ---------- actions ---------- */
+// Steps go in order: Printed -> Read -> Notes -> Researched.
+// You can tick only the next step, and undo only the latest one.
+function stepState(id) {
+  const g = prog(id);
+  let next = STATUSES.findIndex(([k]) => !g[k]);
+  if (next < 0) next = STATUSES.length;
+  let last = -1; STATUSES.forEach(([k], i) => { if (g[k]) last = i; });
+  return { g, next, last };
+}
 function toggle(id, s) {
   const p = S.byId.get(id); if (!p) return;
+  const { next, last } = stepState(id);
+  const i = STATUSES.findIndex(([k]) => k === s);
   const g = Object.assign({}, prog(id));
-  const label = STATUSES.find((x) => x[0] === s)[1];
+  const label = STATUSES[i][1];
+  if (!g[s] && i !== next) return toast(`${STATUSES[next][1]} comes first. Steps go in order.`);
+  if (g[s] && i !== last) return toast(`Undo ${STATUSES[last][1].toLowerCase()} first. Steps go in order.`);
   if (g[s]) delete g[s]; else g[s] = today();
   g.u = Date.now();
   S.progress.p[id] = g;
@@ -645,7 +793,7 @@ function cycleTheme() {
 
 let toastTimer;
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2200); }
-function saveView() { store.set(VIEW_KEY, { field: S.view.field, area: S.view.area, topic: S.view.topic, status: S.view.status, stars: S.view.stars, sort: S.view.sort }); }
+function saveView() { store.set(VIEW_KEY, { mode: S.view.mode, path: S.view.path, field: S.view.field, area: S.view.area, topic: S.view.topic, status: S.view.status, stars: S.view.stars, sort: S.view.sort }); }
 
 let lastPull = 0;
 async function refresh(force) {
@@ -669,6 +817,8 @@ function bind() {
     if (b.dataset.newarea) return openGroup('area', b.dataset.newarea);
     if (b.dataset.newtopic) return openGroup('topic', b.dataset.newtopic, b.dataset.newtopicarea);
     $('search').value = '';
+    if (b.dataset.next) { S.view.mode = 'next'; saveView(); render(); window.scrollTo({ top: 0 }); closeNav(); return; }
+    S.view.mode = 'list';
     S.view.field = b.dataset.f || null;
     S.view.area = b.dataset.hasa === '1' ? b.dataset.a : null;
     S.view.topic = b.dataset.t || null; S.shown = PAGE;
@@ -692,6 +842,7 @@ function bind() {
   $('fSort').addEventListener('change', () => { S.view.sort = $('fSort').value; S.shown = PAGE; saveView(); renderMain(); });
   $('crumb').addEventListener('click', (e) => {
     const b = e.target.closest('[data-cf]'); if (!b) return;
+    S.view.mode = 'list';
     S.view.field = b.dataset.cf; S.view.area = b.dataset.ca ?? null; S.view.topic = null; S.shown = PAGE; saveView(); render();
   });
   $('scrim').addEventListener('click', closeNav);
@@ -719,7 +870,13 @@ function bind() {
     const open = !$('sidebar').classList.contains('open');
     $('sidebar').classList.toggle('open', open); $('navToggle').setAttribute('aria-expanded', String(open)); $('scrim').hidden = !open;
   });
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refresh(false); });
+  // Save straight away when you switch tabs, lock the phone or close the page.
+  const flush = () => { if (canWrite() && (S.dirty.progress || S.dirty.library)) { clearTimeout(syncTimer); sync(); } };
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refresh(false); else flush(); });
+  window.addEventListener('pagehide', flush);
+  window.addEventListener('beforeunload', (e) => { if (syncing || (canWrite() && (S.dirty.progress || S.dirty.library))) { flush(); e.preventDefault(); e.returnValue = ''; } });
+  $('nextView').addEventListener('click', nextClick);
+  $('saveBannerBtn').addEventListener('click', openSettings);
   window.addEventListener('online', () => refresh(true));
 }
 function closeNav() { $('sidebar').classList.remove('open'); $('navToggle').setAttribute('aria-expanded', 'false'); $('scrim').hidden = true; }
@@ -731,6 +888,7 @@ async function start() {
   const cat = await fetchStatic('data/catalog.json', { papers: [] }, false);
   S.catalog = cat.papers || [];
   S.guides = (await fetchStatic('data/learn.json', { guides: {} })).guides || {};
+  S.plan = await fetchStatic('data/plan.json', null);
   rebuild();
   // Views saved before areas existed: work out the area from the topic.
   if (S.view.topic && S.view.area == null) {
