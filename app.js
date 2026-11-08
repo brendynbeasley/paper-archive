@@ -203,7 +203,11 @@ async function sync() {
     if (again || S.dirty.progress || S.dirty.library) { again = false; if (S.dirty.progress || S.dirty.library) syncTimer = setTimeout(sync, 8000); }
   }
 }
-function setSync(text, warn) { const el = $('syncState'); el.textContent = text; el.classList.toggle('warn', !!warn); el.title = text; }
+function setSync(text, warn) {
+  const el = $('syncDot');
+  const kind = warn ? 'warn' : /^(Saving|Unsaved)/.test(text) ? 'busy' : /GitHub/.test(text) ? 'ok' : 'local';
+  el.className = 'dot ' + kind; el.title = text; el.setAttribute('aria-label', text);
+}
 
 /* ---------- derived paper list ---------- */
 function rebuild() {
@@ -267,86 +271,109 @@ function sorted(list) {
 }
 
 /* ---------- rendering ---------- */
+const FIELD_COLORS = { Economics: '#5b4cf0', Econophysics: '#f0592b', Statistics: '#0e9f8b', Mathematics: '#d6336c' };
+const SPARE = ['#2b7de9', '#d98a00', '#8a3ffc', '#1f9d55', '#e0437a', '#0891b2'];
+function fieldColor(f) {
+  if (!f) return '#4a4470';
+  if (FIELD_COLORS[f]) return FIELD_COLORS[f];
+  let h = 0; for (const c of f) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return SPARE[h % SPARE.length];
+}
+const ICONS = {
+  pr: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>',
+  rd: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg>',
+  nt: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+  rs: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+};
+const MORE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg>';
+
 function render() { renderNav(); renderMain(); renderLists(); }
+const isDone = (id) => STATUSES.every(([s]) => prog(id)[s]);
 
 function renderNav() {
   const tree = fieldTree();
-  const total = S.papers.length, read = S.papers.filter((p) => prog(p.id).rd).length;
   const searching = !!$('search').value.trim();
-  const cur = (f, t) => !searching && S.view.field === f && S.view.topic === t ? ' aria-current="true"' : '';
-  let h = `<button class="navitem" data-f="" data-t=""${cur(null, null)}><span class="nm">All papers</span><span class="ct">${read}/${total}</span></button>`;
+  const cur = (f, t) => (!searching && S.view.field === f && S.view.topic === t ? ' aria-current="true"' : '');
+  const all = S.papers.length, allRead = S.papers.filter((p) => prog(p.id).rd).length;
+  let h = `<button class="nav" style="--c:#4a4470" data-f="" data-t=""${cur(null, null)}><span class="sw"></span><span class="nm">All papers</span><span class="ct">${allRead}/${all.toLocaleString()}</span></button>`;
+  h += '<div class="navlabel">Fields</div>';
   const fields = [...tree.keys()].sort((a, b) => (a === 'Economics' ? -1 : b === 'Economics' ? 1 : a.localeCompare(b)));
   for (const f of fields) {
-    const topics = tree.get(f);
-    let n = 0, rd = 0; topics.forEach((c) => { n += c.n; rd += c.rd; });
-    h += `<div class="navfield"><button class="navitem" data-f="${esc(f)}" data-t=""${cur(f, null)}><span class="nm">${esc(f)}</span><span class="ct">${rd}/${n}</span></button><div class="navtopics">`;
-    for (const t of [...topics.keys()]) {
-      const c = topics.get(t);
-      h += `<button class="navitem" data-f="${esc(f)}" data-t="${esc(t)}"${cur(f, t)}><span class="nm" title="${esc(t)}">${esc(t)}</span><span class="ct">${c.rd}/${c.n}</span></button>`;
+    const topics = tree.get(f), c = fieldColor(f);
+    let n = 0, rd = 0; topics.forEach((x) => { n += x.n; rd += x.rd; });
+    h += `<button class="nav" style="--c:${c}" data-f="${esc(f)}" data-t=""${cur(f, null)}><span class="sw"></span><span class="nm">${esc(f)}</span><span class="ct">${n ? `${rd}/${n.toLocaleString()}` : 'empty'}</span></button>`;
+    if (S.view.field === f && !searching) {
+      h += `<div class="topics" style="--c:${c}">`;
+      for (const [t, x] of topics) h += `<button class="tnav" data-f="${esc(f)}" data-t="${esc(t)}"${cur(f, t)}><span class="nm" title="${esc(t)}">${esc(t)}</span><span class="ct">${x.rd}/${x.n}</span></button>`;
+      h += `<button class="navadd" data-newtopic="${esc(f)}">+ New topic</button></div>`;
     }
-    h += `<button class="navadd" data-newtopic="${esc(f)}">+ New topic</button></div></div>`;
   }
-  h += `<div class="navsep"></div><button class="navadd" data-newfield="1">+ New field</button>`;
+  h += '<button class="navadd" data-newfield="1">+ New field</button>';
   $('sidebar').innerHTML = h;
 }
 
-function counters(list) {
-  return STATUSES.map(([s, label]) => {
-    const n = list.filter((p) => prog(p.id)[s]).length;
-    return `<div class="counter ${s}"><b>${n.toLocaleString()}</b><span>${label} · ${list.length ? Math.round((100 * n) / list.length) : 0}%</span></div>`;
-  }).join('');
+function progressHtml(list) {
+  const n = list.length || 1;
+  const done = list.filter((p) => isDone(p.id)).length;
+  const stats = STATUSES.map(([s, label]) => `<span><i class="k" style="background:var(--${s})"></i><b>${list.filter((p) => prog(p.id)[s]).length}</b> ${label.toLowerCase()}</span>`).join('');
+  return `<div class="pbar" title="${done} of ${list.length} fully done"><i style="width:${(100 * done) / n}%"></i></div>
+    <div class="pstats"><span><b>${done}</b>&nbsp;of ${list.length.toLocaleString()} done</span>${stats}</div>`;
 }
 
 function paperRow(p, showWhere) {
   const g = prog(p.id);
-  const link = p.link || '';
-  const scholar = `https://scholar.google.com/scholar?q=${encodeURIComponent(`${p.t} ${(p.a || '').split(',')[0]}`)}`;
-  const title = link
-    ? `<a class="ptitle" href="${esc(link)}" target="_blank" rel="noopener">${esc(p.t)}</a>`
-    : `<span class="ptitle">${esc(p.t)}</span>`;
-  const meta = [p.a, p.y].filter(Boolean).map(esc).join(' · ') + (p.v ? ` · ${md(p.v)}` : '');
-  const tags = [];
-  if (p.s) tags.push(`<span class="stars" title="${p.s === 2 ? 'Must-read' : 'Influential'}">${'★'.repeat(p.s)}</span>`);
-  if (!link) tags.push(`<a href="${scholar}" target="_blank" rel="noopener">Find on Google Scholar</a>`);
-  if (p.research) tags.push(`<a href="${esc(p.research)}" target="_blank" rel="noopener">Research</a>`);
-  if (p.notes) tags.push(`<span class="tag" title="${esc(p.notes)}">has notes</span>`);
-  if (p.vf) tags.push(`<span class="tag" title="The bibliography flags this citation as uncertain">check citation</span>`);
-  if (showWhere) tags.push(`<span class="where">${esc(p.f)} › ${esc(p.tp)}</span>`);
+  const link = p.link || `https://scholar.google.com/scholar?q=${encodeURIComponent(`${p.t} ${(p.a || '').split(',')[0]}`)}`;
+  const firstAuthor = (p.a || '').split(/,|&/)[0].trim();
+  const others = (p.a || '').includes('&') ? ' et al.' : '';
+  const meta = [firstAuthor ? firstAuthor + others : '', p.y].filter(Boolean).map(esc).join(' · ');
   const btns = STATUSES.map(([s, label]) => {
     const on = g[s];
-    const d = on ? new Date(on + 'T00:00:00').toLocaleDateString([], { month: 'short', day: 'numeric', year: on.slice(0, 4) === today().slice(0, 4) ? undefined : '2-digit' }) : '';
-    return `<button type="button" class="st ${s}" data-st="${s}" aria-pressed="${on ? 'true' : 'false'}" title="${on ? `${label} on ${on}. Click to undo.` : `Mark as ${label.toLowerCase()}`}">${label}<small>${d}</small></button>`;
+    const tip = on ? `${label} on ${on}. Click to undo.` : `Mark as ${label.toLowerCase()}`;
+    return `<button type="button" class="st ${s}" data-st="${s}" aria-pressed="${on ? 'true' : 'false'}" aria-label="${label}" title="${tip}">${ICONS[s]}</button>`;
   }).join('');
-  return `<article class="paper" data-id="${esc(p.id)}"><div class="pmain">${title}<div class="pmeta">${meta}</div>${p.n ? `<div class="pnote">${md(p.n)}</div>` : ''}${tags.length ? `<div class="ptags">${tags.join('')}</div>` : ''}</div><div class="pbtns">${btns}<button type="button" class="edit" data-edit="1">Edit</button></div></article>`;
+  return `<article class="paper${isDone(p.id) ? ' done' : ''}" data-id="${esc(p.id)}">
+    <div class="pmain"><a class="ptitle" href="${esc(link)}" target="_blank" rel="noopener" title="${p.link ? 'Open paper' : 'Search Google Scholar'}">${esc(p.t)}</a>
+    <div class="pmeta">${meta}${p.s === 2 ? '<span class="s" title="Must-read">★★</span>' : ''}${showWhere ? ` · <span class="where">${esc(p.tp)}</span>` : ''}</div></div>
+    <div class="btns">${btns}</div>
+    <button type="button" class="more-btn" data-edit="1" aria-label="Details and edit" title="Details and edit">${MORE_ICON}</button></article>`;
 }
 
 function renderMain() {
   const searching = $('search').value.trim();
   const scope = S.papers.filter(inScope);
   const list = sorted(scope.filter(passFilters));
-  $('scopeTitle').textContent = searching ? `Search: “${searching}”` : S.view.topic || S.view.field || 'All papers';
-  $('crumb').textContent = searching ? 'Across every field' : S.view.topic ? S.view.field : S.view.field ? 'Field' : 'Everything in the archive';
-  $('counters').innerHTML = counters(scope);
-  $('resultCount').textContent = `${list.length.toLocaleString()} of ${scope.length.toLocaleString()} papers`;
+  const color = searching ? '#4a4470' : fieldColor(S.view.field);
+  document.documentElement.style.setProperty('--fc', color);
+  $('scopeTitle').textContent = searching ? `“${searching}”` : S.view.topic || S.view.field || 'All papers';
+  $('crumb').innerHTML = searching ? 'Search results across every field'
+    : S.view.topic ? `<button type="button" data-crumb="${esc(S.view.field)}">${esc(S.view.field)}</button>`
+    : S.view.field ? 'Field' : 'Your whole archive';
+  $('progress').innerHTML = progressHtml(scope);
+  document.querySelectorAll('[data-filter]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === S.view.status)));
+  $('mustRead').setAttribute('aria-pressed', String(S.view.stars === '2'));
+  $('legend').innerHTML = STATUSES.map(([s, l]) => `<span><i style="background:var(--${s})"></i>${l}</span>`).join('') + `<span>${list.length.toLocaleString()} papers</span>`;
   if (!list.length) {
-    const empty = !scope.length && S.view.topic && !searching;
-    $('list').innerHTML = `<div class="empty">${empty ? `<p>No papers in this topic yet.</p><p><button class="btn primary" type="button" data-addhere="1">Add papers here</button></p>` : '<p>No papers match these filters.</p>'}</div>`;
+    const empty = !scope.length && !searching && S.view.field;
+    $('list').innerHTML = `<div class="empty">${empty ? `<p>Nothing here yet.</p><button class="pill primary" type="button" data-addhere="1">Add papers</button>` : '<p>No papers match.</p>'}</div>`;
     $('moreBtn').hidden = true;
     return;
   }
   const page = list.slice(0, S.shown);
   const group = S.view.sort === 'order' && !searching;
-  let h = '', lastGroup = null;
+  const counts = new Map();
+  if (group) for (const p of list) { const k = S.view.topic ? p.st || '' : p.tp; counts.set(k, (counts.get(k) || 0) + 1); }
+  let h = '', last = null;
   for (const p of page) {
     if (group) {
-      const gk = S.view.topic ? p.st || '' : S.view.field ? p.tp : `${p.f} › ${p.tp}`;
-      if (gk !== lastGroup) { if (gk) h += `<div class="subhead">${esc(gk)}</div>`; lastGroup = gk; }
+      const k = S.view.topic ? p.st || '' : p.tp;
+      if (k !== last) { if (k) h += `<div class="group">${esc(k)}<small>${counts.get(k)}</small></div>`; last = k; }
     }
-    h += paperRow(p, !!searching || (!group && !S.view.topic));
+    h += paperRow(p, !!searching);
   }
   $('list').innerHTML = h;
-  $('moreBtn').hidden = list.length <= S.shown;
-  $('moreBtn').textContent = `Show ${Math.min(PAGE, list.length - S.shown)} more (${(list.length - S.shown).toLocaleString()} left)`;
+  const left = list.length - S.shown;
+  $('moreBtn').hidden = left <= 0;
+  $('moreBtn').textContent = `Show more (${left.toLocaleString()} left)`;
 }
 
 function renderLists() {
@@ -383,8 +410,10 @@ function openPaper(id) {
   $('pField').value = p ? p.f : S.view.field || ''; $('pTopic').value = p ? p.tp : S.view.topic || '';
   $('pSub').value = p ? p.st || '' : ''; $('pResearch').value = p ? p.research || '' : ''; $('pNotes').value = p ? p.notes || '' : '';
   $('pBulk').value = '';
+  $('pAbout').innerHTML = p ? [p.n ? `<i>${md(p.n)}</i>` : '', p.vf ? 'The bibliography marks this citation as uncertain. Check it before relying on it.' : '', p.link ? '' : 'No link yet. The title opens a Google Scholar search.'].filter(Boolean).join('<br>') : '';
+  document.querySelectorAll('#paperDlg details').forEach((d) => { d.open = false; });
   $('pDelete').hidden = !p;
-  $('pDelete').textContent = p && p.added ? 'Delete' : 'Remove from archive';
+  $('pDelete').textContent = p && p.added ? 'Delete paper' : 'Remove from archive';
   $('paperErr').hidden = true;
   renderLists();
   $('paperDlg').showModal();
@@ -392,7 +421,7 @@ function openPaper(id) {
 function setTab(tab) {
   if (!editing) addTab = tab;
   document.querySelectorAll('#addTabs [data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
-  document.querySelector('[data-pane="one"]').hidden = tab !== 'one';
+  document.querySelectorAll('[data-pane="one"]').forEach((el) => { el.hidden = tab !== 'one'; });
   document.querySelector('[data-pane="bulk"]').hidden = tab !== 'bulk';
   $('pTitle').required = tab === 'one';
 }
@@ -475,6 +504,9 @@ function openSettings() {
   $('sOwner').value = S.cfg.owner; $('sRepo').value = S.cfg.repo; $('sBranch').value = S.cfg.branch || 'main';
   $('sToken').value = S.cfg.token ? '••••••••' : '';
   $('setMsg').hidden = true;
+  $('setStatus').textContent = !hasRepo() ? 'No repository set. Open Repository below.'
+    : canWrite() ? `Connected to ${S.cfg.owner}/${S.cfg.repo}. This device saves changes to GitHub.`
+    : `Viewing ${S.cfg.owner}/${S.cfg.repo}. Add a token to save changes from this device.`;
   $('setDlg').showModal();
 }
 function readSettings() {
@@ -539,7 +571,7 @@ function bind() {
     $('search').value = '';
     S.view.field = b.dataset.f || null; S.view.topic = b.dataset.t || null; S.shown = PAGE;
     saveView(); render(); window.scrollTo({ top: 0 });
-    closeNav();
+    if (S.view.topic || !b.dataset.f) closeNav();
   });
   $('list').addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return;
@@ -550,10 +582,12 @@ function bind() {
   });
   let st;
   $('search').addEventListener('input', () => { clearTimeout(st); st = setTimeout(() => { S.shown = PAGE; render(); }, 180); });
-  [['fStatus', 'status'], ['fStars', 'stars'], ['fSort', 'sort']].forEach(([id, k]) => {
-    $(id).value = S.view[k];
-    $(id).addEventListener('change', () => { S.view[k] = $(id).value; S.shown = PAGE; saveView(); renderMain(); });
-  });
+  document.querySelectorAll('[data-filter]').forEach((b) => b.addEventListener('click', () => { S.view.status = b.dataset.filter; S.shown = PAGE; saveView(); renderMain(); }));
+  $('mustRead').addEventListener('click', () => { S.view.stars = S.view.stars === '2' ? '0' : '2'; S.shown = PAGE; saveView(); renderMain(); });
+  $('fSort').value = S.view.sort;
+  $('fSort').addEventListener('change', () => { S.view.sort = $('fSort').value; S.shown = PAGE; saveView(); renderMain(); });
+  $('crumb').addEventListener('click', (e) => { const b = e.target.closest('[data-crumb]'); if (!b) return; S.view.topic = null; S.shown = PAGE; saveView(); render(); });
+  $('scrim').addEventListener('click', closeNav);
   $('moreBtn').addEventListener('click', () => { S.shown += PAGE; renderMain(); });
   $('addBtn').addEventListener('click', () => openPaper(null));
   $('addTabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (b) setTab(b.dataset.tab); });
@@ -572,12 +606,12 @@ function bind() {
   $('sForget').addEventListener('click', () => { S.cfg.token = ''; store.set(CFG_KEY, S.cfg); $('sToken').value = ''; toast('Token removed from this device'); refresh(true); });
   $('navToggle').addEventListener('click', () => {
     const open = !$('sidebar').classList.contains('open');
-    $('sidebar').classList.toggle('open', open); $('navToggle').setAttribute('aria-expanded', String(open));
+    $('sidebar').classList.toggle('open', open); $('navToggle').setAttribute('aria-expanded', String(open)); $('scrim').hidden = !open;
   });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refresh(false); });
   window.addEventListener('online', () => refresh(true));
 }
-function closeNav() { $('sidebar').classList.remove('open'); $('navToggle').setAttribute('aria-expanded', 'false'); }
+function closeNav() { $('sidebar').classList.remove('open'); $('navToggle').setAttribute('aria-expanded', 'false'); $('scrim').hidden = true; }
 
 /* ---------- start ---------- */
 async function start() {

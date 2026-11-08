@@ -7,65 +7,50 @@
 <meta name="description" content="A personal archive of papers: printed, read, noted, researched.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <header class="top">
-  <button class="iconbtn only-narrow" id="navToggle" type="button" aria-controls="sidebar" aria-expanded="false">Topics</button>
-  <a class="brand" href="./">Paper Archive</a>
-  <div class="searchwrap">
-    <input type="search" id="search" placeholder="Search all papers: title, author, journal" aria-label="Search all papers" autocomplete="off">
-  </div>
-  <span id="syncState" class="sync" role="status">Loading…</span>
-  <button class="btn" id="addBtn" type="button">Add papers</button>
-  <button class="iconbtn" id="settingsBtn" type="button" aria-label="Sync settings" title="Sync settings">Settings</button>
+  <button class="navbtn" id="navToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Show fields and topics">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <a class="brand" href="./"><span class="logo" aria-hidden="true"></span>Paper Archive</a>
+  <input type="search" id="search" placeholder="Search papers" aria-label="Search all papers" autocomplete="off">
+  <span id="syncDot" class="dot" role="status" aria-label="Loading" title="Loading"></span>
+  <button class="add" id="addBtn" type="button"><span aria-hidden="true">+</span> Add</button>
+  <button class="gear" id="settingsBtn" type="button" aria-label="Settings" title="Settings">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+  </button>
 </header>
 
 <div class="layout">
   <nav id="sidebar" class="sidebar" aria-label="Fields and topics"></nav>
-  <main class="main">
-    <div class="scopehead">
-      <div>
-        <div class="crumb" id="crumb"></div>
-        <h1 id="scopeTitle">All papers</h1>
-      </div>
-      <div class="counters" id="counters"></div>
+  <div class="scrim" id="scrim" hidden></div>
+  <main class="main" id="main">
+    <section class="hero" id="hero">
+      <div class="crumb" id="crumb"></div>
+      <h1 id="scopeTitle">All papers</h1>
+      <div class="progress" id="progress"></div>
+    </section>
+    <div class="chips" role="group" aria-label="Filter papers">
+      <button type="button" class="chip" data-filter="any">All</button>
+      <button type="button" class="chip" data-filter="untouched">Not started</button>
+      <button type="button" class="chip" data-filter="progress">In progress</button>
+      <button type="button" class="chip" data-filter="complete">Done</button>
+      <span class="chipsep" aria-hidden="true"></span>
+      <button type="button" class="chip star" id="mustRead" aria-pressed="false">★★ Must-reads</button>
+      <select id="fSort" aria-label="Sort papers">
+        <option value="order">List order</option>
+        <option value="new">Newest</option>
+        <option value="old">Oldest</option>
+        <option value="author">Author</option>
+        <option value="recent">Recently ticked</option>
+      </select>
     </div>
-    <div class="filters">
-      <label>Status
-        <select id="fStatus">
-          <option value="any">Any</option>
-          <option value="untouched">Not started</option>
-          <option value="progress">In progress</option>
-          <option value="complete">All four done</option>
-          <option value="-pr">Not printed</option>
-          <option value="-rd">Not read</option>
-          <option value="-nt">No notes</option>
-          <option value="-rs">Not researched</option>
-          <option value="+rd">Read</option>
-        </select>
-      </label>
-      <label>Importance
-        <select id="fStars">
-          <option value="0">All papers</option>
-          <option value="1">★ and ★★</option>
-          <option value="2">★★ must-reads</option>
-        </select>
-      </label>
-      <label>Sort
-        <select id="fSort">
-          <option value="order">List order</option>
-          <option value="new">Newest first</option>
-          <option value="old">Oldest first</option>
-          <option value="author">Author A–Z</option>
-          <option value="recent">Recently updated</option>
-        </select>
-      </label>
-      <span class="resultcount" id="resultCount"></span>
-    </div>
+    <div class="legend" aria-hidden="true" id="legend"></div>
     <div id="list" class="list"></div>
-    <div class="more"><button class="btn" id="moreBtn" type="button" hidden>Show more</button></div>
+    <div class="more"><button class="pill" id="moreBtn" type="button" hidden>Show more</button></div>
   </main>
 </div>
 
@@ -77,33 +62,41 @@
       <button type="button" role="tab" data-tab="one" aria-selected="true">One paper</button>
       <button type="button" role="tab" data-tab="bulk" aria-selected="false">Paste a list</button>
     </div>
-    <div class="grid2" data-pane="one">
-      <label class="span2">Title<input id="pTitle" required></label>
-      <label>Authors<input id="pAuthors" placeholder="Surname, A., & Surname, B."></label>
-      <label>Year<input id="pYear" inputmode="numeric" maxlength="4"></label>
-      <label class="span2">Journal or source<input id="pVenue" placeholder="Journal of Political Economy 72(1): 44–61"></label>
-      <label class="span2">Link to the paper<input id="pLink" type="url" placeholder="https://…"></label>
+    <div class="fields" data-pane="one">
+      <label>Title<input id="pTitle" required></label>
+      <label>Link to the paper<input id="pLink" type="url" placeholder="https://…"></label>
     </div>
     <div data-pane="bulk" hidden>
-      <label>One paper per line: <code>Title | Authors | Year | Link</code>. Only the title is required.
-        <textarea id="pBulk" rows="8" placeholder="Power Laws in Economics and Finance | Gabaix, X. | 2009 | https://doi.org/10.1146/annurev.economics.050708.142940"></textarea>
+      <label>One paper per line: <code>Title | Authors | Year | Link</code>
+        <textarea id="pBulk" rows="7" placeholder="Power Laws in Economics and Finance | Gabaix, X. | 2009 | https://doi.org/10.1146/annurev.economics.050708.142940"></textarea>
       </label>
     </div>
-    <div class="grid3">
+    <div class="row2">
       <label>Field<input id="pField" list="fieldList" required></label>
       <label>Topic<input id="pTopic" list="topicList" required></label>
-      <label>Subtopic<input id="pSub" list="subList" placeholder="optional"></label>
     </div>
-    <div class="grid2" data-pane="edit">
-      <label class="span2">Research link <span class="hint">(your repo or write-up for this paper)</span><input id="pResearch" type="url" placeholder="https://github.com/you/…"></label>
-      <label class="span2">Notes<textarea id="pNotes" rows="4"></textarea></label>
+    <div class="fields" data-pane="edit">
+      <label>Notes<textarea id="pNotes" rows="3"></textarea></label>
+      <label>Research link <span class="hint">your repo or write-up</span><input id="pResearch" type="url" placeholder="https://github.com/…"></label>
     </div>
+    <details class="more-details" data-pane="one">
+      <summary>More details</summary>
+      <div class="fields">
+        <div class="row2">
+          <label>Authors<input id="pAuthors" placeholder="Surname, A."></label>
+          <label>Year<input id="pYear" inputmode="numeric" maxlength="4"></label>
+        </div>
+        <label>Journal or source<input id="pVenue"></label>
+        <label>Subtopic<input id="pSub" list="subList"></label>
+        <p class="hint" id="pAbout"></p>
+      </div>
+    </details>
     <p class="formerr" id="paperErr" hidden></p>
     <div class="dlgfoot">
-      <button class="btn danger" type="button" id="pDelete">Delete</button>
+      <button class="linkbtn danger" type="button" id="pDelete">Remove</button>
       <span class="grow"></span>
-      <button class="btn" value="cancel" formnovalidate>Cancel</button>
-      <button class="btn primary" id="pSave" value="save">Save</button>
+      <button class="pill" value="cancel" formnovalidate>Cancel</button>
+      <button class="pill primary" id="pSave" value="save">Save</button>
     </div>
   </form>
 </dialog>
@@ -112,34 +105,41 @@
 <dialog id="groupDlg" aria-labelledby="groupDlgTitle">
   <form method="dialog" id="groupForm">
     <h2 id="groupDlgTitle">New field</h2>
-    <label id="gFieldWrap">Field<input id="gField" list="fieldList" required></label>
-    <label id="gTopicWrap">Topic<input id="gTopic"></label>
-    <div class="dlgfoot"><span class="grow"></span><button class="btn" value="cancel" formnovalidate>Cancel</button><button class="btn primary" value="ok">Create</button></div>
+    <label id="gFieldWrap">Field name<input id="gField" list="fieldList" required></label>
+    <label id="gTopicWrap">Topic name<input id="gTopic"></label>
+    <div class="dlgfoot"><span class="grow"></span><button class="pill" value="cancel" formnovalidate>Cancel</button><button class="pill primary" value="ok">Create</button></div>
   </form>
 </dialog>
 
 <!-- Settings -->
 <dialog id="setDlg" aria-labelledby="setDlgTitle">
   <form method="dialog" id="setForm">
-    <h2 id="setDlgTitle">Sync settings</h2>
-    <p class="hint">Your progress is saved as files in your GitHub repo, so every device that opens this site sees the same archive. Viewing needs nothing. To make changes from this device, add a token once.</p>
-    <div class="grid3">
-      <label>GitHub user<input id="sOwner" autocomplete="off"></label>
-      <label>Repository<input id="sRepo" autocomplete="off"></label>
-      <label>Branch<input id="sBranch" autocomplete="off" placeholder="main"></label>
-    </div>
-    <label>Access token <span class="hint">(fine-grained, this repo only, Contents: read and write)</span>
+    <h2 id="setDlgTitle">Settings</h2>
+    <p class="hint" id="setStatus"></p>
+    <label>GitHub token <span class="hint">needed once per device to save changes</span>
       <input id="sToken" type="password" autocomplete="off" placeholder="github_pat_…">
     </label>
-    <p class="hint">The token stays in this browser only. It is never written to the repo. <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create a token on GitHub</a></p>
+    <p class="hint"><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create a token</a>: only this repo, Contents set to read and write. It stays in this browser.</p>
+    <details class="more-details">
+      <summary>Repository</summary>
+      <div class="fields">
+        <div class="row3">
+          <label>User<input id="sOwner" autocomplete="off"></label>
+          <label>Repo<input id="sRepo" autocomplete="off"></label>
+          <label>Branch<input id="sBranch" autocomplete="off" placeholder="main"></label>
+        </div>
+        <div class="dlgfoot">
+          <button class="linkbtn" type="button" id="sExport">Download a backup</button>
+          <button class="linkbtn danger" type="button" id="sForget">Remove token from this device</button>
+        </div>
+      </div>
+    </details>
     <p class="formerr" id="setMsg" hidden></p>
     <div class="dlgfoot">
-      <button class="btn" type="button" id="sTest">Test connection</button>
-      <button class="btn" type="button" id="sExport">Download backup</button>
-      <button class="btn danger" type="button" id="sForget">Remove token</button>
+      <button class="pill" type="button" id="sTest">Test</button>
       <span class="grow"></span>
-      <button class="btn" value="cancel" formnovalidate>Close</button>
-      <button class="btn primary" value="save">Save</button>
+      <button class="pill" value="cancel" formnovalidate>Close</button>
+      <button class="pill primary" value="save">Save</button>
     </div>
   </form>
 </dialog>
