@@ -71,8 +71,9 @@
         <textarea id="pBulk" rows="7" placeholder="Power Laws in Economics and Finance | Gabaix, X. | 2009 | https://doi.org/10.1146/annurev.economics.050708.142940"></textarea>
       </label>
     </div>
-    <div class="row2">
+    <div class="row3">
       <label>Field<input id="pField" list="fieldList" required></label>
+      <label>Area <span class="hint">optional</span><input id="pArea" list="areaList"></label>
       <label>Topic<input id="pTopic" list="topicList" required></label>
     </div>
     <div class="fields" data-pane="edit">
@@ -106,6 +107,7 @@
   <form method="dialog" id="groupForm">
     <h2 id="groupDlgTitle">New field</h2>
     <label id="gFieldWrap">Field name<input id="gField" list="fieldList" required></label>
+    <label id="gAreaWrap">Area name<input id="gArea" list="areaList"></label>
     <label id="gTopicWrap">Topic name<input id="gTopic"></label>
     <div class="dlgfoot"><span class="grow"></span><button class="pill" value="cancel" formnovalidate>Cancel</button><button class="pill primary" value="ok">Create</button></div>
   </form>
@@ -145,6 +147,7 @@
 </dialog>
 
 <datalist id="fieldList"></datalist>
+<datalist id="areaList"></datalist>
 <datalist id="topicList"></datalist>
 <datalist id="subList"></datalist>
 <div id="toast" class="toast" role="status" hidden></div>

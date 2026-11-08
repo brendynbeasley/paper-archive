@@ -1,8 +1,10 @@
 # Paper Archive
 
-A personal archive for tracking papers. Every paper has four buttons, **Printed**, **Read**, **Notes** and **Researched**, and each one records the date you pressed it. Papers are grouped by field and topic. The site runs on GitHub Pages and saves your progress back into this repo, so every device that opens the site sees the same archive.
+A personal archive for tracking papers. Every paper has four buttons, **Printed**, **Read**, **Notes** and **Researched**, and each one records the date you pressed it. The site runs on GitHub Pages and saves your progress back into this repo, so every device that opens the site sees the same archive.
 
-It comes preloaded with 6,185 papers in **Economics**: all 6,144 entries from *Monopoly and Market Power: The Extended Bibliography*, plus 41 foundational papers that the bibliography leaves out (listed under "Foundations" in each topic). **Econophysics**, **Statistics** and **Mathematics** start empty, ready for you to fill in.
+Papers are organised in three levels: **field → area → topic**. It comes preloaded with 6,185 papers under **Economics → Monopoly & market power**, in 22 topics: all 6,144 entries from *Monopoly and Market Power: The Extended Bibliography*, plus 41 foundational papers that the bibliography leaves out (listed under "Foundations" in each topic). **Econophysics**, **Statistics** and **Mathematics** start empty, ready for you to fill in.
+
+Stars come from the bibliography: **★★** marks a must-read, **★** an influential paper.
 
 ## Setup (once)
 
@@ -37,8 +39,17 @@ The repo, and so your progress and notes, is public. GitHub Pages on a private r
 
 - **Add papers → One paper** for a single entry.
 - **Add papers → Paste a list** for many papers at once, one per line: `Title | Authors | Year | Link`.
-- **+ New field** and **+ New topic** in the sidebar create groups.
-- **Edit** on any paper sets its real link (the preloaded papers link to a Google Scholar search until you do), a research link (for example the repo where you did the research), notes, or moves it to another field or topic.
+- **+ New field**, **+ New area** and **+ New topic** in the sidebar create groups. An area is optional: a topic can sit directly under a field.
+- **⋯** on any paper sets or fixes its link, a research link (for example the repo where you did the research), notes, or moves it to another field, area or topic.
+
+## Links
+
+Preloaded papers link to their DOI where one was found. `tools/find_links.py` looked each paper up in Crossref, the public registry of journal DOIs, and kept a link only when the title matched closely and the year (and, for a few years' gap, the first author) agreed. Papers without a confident match show **Search Scholar ↗**, which opens a Google Scholar search instead. To retry lookups and rebuild:
+
+```bash
+python3 tools/find_links.py
+python3 tools/build_catalog.py path/to/All-Monopoly_Papers.md
+```
 
 ## Rebuilding the catalog
 

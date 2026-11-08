@@ -28,7 +28,7 @@ const store = {
 };
 
 /* ---------- state ---------- */
-const emptyLibrary = () => ({ v: 1, fields: [], topics: [], added: [], edits: {}, removed: [] });
+const emptyLibrary = () => ({ v: 1, fields: [], areas: [], topics: [], added: [], edits: {}, removed: [] });
 const emptyProgress = () => ({ v: 1, p: {} });
 const S = {
   catalog: [],
@@ -38,7 +38,7 @@ const S = {
   dirty: { progress: 0, library: 0 },  // change counters not yet pushed
   messages: [],                         // commit message fragments
   cfg: Object.assign({ owner: '', repo: '', branch: 'main', token: '' }, store.get(CFG_KEY) || {}),
-  view: Object.assign({ field: null, topic: null, status: 'any', stars: '0', sort: 'order' }, store.get(VIEW_KEY) || {}),
+  view: Object.assign({ field: null, area: null, topic: null, status: 'any', stars: '0', sort: 'order' }, store.get(VIEW_KEY) || {}),
   shown: PAGE,
   papers: [], byId: new Map(),
 };
@@ -109,6 +109,7 @@ function mergeLibrary(remote, local) {
   const out = emptyLibrary();
   out.fields = [...new Set([...remote.fields, ...local.fields])];
   out.topics = [...new Set([...remote.topics, ...local.topics])];
+  out.areas = [...new Set([...(remote.areas || []), ...(local.areas || [])])];
   out.removed = [...new Set([...remote.removed, ...local.removed])];
   const gone = new Set(out.removed);
   const added = new Map();
@@ -223,19 +224,27 @@ function rebuild() {
   S.byId = new Map(out.map((p) => [p.id, p]));
 }
 const prog = (id) => S.progress.p[id] || {};
+// Field -> area -> topic. Area is optional ('' = topic sits directly under the field).
 function fieldTree() {
   const tree = new Map();
-  const add = (f, t) => {
+  const add = (f, ar, t) => {
     if (!f) return null;
     if (!tree.has(f)) tree.set(f, new Map());
-    if (t && !tree.get(f).has(t)) tree.get(f).set(t, { n: 0, rd: 0 });
-    return t ? tree.get(f).get(t) : null;
+    const areas = tree.get(f);
+    ar = ar || '';
+    if (ar || t) { if (!areas.has(ar)) areas.set(ar, new Map()); }
+    if (!t) return null;
+    const topics = areas.get(ar);
+    if (!topics.has(t)) topics.set(t, { n: 0, rd: 0 });
+    return topics.get(t);
   };
   S.library.fields.forEach((f) => add(f));
-  S.library.topics.forEach((ft) => { const [f, t] = ft.split('::'); add(f, t); });
-  for (const p of S.papers) { const c = add(p.f, p.tp); c.n++; if (prog(p.id).rd) c.rd++; }
+  (S.library.areas || []).forEach((x) => { const [f, ar] = x.split('::'); add(f, ar); });
+  S.library.topics.forEach((x) => { const parts = x.split('::'); if (parts.length === 3) add(parts[0], parts[1], parts[2]); else add(parts[0], '', parts[1]); });
+  for (const p of S.papers) { const c = add(p.f, p.ar, p.tp); c.n++; if (prog(p.id).rd) c.rd++; }
   return tree;
 }
+const sumCounts = (topics) => { let n = 0, rd = 0; topics.forEach((x) => { n += x.n; rd += x.rd; }); return { n, rd }; };
 
 /* ---------- filtering ---------- */
 function inScope(p) {
@@ -245,6 +254,7 @@ function inScope(p) {
     if (!q.split(/\s+/).every((w) => hay.includes(w))) return false;
   } else {
     if (S.view.field && p.f !== S.view.field) return false;
+    if (S.view.area != null && (p.ar || '') !== S.view.area) return false;
     if (S.view.topic && p.tp !== S.view.topic) return false;
   }
   return true;
@@ -293,20 +303,30 @@ const isDone = (id) => STATUSES.every(([s]) => prog(id)[s]);
 function renderNav() {
   const tree = fieldTree();
   const searching = !!$('search').value.trim();
-  const cur = (f, t) => (!searching && S.view.field === f && S.view.topic === t ? ' aria-current="true"' : '');
-  const all = S.papers.length, allRead = S.papers.filter((p) => prog(p.id).rd).length;
-  let h = `<button class="nav" style="--c:#4a4470" data-f="" data-t=""${cur(null, null)}><span class="sw"></span><span class="nm">All papers</span><span class="ct">${allRead}/${all.toLocaleString()}</span></button>`;
+  const V = S.view;
+  const cur = (f, ar, t) => (!searching && V.field === f && (V.area ?? null) === ar && V.topic === t ? ' aria-current="true"' : '');
+  const data = (f, ar, t) => `data-f="${esc(f || '')}" data-a="${ar == null ? '' : esc(ar)}" data-hasa="${ar == null ? 0 : 1}" data-t="${esc(t || '')}"`;
+  const count = (c) => `${c.rd}/${c.n.toLocaleString()}`;
+  const all = { n: S.papers.length, rd: S.papers.filter((p) => prog(p.id).rd).length };
+  let h = `<button class="nav" style="--c:#4a4470" ${data(null, null, null)}${cur(null, null, null)}><span class="sw"></span><span class="nm">All papers</span><span class="ct">${count(all)}</span></button>`;
   h += '<div class="navlabel">Fields</div>';
   const fields = [...tree.keys()].sort((a, b) => (a === 'Economics' ? -1 : b === 'Economics' ? 1 : a.localeCompare(b)));
+  const topicBtns = (f, ar, topics) => [...topics].map(([t, c]) =>
+    `<button class="tnav" ${data(f, ar, t)}${cur(f, ar, t)}><span class="nm">${esc(t)}</span><span class="ct">${count(c)}</span></button>`).join('');
   for (const f of fields) {
-    const topics = tree.get(f), c = fieldColor(f);
-    let n = 0, rd = 0; topics.forEach((x) => { n += x.n; rd += x.rd; });
-    h += `<button class="nav" style="--c:${c}" data-f="${esc(f)}" data-t=""${cur(f, null)}><span class="sw"></span><span class="nm">${esc(f)}</span><span class="ct">${n ? `${rd}/${n.toLocaleString()}` : 'empty'}</span></button>`;
-    if (S.view.field === f && !searching) {
-      h += `<div class="topics" style="--c:${c}">`;
-      for (const [t, x] of topics) h += `<button class="tnav" data-f="${esc(f)}" data-t="${esc(t)}"${cur(f, t)}><span class="nm" title="${esc(t)}">${esc(t)}</span><span class="ct">${x.rd}/${x.n}</span></button>`;
-      h += `<button class="navadd" data-newtopic="${esc(f)}">+ New topic</button></div>`;
+    const areas = tree.get(f), c = fieldColor(f);
+    const fc = { n: 0, rd: 0 }; areas.forEach((tp) => { const x = sumCounts(tp); fc.n += x.n; fc.rd += x.rd; });
+    h += `<button class="nav" style="--c:${c}" ${data(f, null, null)}${cur(f, null, null)}><span class="sw"></span><span class="nm">${esc(f)}</span><span class="ct">${fc.n ? count(fc) : 'empty'}</span></button>`;
+    if (V.field !== f || searching) continue;
+    h += `<div class="tree" style="--c:${c}">`;
+    for (const [ar, topics] of areas) {
+      if (!ar) continue;
+      const open = V.area === ar;
+      h += `<button class="anav" ${data(f, ar, null)}${cur(f, ar, null)} aria-expanded="${open}"><span class="car" aria-hidden="true"></span><span class="nm">${esc(ar)}</span><span class="ct">${count(sumCounts(topics))}</span></button>`;
+      if (open) h += `<div class="topics">${topicBtns(f, ar, topics)}<button class="navadd" data-newtopic="${esc(f)}" data-newtopicarea="${esc(ar)}">+ New topic</button></div>`;
     }
+    if (areas.has('')) h += `<div class="topics loose">${topicBtns(f, '', areas.get(''))}</div>`;
+    h += `<div class="addrow"><button class="navadd" data-newarea="${esc(f)}">+ New area</button><button class="navadd" data-newtopic="${esc(f)}" data-newtopicarea="">+ New topic</button></div></div>`;
   }
   h += '<button class="navadd" data-newfield="1">+ New field</button>';
   $('sidebar').innerHTML = h;
@@ -320,6 +340,9 @@ function progressHtml(list) {
     <div class="pstats"><span><b>${done}</b>&nbsp;of ${list.length.toLocaleString()} done</span>${stats}</div>`;
 }
 
+function linkLabel(u) {
+  try { const h = new URL(u).hostname.replace(/^www\./, ''); return h === 'doi.org' ? 'Open paper' : h; } catch { return 'Open paper'; }
+}
 function paperRow(p, showWhere) {
   const g = prog(p.id);
   const link = p.link || `https://scholar.google.com/scholar?q=${encodeURIComponent(`${p.t} ${(p.a || '').split(',')[0]}`)}`;
@@ -333,7 +356,8 @@ function paperRow(p, showWhere) {
   }).join('');
   return `<article class="paper${isDone(p.id) ? ' done' : ''}" data-id="${esc(p.id)}">
     <div class="pmain"><a class="ptitle" href="${esc(link)}" target="_blank" rel="noopener" title="${p.link ? 'Open paper' : 'Search Google Scholar'}">${esc(p.t)}</a>
-    <div class="pmeta">${meta}${p.s === 2 ? '<span class="s" title="Must-read">★★</span>' : ''}${showWhere ? ` · <span class="where">${esc(p.tp)}</span>` : ''}</div></div>
+    <div class="pmeta">${meta}${p.s ? `<span class="s" title="${p.s === 2 ? 'Must-read' : 'Influential'}">${'★'.repeat(p.s)}</span>` : ''}${showWhere ? ` · <span class="where">${esc(p.tp)}</span>` : ''}
+      <a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? linkLabel(p.link) : 'Search Scholar'} ↗</a></div></div>
     <div class="btns">${btns}</div>
     <button type="button" class="more-btn" data-edit="1" aria-label="Details and edit" title="Details and edit">${MORE_ICON}</button></article>`;
 }
@@ -344,14 +368,17 @@ function renderMain() {
   const list = sorted(scope.filter(passFilters));
   const color = searching ? '#4a4470' : fieldColor(S.view.field);
   document.documentElement.style.setProperty('--fc', color);
-  $('scopeTitle').textContent = searching ? `“${searching}”` : S.view.topic || S.view.field || 'All papers';
-  $('crumb').innerHTML = searching ? 'Search results across every field'
-    : S.view.topic ? `<button type="button" data-crumb="${esc(S.view.field)}">${esc(S.view.field)}</button>`
-    : S.view.field ? 'Field' : 'Your whole archive';
+  const V = S.view;
+  $('scopeTitle').textContent = searching ? `“${searching}”` : V.topic || V.area || V.field || 'All papers';
+  const crumbs = [];
+  if (!searching && V.field && (V.area || V.topic)) crumbs.push(`<button type="button" data-cf="${esc(V.field)}">${esc(V.field)}</button>`);
+  if (!searching && V.area && V.topic) crumbs.push(`<button type="button" data-cf="${esc(V.field)}" data-ca="${esc(V.area)}">${esc(V.area)}</button>`);
+  $('crumb').innerHTML = searching ? 'Search results across every field' : crumbs.length ? crumbs.join(' <span aria-hidden="true">›</span> ') : V.field ? 'Field' : 'Your whole archive';
   $('progress').innerHTML = progressHtml(scope);
   document.querySelectorAll('[data-filter]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === S.view.status)));
   $('mustRead').setAttribute('aria-pressed', String(S.view.stars === '2'));
-  $('legend').innerHTML = STATUSES.map(([s, l]) => `<span><i style="background:var(--${s})"></i>${l}</span>`).join('') + `<span>${list.length.toLocaleString()} papers</span>`;
+  $('legend').innerHTML = `<span class="key"><b class="s">★★</b> must-read</span><span class="key"><b class="s">★</b> influential</span><span class="gap"></span>`
+    + STATUSES.map(([s, l]) => `<span><i style="background:var(--${s})"></i>${l}</span>`).join('') + `<span>${list.length.toLocaleString()} papers</span>`;
   if (!list.length) {
     const empty = !scope.length && !searching && S.view.field;
     $('list').innerHTML = `<div class="empty">${empty ? `<p>Nothing here yet.</p><button class="pill primary" type="button" data-addhere="1">Add papers</button>` : '<p>No papers match.</p>'}</div>`;
@@ -361,11 +388,12 @@ function renderMain() {
   const page = list.slice(0, S.shown);
   const group = S.view.sort === 'order' && !searching;
   const counts = new Map();
-  if (group) for (const p of list) { const k = S.view.topic ? p.st || '' : p.tp; counts.set(k, (counts.get(k) || 0) + 1); }
+  const gkey = (p) => (V.topic ? p.st || '' : V.area != null || !p.ar ? p.tp : `${p.ar} › ${p.tp}`);
+  if (group) for (const p of list) { const k = gkey(p); counts.set(k, (counts.get(k) || 0) + 1); }
   let h = '', last = null;
   for (const p of page) {
     if (group) {
-      const k = S.view.topic ? p.st || '' : p.tp;
+      const k = gkey(p);
       if (k !== last) { if (k) h += `<div class="group">${esc(k)}<small>${counts.get(k)}</small></div>`; last = k; }
     }
     h += paperRow(p, !!searching);
@@ -379,11 +407,14 @@ function renderMain() {
 function renderLists() {
   const tree = fieldTree();
   const f = $('pField').value || S.view.field;
-  $('fieldList').innerHTML = [...tree.keys()].map((x) => `<option value="${esc(x)}">`).join('');
-  $('topicList').innerHTML = f && tree.has(f) ? [...tree.get(f).keys()].map((x) => `<option value="${esc(x)}">`).join('') : '';
+  const ar = $('pArea').value;
+  const opts = (xs) => [...xs].filter(Boolean).map((x) => `<option value="${esc(x)}">`).join('');
+  $('fieldList').innerHTML = opts(tree.keys());
+  const areas = f && tree.has(f) ? tree.get(f) : new Map();
+  $('areaList').innerHTML = opts(areas.keys());
+  $('topicList').innerHTML = opts(areas.has(ar) ? areas.get(ar).keys() : []);
   const t = $('pTopic').value;
-  const subs = new Set(S.papers.filter((p) => p.f === f && p.tp === t && p.st).map((p) => p.st));
-  $('subList').innerHTML = [...subs].map((x) => `<option value="${esc(x)}">`).join('');
+  $('subList').innerHTML = opts(new Set(S.papers.filter((p) => p.f === f && (p.ar || '') === ar && p.tp === t).map((p) => p.st)));
 }
 
 /* ---------- actions ---------- */
@@ -407,7 +438,7 @@ function openPaper(id) {
   document.querySelector('[data-pane="edit"]').hidden = !p;
   $('pTitle').value = p ? p.t : ''; $('pAuthors').value = p ? p.a || '' : ''; $('pYear').value = p ? p.y || '' : '';
   $('pVenue').value = p ? (p.v || '').replace(/\*/g, '') : ''; $('pLink').value = p ? p.link || '' : '';
-  $('pField').value = p ? p.f : S.view.field || ''; $('pTopic').value = p ? p.tp : S.view.topic || '';
+  $('pField').value = p ? p.f : S.view.field || ''; $('pArea').value = p ? p.ar || '' : S.view.area || ''; $('pTopic').value = p ? p.tp : S.view.topic || '';
   $('pSub').value = p ? p.st || '' : ''; $('pResearch').value = p ? p.research || '' : ''; $('pNotes').value = p ? p.notes || '' : '';
   $('pBulk').value = '';
   $('pAbout').innerHTML = p ? [p.n ? `<i>${md(p.n)}</i>` : '', p.vf ? 'The bibliography marks this citation as uncertain. Check it before relying on it.' : '', p.link ? '' : 'No link yet. The title opens a Google Scholar search.'].filter(Boolean).join('<br>') : '';
@@ -429,12 +460,12 @@ const newId = () => 'u' + Date.now().toString(36) + Math.random().toString(36).s
 const cleanUrl = (u) => { u = (u || '').trim(); return /^https?:\/\//i.test(u) ? u : u ? 'https://' + u : ''; };
 
 function savePaper() {
-  const f = $('pField').value.trim(), tp = $('pTopic').value.trim(), st = $('pSub').value.trim();
+  const f = $('pField').value.trim(), ar = $('pArea').value.trim(), tp = $('pTopic').value.trim(), st = $('pSub').value.trim();
   if (!f || !tp) return err('Pick a field and a topic.');
   const lib = S.library;
   if (editing) {
     const p = S.byId.get(editing);
-    const fields = { t: $('pTitle').value.trim() || p.t, a: $('pAuthors').value.trim(), y: $('pYear').value.trim(), v: $('pVenue').value.trim(), link: cleanUrl($('pLink').value), f, tp, st, research: cleanUrl($('pResearch').value), notes: $('pNotes').value.trim(), u: Date.now() };
+    const fields = { t: $('pTitle').value.trim() || p.t, a: $('pAuthors').value.trim(), y: $('pYear').value.trim(), v: $('pVenue').value.trim(), link: cleanUrl($('pLink').value), f, ar, tp, st, research: cleanUrl($('pResearch').value), notes: $('pNotes').value.trim(), u: Date.now() };
     if (p.added) {
       const i = lib.added.findIndex((x) => x.id === editing);
       lib.added[i] = Object.assign({}, lib.added[i], fields);
@@ -464,10 +495,10 @@ function savePaper() {
     rows = [{ t, a: $('pAuthors').value.trim(), y: $('pYear').value.trim(), v: $('pVenue').value.trim(), link: cleanUrl($('pLink').value) }];
   }
   const now = Date.now();
-  rows.forEach((r, i) => lib.added.push(Object.assign(r, { id: newId() + i, f, tp, st, s: 0, u: now })));
+  rows.forEach((r, i) => lib.added.push(Object.assign(r, { id: newId() + i, f, ar, tp, st, s: 0, u: now })));
   changed('library', rows.length === 1 ? `Add: ${rows[0].t.slice(0, 80)}` : `Add ${rows.length} papers to ${f} › ${tp}`);
   toast(rows.length === 1 ? 'Paper added' : `${rows.length} papers added`);
-  S.view.field = f; S.view.topic = tp; saveView(); render();
+  S.view.field = f; S.view.area = ar; S.view.topic = tp; saveView(); render();
   return true;
 }
 function err(msg) { const e = $('paperErr'); e.textContent = msg; e.hidden = false; return false; }
@@ -480,24 +511,34 @@ function deletePaper() {
   toast('Paper removed');
 }
 
-function openGroup(field) {
-  $('groupDlgTitle').textContent = field ? `New topic in ${field}` : 'New field';
-  $('gFieldWrap').hidden = !!field;
-  $('gField').value = field || ''; $('gTopic').value = '';
-  $('gTopic').required = !!field;
-  $('gTopicWrap').querySelector('input').placeholder = field ? '' : 'optional first topic';
-  renderLists();
+// mode: 'field' | 'area' | 'topic'
+let groupCtx = null;
+function openGroup(mode, field, area) {
+  groupCtx = { mode, field, area: area || '' };
+  $('groupDlgTitle').textContent = mode === 'field' ? 'New field' : mode === 'area' ? `New area in ${field}` : `New topic in ${area || field}`;
+  $('gFieldWrap').hidden = mode !== 'field';
+  $('gAreaWrap').hidden = mode === 'topic';
+  $('gField').value = field || ''; $('gArea').value = ''; $('gTopic').value = '';
+  $('gArea').required = mode === 'area';
+  $('gTopic').required = mode === 'topic';
+  $('gTopic').placeholder = mode === 'topic' ? '' : 'optional';
+  $('gArea').placeholder = mode === 'area' ? 'e.g. Monopoly & market power' : 'optional';
   $('groupDlg').showModal();
-  (field ? $('gTopic') : $('gField')).focus();
+  (mode === 'field' ? $('gField') : mode === 'area' ? $('gArea') : $('gTopic')).focus();
 }
 function saveGroup() {
-  const f = $('gField').value.trim(), t = $('gTopic').value.trim();
+  const f = (groupCtx.mode === 'field' ? $('gField').value : groupCtx.field).trim();
+  const ar = (groupCtx.mode === 'topic' ? groupCtx.area : $('gArea').value).trim();
+  const t = $('gTopic').value.trim();
   if (!f) return;
   const lib = S.library;
+  lib.areas = lib.areas || [];
   if (!lib.fields.includes(f)) lib.fields.push(f);
-  if (t && !lib.topics.includes(`${f}::${t}`)) lib.topics.push(`${f}::${t}`);
-  S.view.field = f; S.view.topic = t || null; saveView();
-  changed('library', t ? `New topic: ${f} › ${t}` : `New field: ${f}`);
+  if (ar && !lib.areas.includes(`${f}::${ar}`)) lib.areas.push(`${f}::${ar}`);
+  const key = ar ? `${f}::${ar}::${t}` : `${f}::${t}`;
+  if (t && !lib.topics.includes(key)) lib.topics.push(key);
+  S.view.field = f; S.view.area = ar || (t ? '' : null); S.view.topic = t || null; saveView();
+  changed('library', t ? `New topic: ${[f, ar, t].filter(Boolean).join(' › ')}` : ar ? `New area: ${f} › ${ar}` : `New field: ${f}`);
 }
 
 function openSettings() {
@@ -546,7 +587,7 @@ function exportBackup() {
 
 let toastTimer;
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2200); }
-function saveView() { store.set(VIEW_KEY, { field: S.view.field, topic: S.view.topic, status: S.view.status, stars: S.view.stars, sort: S.view.sort }); }
+function saveView() { store.set(VIEW_KEY, { field: S.view.field, area: S.view.area, topic: S.view.topic, status: S.view.status, stars: S.view.stars, sort: S.view.sort }); }
 
 let lastPull = 0;
 async function refresh(force) {
@@ -566,10 +607,13 @@ async function refresh(force) {
 function bind() {
   $('sidebar').addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.newfield) return openGroup(null);
-    if (b.dataset.newtopic) return openGroup(b.dataset.newtopic);
+    if (b.dataset.newfield) return openGroup('field');
+    if (b.dataset.newarea) return openGroup('area', b.dataset.newarea);
+    if (b.dataset.newtopic) return openGroup('topic', b.dataset.newtopic, b.dataset.newtopicarea);
     $('search').value = '';
-    S.view.field = b.dataset.f || null; S.view.topic = b.dataset.t || null; S.shown = PAGE;
+    S.view.field = b.dataset.f || null;
+    S.view.area = b.dataset.hasa === '1' ? b.dataset.a : null;
+    S.view.topic = b.dataset.t || null; S.shown = PAGE;
     saveView(); render(); window.scrollTo({ top: 0 });
     if (S.view.topic || !b.dataset.f) closeNav();
   });
@@ -586,13 +630,17 @@ function bind() {
   $('mustRead').addEventListener('click', () => { S.view.stars = S.view.stars === '2' ? '0' : '2'; S.shown = PAGE; saveView(); renderMain(); });
   $('fSort').value = S.view.sort;
   $('fSort').addEventListener('change', () => { S.view.sort = $('fSort').value; S.shown = PAGE; saveView(); renderMain(); });
-  $('crumb').addEventListener('click', (e) => { const b = e.target.closest('[data-crumb]'); if (!b) return; S.view.topic = null; S.shown = PAGE; saveView(); render(); });
+  $('crumb').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-cf]'); if (!b) return;
+    S.view.field = b.dataset.cf; S.view.area = b.dataset.ca ?? null; S.view.topic = null; S.shown = PAGE; saveView(); render();
+  });
   $('scrim').addEventListener('click', closeNav);
   $('moreBtn').addEventListener('click', () => { S.shown += PAGE; renderMain(); });
   $('addBtn').addEventListener('click', () => openPaper(null));
   $('addTabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (b) setTab(b.dataset.tab); });
   $('pField').addEventListener('input', renderLists);
   $('pTopic').addEventListener('input', renderLists);
+  $('pArea').addEventListener('input', renderLists);
   $('paperForm').addEventListener('submit', (e) => {
     if (e.submitter && e.submitter.value === 'cancel') return;
     if (!savePaper()) e.preventDefault();
@@ -619,7 +667,13 @@ async function start() {
   loadCache();
   const cat = await fetchStatic('data/catalog.json', { papers: [] }, false);
   S.catalog = cat.papers || [];
-  rebuild(); render();
+  rebuild();
+  // Views saved before areas existed: work out the area from the topic.
+  if (S.view.topic && S.view.area == null) {
+    const hit = S.papers.find((p) => p.f === S.view.field && p.tp === S.view.topic);
+    S.view.area = hit ? hit.ar || '' : null;
+  }
+  render();
   await refresh(true);
 }
 start();

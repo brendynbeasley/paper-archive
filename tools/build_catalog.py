@@ -49,10 +49,21 @@ def main(path):
             continue
         if l.startswith('- '):
             e = parse(l[2:])
-            e.update(id='mp%04d' % (len(out) + 1), f='Economics', tp=SHORT[sec], st=sub)
+            e.update(id='mp%04d' % (len(out) + 1), f='Economics', ar='Monopoly & market power', tp=SHORT[sec], st=sub)
             out.append(e)
     # 41 classics that the bibliography leaves out (they sit on its companion curated list)
-    out += json.load(open('data/foundations.json', encoding='utf-8'))
+    for e in json.load(open('data/foundations.json', encoding='utf-8')):
+        e['ar'] = 'Monopoly & market power'
+        out.append(e)
+    # DOI links found by tools/find_links.py
+    try:
+        links = json.load(open('tools/links_cache.json'))
+    except FileNotFoundError:
+        links = {}
+    for e in out:
+        doi = (links.get(e['id']) or {}).get('doi')
+        if doi:
+            e['link'] = 'https://doi.org/' + doi
     json.dump({'v': 1, 'source': 'Monopoly and Market Power: The Extended Bibliography (1 Nov 2026)', 'papers': out},
               open('data/catalog.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     print(len(out), 'papers;', sum(1 for e in out if not e['a']), 'unparsed author/year')
