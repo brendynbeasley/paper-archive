@@ -1,0 +1,1406 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Dupuit's Tolls</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800;1,6..96,400..700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: an engineer's ledger — one reading column of prose, wide "plates" for instruments, a sticky index of sections. */
+:root{
+  --paper:#eef1f3; --paper-2:#e2e7eb; --card:#f8fafb; --ink:#16202b; --ink-2:#4a5866; --rule:#c3ccd4;
+  --accent:#1d4e89; --accent-ink:#ffffff; --accent-soft:#d6e2f1;
+  --lost:#b4473a; --prod:#a3700f; --cons:#277766; --ok:#277766; --bad:#b4473a;
+  --code-bg:#17212c; --code-fg:#dde5ec; --tk-k:#8fb8ff; --tk-s:#b8da8e; --tk-n:#f2b96b; --tk-c:#7d8d9e; --tk-t:#e8a3cb;
+  --display:"Bodoni Moda","Didot","Bodoni 72",Georgia,serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f151c; --paper-2:#17202a; --card:#1a2430; --ink:#e3e9ee; --ink-2:#9aaab8; --rule:#2c3a48;
+  --accent:#86ade2; --accent-ink:#0f151c; --accent-soft:#1f3149;
+  --lost:#e27c6e; --prod:#dcab4c; --cons:#5fc2aa; --ok:#5fc2aa; --bad:#e27c6e;
+  --code-bg:#0a0f15; --code-fg:#dde5ec; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --paper:#0f151c; --paper-2:#17202a; --card:#1a2430; --ink:#e3e9ee; --ink-2:#9aaab8; --rule:#2c3a48;
+  --accent:#86ade2; --accent-ink:#0f151c; --accent-soft:#1f3149;
+  --lost:#e27c6e; --prod:#dcab4c; --cons:#5fc2aa; --ok:#5fc2aa; --bad:#e27c6e;
+  --code-bg:#0a0f15; --code-fg:#dde5ec; color-scheme:dark }
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--paper)}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+h1,h2,h3{font-family:var(--display);font-weight:600;line-height:1.12;text-wrap:balance;margin:0}
+h2{font-size:clamp(1.8rem,4vw,2.6rem)}
+h3{font-size:1.3rem}
+p{margin:0}
+.prose{max-width:66ch;display:grid;gap:14px}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.fr{font-family:var(--display);font-style:italic}
+.muted{color:var(--ink-2)}
+.num{font-variant-numeric:tabular-nums}
+code,.mono{font-family:var(--mono);font-size:.9em}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--rule)}
+.nav .wrap{display:flex;align-items:center;gap:16px}
+.nav .brand{font-family:var(--display);font-style:italic;font-weight:600;white-space:nowrap;font-size:1.05rem}
+.nav ul{display:flex;gap:2px;list-style:none;margin:0;padding:8px 0;overflow-x:auto;scrollbar-width:none;min-width:0}
+.nav ul::-webkit-scrollbar{display:none}
+.nav a{display:block;padding:5px 9px;border-radius:4px;color:var(--ink-2);text-decoration:none;font-size:.86rem;white-space:nowrap}
+.nav a:hover,.nav a.on{color:var(--ink);background:var(--paper-2)}
+
+/* hero */
+.hero{padding-block:40px 24px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:22px}
+.hero h1{font-size:clamp(2.4rem,7vw,4.6rem);font-weight:500;letter-spacing:-.01em}
+.hero h1 em{font-weight:400}
+.hero .lede{font-size:1.12rem;max-width:62ch}
+.byline{font-family:var(--mono);font-size:.8rem;color:var(--ink-2)}
+.stage{background:var(--card);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.stage canvas{display:block;width:100%;height:260px}
+.stage-ctl{display:flex;flex-wrap:wrap;gap:14px 26px;align-items:center;padding:14px 16px;border-top:1px solid var(--rule)}
+.stage-ctl label{font-weight:500}
+.kpis{display:flex;flex-wrap:wrap;gap:8px 22px}
+.kpi{display:grid}
+.kpi b{font-family:var(--mono);font-size:1.25rem;font-weight:500}
+.kpi span{font-size:.74rem;color:var(--ink-2);text-transform:uppercase;letter-spacing:.08em}
+
+/* sections */
+.sec{padding-block:56px;border-top:1px solid var(--rule)}
+.sec-head{display:grid;gap:8px;margin-bottom:22px}
+.sec-head .tag{font-family:var(--mono);font-size:.74rem;color:var(--accent);letter-spacing:.1em;text-transform:uppercase}
+.cols{display:grid;grid-template-columns:minmax(0,1fr);gap:26px}
+@media (min-width:900px){.cols{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.cols.wide-r{grid-template-columns:minmax(0,5fr) minmax(0,6fr)}}
+.plate{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:18px;display:grid;gap:14px;min-width:0}
+.plate h3{font-size:1.15rem}
+.plate .cap{font-size:.84rem;color:var(--ink-2)}
+.quote{border-left:3px solid var(--accent);padding:4px 0 4px 14px;font-family:var(--display);font-style:italic;font-size:1.12rem;max-width:62ch}
+.quote small{display:block;font-family:var(--body);font-style:normal;font-size:.8rem;color:var(--ink-2);margin-top:4px}
+.callout{background:var(--accent-soft);border-radius:6px;padding:12px 14px;font-size:.95rem;max-width:66ch}
+.erratum{border:1px dashed var(--prod);border-radius:6px;padding:10px 12px;font-size:.88rem;max-width:66ch}
+.erratum b{color:var(--prod)}
+
+/* controls */
+input[type=range]{width:100%;accent-color:var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:inherit;font-size:.9rem;border:1px solid var(--rule);background:var(--paper);color:var(--ink);padding:7px 12px;border-radius:5px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:5px;overflow:hidden}
+.seg button{font:inherit;font-size:.88rem;border:0;background:var(--paper);color:var(--ink-2);padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+select,input[type=number],input[type=text],textarea{font:inherit;background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:5px;padding:6px 8px}
+input[type=number]{width:8em}
+.ctl{display:grid;gap:4px}
+.ctl label{font-size:.85rem;font-weight:500}
+.ctl output{font-family:var(--mono)}
+
+/* charts */
+.chart{width:100%;overflow-x:auto}
+.chart svg{display:block;width:100%;height:auto;min-width:300px}
+svg text{fill:var(--ink-2);font-family:var(--mono);font-size:11px}
+svg .grid{stroke:var(--rule);stroke-width:1}
+svg .axis{stroke:var(--ink-2);stroke-width:1}
+svg .lost{fill:var(--lost);opacity:.78}
+svg .rev{fill:var(--prod);opacity:.82}
+svg .sur{fill:var(--cons);opacity:.78}
+svg .step{fill:none;stroke:var(--ink);stroke-width:1.6}
+svg .tollline{stroke:var(--ink);stroke-dasharray:4 3;stroke-width:1.2}
+svg .lbl{fill:var(--ink);font-family:var(--body);font-size:12px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.84rem}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.sw-lost{background:var(--lost)}.sw-rev{background:var(--prod)}.sw-sur{background:var(--cons)}
+.stack{display:flex;height:30px;border-radius:4px;overflow:hidden;border:1px solid var(--rule)}
+.stack div{transition:flex-grow .35s ease;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--mono);font-size:.78rem;min-width:0;overflow:hidden;white-space:nowrap}
+.stack .s-lost{background:var(--lost)}.stack .s-rev{background:var(--prod)}.stack .s-sur{background:var(--cons)}
+.bigs{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.big{border-top:3px solid var(--rule);padding-top:6px}
+.big b{display:block;font-family:var(--mono);font-size:1.4rem;font-weight:500}
+.big span{font-size:.78rem;color:var(--ink-2)}
+.big.lost{border-color:var(--lost)}.big.rev{border-color:var(--prod)}.big.sur{border-color:var(--cons)}
+
+/* tables */
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums}
+th,td{padding:6px 8px;border-bottom:1px solid var(--rule);text-align:right;white-space:nowrap}
+th{font-weight:600;color:var(--ink-2);font-size:.76rem;text-transform:uppercase;letter-spacing:.05em}
+td:first-child,th:first-child{text-align:left}
+tr.cur td{background:var(--accent-soft)}
+td.flag{color:var(--prod);font-weight:600}
+
+/* math */
+math{font-size:1.18em}
+.eq{display:grid;gap:6px;padding:14px;background:var(--paper-2);border-radius:6px;overflow-x:auto}
+.eq .what{font-size:.82rem;color:var(--ink-2)}
+.eqs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px}
+
+/* code */
+pre.code{background:var(--code-bg);color:var(--code-fg);border-radius:6px;padding:16px;overflow-x:auto;font-family:var(--mono);font-size:.82rem;line-height:1.55;margin:0;max-height:560px}
+.tk-k{color:var(--tk-k)}.tk-s{color:var(--tk-s)}.tk-n{color:var(--tk-n)}.tk-c{color:var(--tk-c);font-style:italic}.tk-t{color:var(--tk-t)}
+.console{background:var(--code-bg);color:var(--code-fg);border-radius:6px;padding:12px 14px;font-family:var(--mono);font-size:.8rem;white-space:pre-wrap;min-height:4em;overflow-x:auto}
+.runs{display:grid;gap:8px}
+.run{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--rule);padding-bottom:8px}
+.run code{white-space:normal;word-break:break-word;min-width:0;flex:1 1 260px}
+
+/* timeline */
+.tl{list-style:none;margin:0;padding:0;position:relative;display:grid;gap:0}
+.tl::before{content:"";position:absolute;left:62px;top:6px;bottom:6px;width:2px;background:var(--rule)}
+.tl li{display:grid;grid-template-columns:56px 1fr;gap:20px;padding:10px 0;position:relative}
+.tl li::before{content:"";position:absolute;left:57px;top:18px;width:12px;height:12px;border-radius:50%;background:var(--paper);border:2px solid var(--ink-2)}
+.tl li.key::before{background:var(--accent);border-color:var(--accent)}
+.tl .yr{font-family:var(--mono);font-weight:500;padding-top:6px;text-align:right}
+.tl .body{padding-left:12px;min-width:0}
+.tl .body b{font-family:var(--display);font-size:1.08rem}
+.tl .body p{font-size:.93rem;color:var(--ink-2)}
+.tl li{opacity:1;transform:none;transition:opacity .5s ease,transform .5s ease}
+.tl.anim li.pre{opacity:.25;transform:translateX(8px)}
+
+/* cards (real world) */
+.grid-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.rw{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:16px;display:grid;gap:8px;align-content:start}
+.rw .t{font-family:var(--display);font-size:1.15rem;font-weight:600}
+.rw .lens{font-size:.9rem;border-top:1px solid var(--rule);padding-top:8px}
+.rw .lens b{color:var(--accent);font-weight:600}
+.chip{display:inline-block;font-family:var(--mono);font-size:.7rem;padding:2px 7px;border-radius:20px;border:1px solid var(--rule);color:var(--ink-2)}
+
+/* practice */
+.probs{display:grid;gap:14px}
+.prob{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:16px;display:grid;gap:10px}
+.prob .q{max-width:70ch}
+.fb{font-size:.9rem;font-weight:500}
+.fb.ok{color:var(--ok)}.fb.no{color:var(--bad)}
+details summary{cursor:pointer;color:var(--accent);font-size:.9rem}
+details .sol{padding-top:8px;font-size:.92rem;max-width:70ch}
+
+/* quiz */
+.quiz{display:grid;gap:14px;max-width:760px}
+.qopt{display:grid;gap:6px}
+.qopt button{text-align:left;font:inherit;font-size:.95rem;background:var(--card);border:1px solid var(--rule);color:var(--ink);border-radius:5px;padding:9px 12px;cursor:pointer}
+.qopt button:hover{border-color:var(--accent)}
+.qopt button.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--card))}
+.qopt button.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--card))}
+.qbar{height:6px;background:var(--paper-2);border-radius:3px;overflow:hidden}
+.qbar div{height:100%;background:var(--accent);transition:width .3s}
+
+/* flashcards */
+.deck{display:grid;gap:14px;max-width:640px}
+.fc{perspective:1200px;cursor:pointer;min-height:230px}
+.fc-in{position:relative;width:100%;min-height:230px;transition:transform .55s cubic-bezier(.3,.7,.3,1);transform-style:preserve-3d}
+.fc.flip .fc-in{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:1px solid var(--rule);border-radius:8px;padding:22px;display:flex;flex-direction:column;justify-content:center;gap:10px;background:var(--card)}
+.fc-face.back{transform:rotateY(180deg);background:var(--paper-2)}
+.fc-face .side{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.fc-face .txt{font-size:1.08rem}
+.fc-face.front .txt{font-family:var(--display);font-size:1.35rem;font-weight:500}
+@media (prefers-reduced-motion: reduce){.fc.flip .fc-in{transform:none}.fc.flip .front{visibility:hidden}.fc .back{transform:none;visibility:hidden}.fc.flip .back{visibility:visible}}
+textarea{width:100%;font-family:var(--mono);font-size:.78rem}
+
+/* glossary */
+dl.gl{display:grid;grid-template-columns:minmax(0,1fr);gap:0;margin:0}
+@media (min-width:700px){dl.gl{grid-template-columns:220px minmax(0,1fr)}}
+dl.gl dt{font-family:var(--display);font-style:italic;font-size:1.08rem;padding:10px 0 2px;border-top:1px solid var(--rule)}
+dl.gl dd{margin:0;padding:2px 0 10px;color:var(--ink-2)}
+@media (min-width:700px){dl.gl dd{padding:12px 0 10px;border-top:1px solid var(--rule)}}
+footer{padding-block:40px;border-top:1px solid var(--rule);color:var(--ink-2);font-size:.85rem}
+.wagons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.wagon{text-align:center;font-size:.8rem;color:var(--ink-2)}
+.wagon svg{width:100%;height:auto}
+</style>
+
+<nav class="nav" aria-label="Sections">
+  <div class="wrap">
+    <span class="brand">Dupuit 1849</span>
+    <ul id="navlist">
+      <li><a href="#story">Bridge</a></li>
+      <li><a href="#timeline">Timeline</a></li>
+      <li><a href="#utility">Utility</a></li>
+      <li><a href="#measure">Measuring</a></li>
+      <li><a href="#staircase">Staircase</a></li>
+      <li><a href="#say">Say vs Dupuit</a></li>
+      <li><a href="#split">Three parts</a></li>
+      <li><a href="#state">State vs company</a></li>
+      <li><a href="#discrimination">Classes</a></li>
+      <li><a href="#railway">Railway</a></li>
+      <li><a href="#distance">Distance</a></li>
+      <li><a href="#equations">Equations</a></li>
+      <li><a href="#code">Code</a></li>
+      <li><a href="#real-world">Today</a></li>
+      <li><a href="#practice">Practice</a></li>
+      <li><a href="#quiz">Quiz</a></li>
+      <li><a href="#cards">Flashcards</a></li>
+      <li><a href="#glossary">Glossary</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+<!-- HERO -->
+<header class="hero" id="story">
+  <div class="wrap hero-grid">
+    <div class="eyebrow">Annales des Ponts et Chaussées · March–April 1849</div>
+    <h1>The bridge that <em class="fr">is only half built</em> by its toll</h1>
+    <p class="lede">In 1849 the French state engineer Jules Dupuit asked a plain question: what does a toll do to the usefulness of a bridge, a canal or a railway? His answer introduced consumer surplus, deadweight loss, the revenue curve and the economics of price discrimination, worked out with tables of numbers rather than calculus.</p>
+    <p class="byline">J. Dupuit, <span class="fr">De l'influence des péages sur l'utilité des voies de communication</span> · dated Angers, 28 March 1849</p>
+    <div class="stage">
+      <canvas id="hero" aria-label="Animated bridge: travellers arrive, meet the toll gate, and either pay and cross or turn back"></canvas>
+      <div class="stage-ctl">
+        <div class="ctl" style="flex:1 1 220px">
+          <label for="heroToll">Toll on Bridge A: <output id="heroTollOut" class="mono">2</output> centimes</label>
+          <input id="heroToll" type="range" min="0" max="8" step="1" value="2">
+        </div>
+        <div class="kpis" aria-live="polite">
+          <div class="kpi"><b id="hk-cross" class="num">37</b><span>of 100 cross</span></div>
+          <div class="kpi"><b id="hk-rev" class="num" style="color:var(--prod)">74</b><span>toll revenue</span></div>
+          <div class="kpi"><b id="hk-sur" class="num" style="color:var(--cons)">93</b><span>kept by users</span></div>
+          <div class="kpi"><b id="hk-lost" class="num" style="color:var(--lost)">81</b><span>utility lost</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="muted" style="font-size:.9rem;max-width:70ch">Each figure is one potential traveller. Teal walkers value the crossing more than the toll and pay; brick-red walkers value it less and turn back. Their lost trips cost the owner nothing to provide, yet nobody gets that value. Dupuit called it <span class="fr">utilité perdue</span>. Move the slider to see what happens to all four numbers.</p>
+  </div>
+</header>
+
+<!-- TIMELINE -->
+<section class="sec" id="timeline">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">Context</span><h2>Where this paper sits</h2>
+      <p class="prose muted">Dupuit was replying to a public quarrel inside the corps of state engineers. The ideas then sat largely unused until economists rediscovered them decades later.</p></div>
+    <ol class="tl" id="tl"></ol>
+  </div>
+</section>
+
+<!-- UTILITY -->
+<section class="sec" id="utility">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">Finding 1</span><h2>Utility, price and cost are three different numbers</h2></div>
+    <div class="cols wide-r">
+      <div class="prose">
+        <p>J.-B. Say held that the price of a thing measures its utility. Dupuit's critic Bordas followed him, and so did the engineer Comoy, who valued a canal by its cost per tonne carried.</p>
+        <p>Dupuit separates three properties of every good. In his example, a bottle of wine has <b>utility 20 F</b> (the most the buyer would pay), <b>value 6 F</b> (the price paid) and <b>production cost 3 F</b>. A metre of cloth can have utility 30, price 15 and cost 20: the cost can be higher than the price.</p>
+        <div class="quote">"The state would thus be poorer because the canal cost less! Is it not obvious that it would be richer by all that it had spent less?"<small>Dupuit on Comoy's method, p. 6</small></div>
+        <p>Comoy computed (interest + upkeep) ÷ tonnage = 1.90 F a tonne and called it "the value of the unit of wealth". By that formula, a more skilful engineer who built the same canal for less would appear to have created less wealth. The cost of the canal has to be <b>subtracted</b> from its benefit. It cannot measure it.</p>
+      </div>
+      <div class="plate">
+        <h3>Comoy's paradox, live</h3>
+        <p class="cap">500,000 tonnes a year, interest at 5%. Assume users would pay up to 1.5M F a year for the service; that figure is ours, for illustration. Lower the cost and compare the two measures.</p>
+        <div class="ctl"><label for="cCost">Construction cost: <output id="cCostOut">16.0</output> M F</label><input id="cCost" type="range" min="8" max="24" step="0.5" value="16"></div>
+        <div class="ctl"><label for="cUp">Annual upkeep: <output id="cUpOut">150</output> k F</label><input id="cUp" type="range" min="50" max="250" step="10" value="150"></div>
+        <div class="bigs">
+          <div class="big"><b id="cComoy" class="num">1.90</b><span>Comoy "value of the unit of wealth" (F/t)</span></div>
+          <div class="big sur"><b id="cNet" class="num">550,000</b><span>Dupuit net benefit = utility − cost (F/yr)</span></div>
+        </div>
+        <p class="cap" id="cMsg">Comoy's number falls when the canal gets cheaper. Dupuit's net benefit rises.</p>
+        <div class="chart"><svg id="wineSvg" viewBox="0 0 520 170" role="img" aria-label="Utility, value and cost of wine and cloth"></svg></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MEASURE -->
+<section class="sec" id="measure">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">Finding 2</span><h2>Utility is the largest sacrifice someone would make</h2></div>
+    <div class="cols">
+      <div class="prose">
+        <p>Bordas said utility "is not susceptible of measure". Dupuit replies that it is as obvious as a theorem of geometry. The butcher says a kilo of meat costs 1 franc. Ask whether the customer would still buy at 21 sous, 22, 23 and so on. If they buy at 40 and refuse at 41, the kilo's utility to them is 40 sous, to within a sou. (20 sous = 1 franc; 1 sou = 5 centimes.)</p>
+        <p>That number is <b>different for each person</b>: Rossi's bookseller finds buyers at 10 F, at 100 F, and at every price between. It is also <b>different for the same person</b>: a working household buys 3 pounds of meat at 10 sous and only 2 at 15, so the third pound is worth less to them than the first two.</p>
+        <p>Paying a price leaves a remainder. Dupuit would pay up to 15 sous to cross the bridge for an urgent meeting. If the toll is 1 sou, he keeps 14 sous of <span class="fr">utilité relative</span>. Today this is called consumer surplus.</p>
+        <div class="eq"><span class="what">Relative utility (consumer surplus) of one use</span>
+          <math display="block"><msub><mi>u</mi><mtext>rel</mtext></msub><mo>=</mo><msub><mi>u</mi><mtext>abs</mtext></msub><mo>−</mo><mi>p</mi></math></div>
+      </div>
+      <div class="plate">
+        <h3>Run Dupuit's interview</h3>
+        <p class="cap">A customer with a secret maximum price walks into the butcher's. Raise or lower the price one sou at a time until you find it, or let the page run the interview.</p>
+        <div class="row">
+          <button class="btn" id="aDown">− 1 sou</button>
+          <div class="kpi" style="min-width:110px;text-align:center"><b id="aPrice" class="num">20</b><span>sous asked</span></div>
+          <button class="btn" id="aUp">+ 1 sou</button>
+          <button class="btn primary" id="aAuto">Run interview</button>
+          <button class="btn" id="aNew">New customer</button>
+        </div>
+        <div id="aSay" class="callout" aria-live="polite">"At 20 sous? I'll buy."</div>
+        <div class="chart"><svg id="aSvg" viewBox="0 0 520 120" role="img" aria-label="Price ladder in sous"></svg></div>
+        <p class="cap" id="aFound">Find the highest price the customer accepts.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STAIRCASE -->
+<section class="sec" id="staircase">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">Finding 3</span><h2>Adding up utility from the demand schedule</h2></div>
+    <div class="cols wide-r">
+      <div class="prose">
+        <p>For goods used many times, such as a bridge or a canal, utility is the sum over every use. Dupuit's procedure (pp. 25, 37) has four steps:</p>
+        <ol style="margin:0;padding-left:1.2em;display:grid;gap:6px">
+          <li>Write the <span class="fr">loi de consommation</span>, the quantity used at each price. It has to be learned from experience.</li>
+          <li>Raise a tax by small steps, from zero until nothing is used.</li>
+          <li>The units that disappear when the tax goes from <i>k</i>−1 to <i>k</i> were worth about <i>k</i> each. Multiply.</li>
+          <li>Add the products. The total is the utility of the whole quantity used at price zero.</li>
+        </ol>
+        <p>His canal: 100 tonnes at toll 0, 70 at toll 1 (30 tonnes worth 1 F each), 50 at toll 2 (20 tonnes worth 2 F each), and so on to zero at toll 10. The utility totals 330.</p>
+        <p>He also assumes the schedule is <b>convex</b>. Each price cut gains more users than the last because a cheaper good reaches a wider part of society. So the gaps between successive quantities shrink as price rises.</p>
+        <div class="eq"><span class="what">Dupuit's sum, and its modern continuous form</span>
+          <math display="block"><mi>U</mi><mo>=</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mi>k</mi><mo>·</mo><mo>(</mo><msub><mi>Q</mi><mrow><mi>k</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>−</mo><msub><mi>Q</mi><mi>k</mi></msub><mo>)</mo><mspace width="1em"/><mo>≈</mo><mspace width="1em"/><msubsup><mo>∫</mo><mn>0</mn><mi>∞</mi></msubsup><mi>Q</mi><mo>(</mo><mi>s</mi><mo>)</mo><mspace width="0.2em"/><mi>d</mi><mi>s</mi></math></div>
+      </div>
+      <div class="plate">
+        <h3>Build the canal's utility, step by step</h3>
+        <p class="cap">Each block is a batch of tonnes that a 1-franc rise in the toll drives off the canal. Width = tonnes lost, height = the toll at which they leave, area = their utility.</p>
+        <div class="chart"><svg id="canalSvg" viewBox="0 0 560 300" role="img" aria-label="Staircase demand for the canal"></svg></div>
+        <div class="row"><button class="btn primary" id="canalPlay">Animate the sum</button><span class="mono" id="canalSum">Total utility = 330</span></div>
+        <div class="tbl"><table id="canalTbl"></table></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SAY VS DUPUIT -->
+<section class="sec" id="say">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">Finding 4</span><h2>Say's method overstates every gain</h2></div>
+    <div class="cols">
+      <div class="prose">
+        <p>Bordas valued a price cut as (price cut × all units now used). Take his stone example: a canal cuts stone from 20 F to 15 F a tonne and the town's use rises from 10,000 to 15,000 tonnes. Say's method gives 5 × 15,000 = <b>75,000 F</b>.</p>
+        <p>Dupuit points out that the 5,000 new tonnes cannot each be worth 5 F, or they would have been bought at 20 F. They go to uses that only become worthwhile as stone gets cheaper: garden walls at 19 F, sheds for the rich at 18 F, for the less rich at 16 to 17 F, paved streets at 15 F. Raising a hypothetical toll 1 F at a time gives <b>62,100 F</b>.</p>
+        <div class="quote">"You say I gained 3,000 francs on my stockings; take them and give me half my gain."<small>Dupuit's worker, answering the claim that cheap stockings made him rich, p. 35</small></div>
+        <p>Queen Elizabeth's single pair of knitted stockings was worth perhaps 1,000 F. A worker owns three pairs at 3 F. At 6 F he would own two, at 10 F one. Valuing all three pairs at the old price confuses the price drop with the gain.</p>
+        <p>The same error applies to the Pont d'Arcole: traffic rose tenfold after its toll was abolished. Say's rule would value the abolition at ten times the old toll revenue, yet only one crosser in ten gains the full sou.</p>
+      </div>
+      <div class="plate">
+        <h3>The rectangle versus the staircase</h3>
+        <p class="cap">The outlined rectangle is Say's estimate. The coloured steps are Dupuit's. The hatched gap is the overstatement.</p>
+        <div class="chart"><svg id="stoneSvg" viewBox="0 0 560 300" role="img" aria-label="Say rectangle versus Dupuit staircase for stone"></svg></div>
+        <div class="bigs">
+          <div class="big"><b class="num">75,000</b><span>Say / Bordas (F)</span></div>
+          <div class="big sur"><b class="num">62,100</b><span>Dupuit (F)</span></div>
+          <div class="big lost"><b class="num">12,900</b><span>overstatement (F)</span></div>
+        </div>
+        <div class="tbl"><table>
+          <tr><th>Stone price</th><th>Toll</th><th>Tonnes</th><th>Tonnes lost</th><th>Utility</th></tr>
+          <tr><td>15</td><td>0</td><td>15,000</td><td></td><td></td></tr>
+          <tr><td>16</td><td>1</td><td>13,500</td><td>1,500</td><td>1,500</td></tr>
+          <tr><td>17</td><td>2</td><td>12,200</td><td>1,300</td><td>2,600</td></tr>
+          <tr><td>18</td><td>3</td><td>11,000</td><td>1,200</td><td>3,600</td></tr>
+          <tr><td>19</td><td>4</td><td>10,400</td><td>600</td><td>2,400</td></tr>
+          <tr><td>20</td><td>5</td><td>0</td><td>10,400</td><td>52,000</td></tr>
+          <tr><td colspan="4">Total</td><td><b>62,100</b></td></tr>
+        </table></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPLIT -->
+<section class="sec" id="split">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">Finding 5 · the centrepiece</span><h2>Every toll cuts utility into three parts</h2>
+      <p class="prose muted">Dupuit invents three bridges, A, B and C, each with 100 crossings when free and a different demand schedule. Choose a bridge, move the toll, and watch the area under the staircase divide.</p></div>
+    <div class="plate">
+      <div class="row" style="justify-content:space-between">
+        <div class="seg" role="group" aria-label="Bridge">
+          <button data-b="A" aria-pressed="false">Bridge A</button><button data-b="B" aria-pressed="true">Bridge B</button><button data-b="C" aria-pressed="false">Bridge C</button>
+        </div>
+        <div class="ctl" style="flex:1 1 260px;max-width:420px"><label for="sToll">Toll: <output id="sTollOut">5</output></label><input id="sToll" type="range" min="0" max="10" value="5" step="1"></div>
+      </div>
+      <div class="stack" id="sStack" aria-hidden="true"><div class="s-lost"></div><div class="s-rev"></div><div class="s-sur"></div></div>
+      <div class="bigs">
+        <div class="big"><b id="sQ" class="num">20</b><span>crossings (of 100)</span></div>
+        <div class="big lost"><b id="sL" class="num">182</b><span>1 · utility lost</span></div>
+        <div class="big rev"><b id="sR" class="num">100</b><span>2 · collected by owner</span></div>
+        <div class="big sur"><b id="sS" class="num">50</b><span>3 · kept by users</span></div>
+        <div class="big"><b id="sT" class="num">332</b><span>total possible utility</span></div>
+      </div>
+      <div class="cols">
+        <div><div class="chart"><svg id="stepSvg" viewBox="0 0 560 300" role="img" aria-label="Demand staircase split into lost, revenue and surplus"></svg></div>
+          <div class="legend"><span><i class="sw-lost"></i>lost (deadweight)</span><span><i class="sw-rev"></i>owner's revenue</span><span><i class="sw-sur"></i>users' surplus</span></div></div>
+        <div><div class="chart"><svg id="revSvg" viewBox="0 0 560 300" role="img" aria-label="Revenue and utility as functions of the toll"></svg></div>
+          <div class="legend"><span><i class="sw-rev"></i>toll revenue</span><span><i style="background:var(--cons)"></i>utility produced (revenue + surplus)</span></div></div>
+      </div>
+      <p class="callout" id="sNote"></p>
+      <details><summary>Show Dupuit's full table for this bridge</summary><div class="tbl" style="margin-top:8px"><table id="sTbl"></table></div></details>
+    </div>
+    <div class="cols" style="margin-top:22px">
+      <div class="prose">
+        <h3>What the numbers show</h3>
+        <p><b>Revenue rises, peaks and falls.</b> At toll 0 it is zero; at a high enough toll nobody crosses and it is zero again. In between there is one toll with the highest revenue, and every lower revenue is reached by two tolls. Dupuit calls this "a general property of all taxes on consumption".</p>
+        <p><b>Utility falls more slowly than traffic at first.</b> On Bridge A, moving from toll 0 to 1 loses 45% of crossings but only 18% of utility. The first crossings lost are the ones people valued least.</p>
+        <p><b>Equal utility, different crossings.</b> On Bridge B at toll 3, the 65 trips that no longer happen are worth 115. That is about what the 35 trips actually made bring in revenue. Counting heads does not measure usefulness.</p>
+      </div>
+      <div class="erratum"><b>A slip in the original.</b> Dupuit prints the revenue of Bridge B at toll 3 as 115 and calls it the maximum. Since 3 × 35 = 105, the 115 was copied from the lost-utility column. Consumer surplus at that toll is then 112, not his 102. Toll 3 is still the revenue maximum and none of his conclusions change. The page computes every figure from the demand schedule, so it shows 105.</div>
+    </div>
+  </div>
+</section>
+
+<!-- STATE VS COMPANY -->
+<section class="sec" id="state">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">Finding 6</span><h2>Who owns the bridge decides how useful it is</h2></div>
+    <div class="cols">
+      <div class="prose">
+        <p>It was often said that a concession company's interest was the same as the state's. Dupuit's tables refute this.</p>
+        <ul style="margin:0;padding-left:1.2em;display:grid;gap:6px">
+          <li><b>A company</b> sets the toll with the highest revenue: 2 on A, 3 on B, 5 on C.</li>
+          <li><b>The state</b> wants only interest, upkeep and amortisation. Bridge C cost 150,000 F: 6,000 F interest at 4% plus 2,000 F upkeep = 8,000 F, and toll 1 already brings in 8,000 F (with the schedule scaled so 100 means 10,000 crossings).</li>
+        </ul>
+        <p>The company takes 8,500 F more from users. Dupuit says this hardly matters for public wealth: shareholders gain exactly what crossers pay, so the money only changes hands. The <b>14,900 F of utility</b> is different. People who would have crossed don't, although carrying them would have cost the company nothing. Nobody gets that value.</p>
+        <p>Uncertainty strengthens the case for the state. A company that cuts its toll and is wrong about demand takes a real loss. If the state is wrong, the money stays in its citizens' pockets, and the state can collect it through another tax.</p>
+      </div>
+      <div class="plate">
+        <h3>Bridge C, two owners</h3>
+        <div class="tbl"><table>
+          <tr><th></th><th>Utility (F)</th><th>Crossings</th><th>Revenue (F)</th></tr>
+          <tr><td>State, toll 1</td><td>42,500</td><td>80</td><td>8,000</td></tr>
+          <tr><td>Company, toll 5</td><td>27,600</td><td>33</td><td>16,500</td></tr>
+          <tr><td><b>Difference</b></td><td class="flag">14,900</td><td>47</td><td>8,500</td></tr>
+        </table></div>
+        <div class="chart"><svg id="stateSvg" viewBox="0 0 520 190" role="img" aria-label="State versus company comparison bars"></svg></div>
+        <p class="cap">Brick: value lost for good. Ochre: money moved from users to shareholders. Only the brick bar makes the country poorer.</p>
+      </div>
+    </div>
+    <div class="plate" style="margin-top:22px">
+      <h3>Scenario: the Pont d'Arcole, Paris</h3>
+      <p>A report to the Seine municipal council found that crossings on the Pont d'Arcole rose tenfold after its toll was abolished. Dupuit takes the old toll as 5 and the new traffic as 100 against the old 10. That matches Bridge A, and with it he answers the council's question: should the toll be restored?</p>
+      <div class="seg" role="group" aria-label="Arcole toll choice" id="arcSeg">
+        <button data-t="5" aria-pressed="true">Old toll 5</button><button data-t="2" aria-pressed="false">Company: 2</button><button data-t="1" aria-pressed="false">City: 1</button><button data-t="0" aria-pressed="false">Free</button>
+      </div>
+      <div class="bigs">
+        <div class="big"><b id="arQ" class="num">10</b><span>crossings</span></div>
+        <div class="big rev"><b id="arR" class="num">50</b><span>revenue</span></div>
+        <div class="big sur"><b id="arU" class="num">67</b><span>utility produced</span></div>
+        <div class="big"><b id="arB" class="num">1.0×</b><span>"bridges" (utility ÷ 67)</span></div>
+      </div>
+      <p id="arMsg" class="callout"></p>
+      <div class="quote">"Tariffs build bridges, canals and railways without spending a penny. They can also destroy them. It would be as well to demolish the Pont d'Arcole as to set its toll at 100 francs."<small>p. 49</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- DISCRIMINATION -->
+<section class="sec" id="discrimination">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">Finding 7</span><h2>Charging different people different prices</h2></div>
+    <div class="cols">
+      <div class="prose">
+        <p>The best tariff, Dupuit says, would make each user pay a share of their own utility, for example half of the price that would stop them crossing. Nobody would be priced off the bridge, so no utility would be lost, and revenue would still cover the cost.</p>
+        <div class="eq"><span class="what">Dupuit's ideal toll for user <i>i</i> with maximum price <i>v<sub>i</sub></i></span>
+          <math display="block"><msub><mi>τ</mi><mi>i</mi></msub><mo>=</mo><mi>α</mi><mspace width="0.2em"/><msub><mi>v</mi><mi>i</mi></msub><mo>,</mo><mspace width="1em"/><mn>0</mn><mo>&lt;</mo><mi>α</mi><mo>&lt;</mo><mn>1</mn></math></div>
+        <p>Users won't honestly state their maximum, "the universal improbity of travellers" as Dupuit puts it. So a real tariff guesses each user's maximum from signs it can observe and sorts users into classes.</p>
+        <p><b>The bookseller</b> publishes at 100 F, then 50, 30, 20, 15, 10 and finally 6 F. Bordas called this fraud. Dupuit replies that it lets the publisher pay the author 100,000 F for a manuscript that once fetched a few hundred, while readers with 6 F still get the book. The first buyers chose freely, and many would have paid 150 F.</p>
+        <p><b>The theatre</b> prices seats by the "caprices" of spectators, those who come to see and those who come to be seen, far more than by sight lines.</p>
+        <p><b>Canal freight.</b> The 1821–22 canals charged per tonne by type of good: manure, sand and gravel 0.010 F up to fabrics 0.088 F. The expensive goods then went by road. Dupuit would charge each good by what transport by canal is worth to its shipper: coffee 2, coal 4 and fertiliser 6. Coffee leaves for the road above 3 F. Fertiliser has no alternative at all, since carting it over land costs far more.</p>
+        <div class="quote">"Tolls, like indirect taxes, are voluntary taxes. You can make the poor pay less, but you cannot make the rich pay more."<small>p. 56–57</small></div>
+      </div>
+      <div class="plate">
+        <h3>Scenario: the workers' footbridge</h3>
+        <p class="cap">A footbridge cost 150,000 F and earns only 5,000 F a year at 5 centimes. Workers detour around it every morning and evening because 10 centimes a day is too much on their wages. The new owner adds one clause: <span class="fr">"for passers in cap, smock or jacket, the toll is 1 centime."</span> That brings 300,000 new crossings a year at 1 c. Some old payers will dress the part to pay less.</p>
+        <div class="ctl"><label for="fbLeak">Old 5-c crossings that switch to 1 c by dressing as workers: <output id="fbLeakOut">40,000</output></label><input id="fbLeak" type="range" min="0" max="100000" step="5000" value="40000"></div>
+        <div class="tbl"><table id="fbTbl"></table></div>
+        <div class="chart"><svg id="fbSvg" viewBox="0 0 520 150" role="img" aria-label="Revenue under three tariffs"></svg></div>
+        <p class="cap">Dupuit's numbers: 5 c only → 5,000 F; 1 c for all → 4,000 F; the two-tier tariff → 6,400 F, and close to 8,000 F if a stricter rule (only at shift times, only with a worker's <span class="fr">livret</span>) stops the leakage.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RAILWAY -->
+<section class="sec" id="railway">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">Finding 8</span><h2>The railway with classes</h2></div>
+    <div class="cols wide-r">
+      <div class="prose">
+        <p>Give a railway Bridge C's demand schedule and a traction cost of 2 per traveller. With traction costs, the fare with the highest <i>net</i> receipts is 6 (net 104), higher than the gross maximum at 5. Fixed costs are interest and administration. If they are 110, a single fare loses money whatever it is set at.</p>
+        <p>The line is still useful: at fare 6 it produces 234 of utility (52 traction, 104 to the company, 78 left to travellers). Add a second class and the same demand does much better. With fares 4 and 7: 41 travellers, net receipts 142, traveller surplus 92, a profit of 32. "There is gain for everybody."</p>
+        <div class="eq"><span class="what">Net receipts of a two-class tariff (low <i>l</i>, high <i>h</i>, traction cost <i>c</i>)</span>
+          <math display="block"><mi>Π</mi><mo>=</mo><mo>(</mo><mi>h</mi><mo>−</mo><mi>c</mi><mo>)</mo><mspace width="0.15em"/><mi>Q</mi><mo>(</mo><mi>h</mi><mo>)</mo><mo>+</mo><mo>(</mo><mi>l</mi><mo>−</mo><mi>c</mi><mo>)</mo><mo>[</mo><mi>Q</mi><mo>(</mo><mi>l</mi><mo>)</mo><mo>−</mo><mi>Q</mi><mo>(</mo><mi>h</mi><mo>)</mo><mo>]</mo></math></div>
+        <p>The catch: some of those 20 travellers willing to pay 7 will take the 4-franc seat if they can. The wider the gap between fares, the more trade down. Dupuit estimates that (3, 7) falls from 130 to 106 net, while (4, 7) only falls to 130.</p>
+        <p>This explains the third-class wagons of his day, open to the weather, badly sprung, with hard benches. A roof would cost little, and the state could even pay for it. The company would refuse because better third-class wagons could cost it two million in receipts.</p>
+        <div class="quote">"They strike at the poor, not from any wish to make them suffer, but to frighten the rich."<small>p. 65</small></div>
+      </div>
+      <div class="plate">
+        <h3>Railway tariff lab</h3>
+        <p class="cap">Demand = Bridge C. Traction cost 2 per traveller. Fixed costs 110. Set low = high for a single fare.</p>
+        <div class="row">
+          <div class="ctl"><label for="rLow">Low fare (3rd class)</label><select id="rLow"></select></div>
+          <div class="ctl"><label for="rHigh">High fare (1st class)</label><select id="rHigh"></select></div>
+          <div class="ctl" style="flex:1 1 200px"><label for="rLeak">Trade-down: <output id="rLeakOut">0</output>% of high payers</label><input id="rLeak" type="range" min="0" max="60" step="5" value="0"></div>
+        </div>
+        <div class="row">
+          <span class="muted" style="font-size:.85rem">Dupuit's presets:</span>
+          <button class="btn" data-preset="6,6,0">single 6</button>
+          <button class="btn" data-preset="6,8,0">6 &amp; 8</button>
+          <button class="btn" data-preset="4,7,0">4 &amp; 7</button>
+          <button class="btn" data-preset="2,6,0">2 &amp; 6</button>
+          <button class="btn" data-preset="3,7,30">3 &amp; 7, realistic</button>
+          <button class="btn" data-preset="4,7,20">4 &amp; 7, realistic</button>
+        </div>
+        <div class="wagons" aria-hidden="true">
+          <div class="wagon"><svg viewBox="0 0 120 60"><rect x="6" y="10" width="108" height="34" rx="6" fill="var(--accent)"/><rect x="14" y="16" width="20" height="14" rx="2" fill="var(--card)"/><rect x="40" y="16" width="20" height="14" rx="2" fill="var(--card)"/><rect x="66" y="16" width="20" height="14" rx="2" fill="var(--card)"/><rect x="92" y="16" width="16" height="14" rx="2" fill="var(--card)"/><circle cx="28" cy="50" r="7" fill="var(--ink)"/><circle cx="92" cy="50" r="7" fill="var(--ink)"/></svg><div>1st class · <b id="wHi" class="num">20</b></div></div>
+          <div class="wagon"><svg viewBox="0 0 120 60"><rect x="6" y="18" width="108" height="26" rx="2" fill="var(--ink-2)"/><line x1="6" y1="18" x2="114" y2="18" stroke="var(--ink-2)" stroke-width="2"/><g stroke="var(--paper)" stroke-width="2"><line x1="30" y1="22" x2="30" y2="40"/><line x1="60" y1="22" x2="60" y2="40"/><line x1="90" y1="22" x2="90" y2="40"/></g><circle cx="28" cy="50" r="7" fill="var(--ink)"/><circle cx="92" cy="50" r="7" fill="var(--ink)"/><text x="60" y="12" text-anchor="middle" style="font-size:9px">open to the rain</text></svg><div>3rd class · <b id="wLo" class="num">21</b></div></div>
+          <div class="wagon"><svg viewBox="0 0 120 60"><g fill="none" stroke="var(--lost)" stroke-width="2"><circle cx="60" cy="28" r="18"/><line x1="47" y1="15" x2="73" y2="41"/></g></svg><div>stay home · <b id="wNo" class="num">59</b></div></div>
+        </div>
+        <div class="tbl"><table id="rTbl"></table></div>
+        <div class="stack" id="rStack" aria-hidden="true"><div style="background:var(--ink-2)"></div><div class="s-rev"></div><div class="s-sur"></div></div>
+        <div class="legend"><span><i style="background:var(--ink-2)"></i>traction cost</span><span><i class="sw-rev"></i>net receipts</span><span><i class="sw-sur"></i>travellers' surplus</span></div>
+        <p class="callout" id="rMsg"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DISTANCE -->
+<section class="sec" id="distance">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">Finding 9</span><h2>Tolls should not be proportional to distance</h2></div>
+    <div class="cols">
+      <div class="prose">
+        <p>Every French tariff of 1849 charged per kilometre. Dupuit calls this "a very grave error". What a trip is worth depends on the alternatives, not on the length of track. Charging for "distance usefully travelled" would still be wrong.</p>
+        <p><b>Châteauroux to Tours</b> by rail went round through Orléans: 259 km, 19 F, about 7 hours. The road took 9 to 10 hours and cost about 10 F. At 19 F travellers chose the road. At 10 F they would ride in seats that would otherwise run empty, and almost all the fare would be profit. The posts already charged 20 c for a letter to Versailles and 4 c for a newspaper to Marseille.</p>
+        <div class="tbl"><table>
+          <tr><th>From Châteauroux to</th><th>km</th><th>Per-km fare</th><th>Dupuit's fare</th></tr>
+          <tr><td>Orléans</td><td>144</td><td>11.20</td><td>11.20</td></tr>
+          <tr><td>Blois</td><td>202</td><td>15.20</td><td>11.00</td></tr>
+          <tr><td>Tours</td><td>259</td><td>19.00</td><td>10.00</td></tr>
+          <tr><td>Poitiers</td><td>360</td><td>27.00</td><td>8.00</td></tr>
+        </table></div>
+        <p>The longest trip gets the lowest fare, which is fine. Third-class fares can work the same way: 0.50 F for the 10 km to a station used by rich villa owners, 0.60 F for the 20 km to a farming village with other ways into town.</p>
+        <p><b>Route planning follows.</b> A longer line through busier, flatter country can carry a lower fare per kilometre. Dupuit's example: 200 km at 0.06 F costs a traveller less than 175 km at 0.08 F.</p>
+        <div class="erratum"><b>Another slip.</b> Dupuit writes 175 km × 0.08 = 16 F; it is 14 F. The saving on the longer line is 2 F per traveller rather than 4 F, and the point stands.</div>
+      </div>
+      <div class="plate">
+        <h3>Town V and the line S–T (his Fig. 8)</h3>
+        <p class="cap">Every mode costs 0.08 F/km. A traveller from V to X can take the road to T (50 km) or the road to S (30 km) then the train S→T (40 km). At the per-km fare of 3.20 F, the train loses them. Lower the S→T fare for travellers coming from V.</p>
+        <div class="chart"><svg id="vstSvg" viewBox="0 0 440 240" role="img" aria-label="Network: town V, stations S and T"></svg></div>
+        <div class="ctl"><label for="vFare">Rail fare S→T for V travellers: <output id="vFareOut">3.20</output> F</label><input id="vFare" type="range" min="0.4" max="3.2" step="0.1" value="3.2"></div>
+        <div class="tbl"><table id="vTbl"></table></div>
+        <p class="callout" id="vMsg"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EQUATIONS -->
+<section class="sec" id="equations">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">The model in symbols</span><h2>Equations</h2>
+      <p class="prose muted">Dupuit wrote no formulas; he used tables and arithmetic. These are the standard modern forms of his results, with Q(t) the number of uses at toll t.</p></div>
+    <div class="eqs">
+      <div class="eq"><span class="what">Total possible utility (toll zero)</span><math display="block"><mi>U</mi><mo>=</mo><msubsup><mo>∫</mo><mn>0</mn><mi>∞</mi></msubsup><mi>Q</mi><mo>(</mo><mi>s</mi><mo>)</mo><mspace width="0.2em"/><mi>d</mi><mi>s</mi></math></div>
+      <div class="eq"><span class="what">1 · Utility lost at toll t (deadweight loss)</span><math display="block"><mi>L</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><msubsup><mo>∫</mo><mn>0</mn><mi>t</mi></msubsup><mi>Q</mi><mo>(</mo><mi>s</mi><mo>)</mo><mspace width="0.2em"/><mi>d</mi><mi>s</mi><mo>−</mo><mi>t</mi><mspace width="0.1em"/><mi>Q</mi><mo>(</mo><mi>t</mi><mo>)</mo></math></div>
+      <div class="eq"><span class="what">2 · Owner's revenue</span><math display="block"><mi>R</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><mi>t</mi><mspace width="0.1em"/><mi>Q</mi><mo>(</mo><mi>t</mi><mo>)</mo></math></div>
+      <div class="eq"><span class="what">3 · Users' surplus</span><math display="block"><mi>S</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><msubsup><mo>∫</mo><mi>t</mi><mi>∞</mi></msubsup><mi>Q</mi><mo>(</mo><mi>s</mi><mo>)</mo><mspace width="0.2em"/><mi>d</mi><mi>s</mi></math></div>
+      <div class="eq"><span class="what">The three parts always add up</span><math display="block"><mi>L</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>+</mo><mi>R</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>+</mo><mi>S</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><mi>U</mi></math></div>
+      <div class="eq"><span class="what">Revenue-maximising toll: unit elasticity</span><math display="block"><msup><mi>R</mi><mo>′</mo></msup><mo>(</mo><msup><mi>t</mi><mo>*</mo></msup><mo>)</mo><mo>=</mo><mn>0</mn><mspace width="0.6em"/><mo>⇔</mo><mspace width="0.6em"/><mfrac><mrow><msup><mi>t</mi><mo>*</mo></msup><msup><mi>Q</mi><mo>′</mo></msup><mo>(</mo><msup><mi>t</mi><mo>*</mo></msup><mo>)</mo></mrow><mrow><mi>Q</mi><mo>(</mo><msup><mi>t</mi><mo>*</mo></msup><mo>)</mo></mrow></mfrac><mo>=</mo><mo>−</mo><mn>1</mn></math></div>
+      <div class="eq"><span class="what">The state's rule: lowest toll that covers cost K</span><math display="block"><msub><mi>t</mi><mtext>state</mtext></msub><mo>=</mo><mo movablelimits="true">min</mo><mo>{</mo><mi>t</mi><mo>:</mo><mi>t</mi><mspace width="0.1em"/><mi>Q</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>≥</mo><mi>K</mi><mo>}</mo></math></div>
+      <div class="eq"><span class="what">Say's estimate versus Dupuit's, for a price cut from p₀ to p₁</span><math display="block"><msub><mi>G</mi><mtext>Say</mtext></msub><mo>=</mo><mo>(</mo><msub><mi>p</mi><mn>0</mn></msub><mo>−</mo><msub><mi>p</mi><mn>1</mn></msub><mo>)</mo><mspace width="0.1em"/><mi>Q</mi><mo>(</mo><msub><mi>p</mi><mn>1</mn></msub><mo>)</mo><mspace width="0.6em"/><mo>≥</mo><mspace width="0.6em"/><msub><mi>G</mi><mtext>Dupuit</mtext></msub><mo>=</mo><msubsup><mo>∫</mo><msub><mi>p</mi><mn>1</mn></msub><msub><mi>p</mi><mn>0</mn></msub></msubsup><mi>Q</mi><mo>(</mo><mi>s</mi><mo>)</mo><mspace width="0.2em"/><mi>d</mi><mi>s</mi></math></div>
+      <div class="eq"><span class="what">Two-class railway, with share f of high payers trading down</span><math display="block"><mi>Π</mi><mo>=</mo><mo>(</mo><mi>h</mi><mo>−</mo><mi>c</mi><mo>)</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>f</mi><mo>)</mo><mi>Q</mi><mo>(</mo><mi>h</mi><mo>)</mo><mo>+</mo><mo>(</mo><mi>l</mi><mo>−</mo><mi>c</mi><mo>)</mo><mo>[</mo><mi>Q</mi><mo>(</mo><mi>l</mi><mo>)</mo><mo>−</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>f</mi><mo>)</mo><mi>Q</mi><mo>(</mo><mi>h</mi><mo>)</mo><mo>]</mo></math></div>
+      <div class="eq"><span class="what">Route choice: the rail fare r wins V's travellers when</span><math display="block"><msub><mi>c</mi><mtext>VS</mtext></msub><mo>+</mo><mi>r</mi><mo>≤</mo><msub><mi>c</mi><mtext>VT</mtext></msub><mspace width="0.6em"/><mo>⇒</mo><mspace width="0.6em"/><mi>r</mi><mo>≤</mo><mn>4.00</mn><mo>−</mo><mn>2.40</mn><mo>=</mo><mn>1.60</mn></math></div>
+      <div class="eq"><span class="what">Dupuit's ideal toll and the result: no lost utility</span><math display="block"><msub><mi>τ</mi><mi>i</mi></msub><mo>=</mo><mi>α</mi><msub><mi>v</mi><mi>i</mi></msub><mspace width="0.6em"/><mo>⇒</mo><mspace width="0.6em"/><mi>L</mi><mo>=</mo><mn>0</mn><mo>,</mo><mspace width="0.4em"/><mi>R</mi><mo>=</mo><mi>α</mi><mi>U</mi><mo>,</mo><mspace width="0.4em"/><mi>S</mi><mo>=</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>α</mi><mo>)</mo><mi>U</mi></math></div>
+    </div>
+    <p class="muted" style="margin-top:12px;font-size:.88rem;max-width:72ch">On a staircase demand, the integrals become Dupuit's sums: the units lost between tolls k−1 and k each count as worth k. That is the convention the tables, charts and code on this page use.</p>
+  </div>
+</section>
+
+<!-- CODE -->
+<section class="sec" id="code">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">In code</span><h2>Dupuit's method as a TypeScript module</h2>
+      <p class="prose muted">Every number on this page comes from these functions. The page runs the same logic as plain JavaScript, so the Run buttons below show real output.</p></div>
+    <div class="cols wide-r">
+      <div class="runs plate">
+        <h3>Run the examples</h3>
+        <div id="runs"></div>
+        <div class="console" id="console" aria-live="polite">// output appears here</div>
+        <h3 style="margin-top:6px">Try your own demand schedule</h3>
+        <p class="cap">Enter uses at toll 0, 1, 2, … separated by commas. Each value should be no larger than the one before, and the last should be 0.</p>
+        <div class="ctl"><label for="pgQ">Schedule Q</label><input id="pgQ" type="text" value="100, 60, 40, 25, 15, 8, 3, 0"></div>
+        <div class="row"><div class="ctl"><label for="pgT">Toll</label><input id="pgT" type="number" min="0" value="2"></div><div class="ctl"><label for="pgK">Cost to cover (state)</label><input id="pgK" type="number" min="0" value="60"></div><button class="btn primary" id="pgRun" style="align-self:end">Analyse</button></div>
+      </div>
+      <pre class="code" id="tsView" tabindex="0" aria-label="TypeScript source"></pre>
+    </div>
+  </div>
+</section>
+
+<!-- REAL WORLD -->
+<section class="sec" id="real-world">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">Implications</span><h2>Dupuit's ideas in today's prices</h2>
+      <p class="prose muted">Each case maps onto a finding in the paper. The questions have no single answer; they are prompts to apply his framework.</p></div>
+    <div class="grid-cards" id="rwGrid"></div>
+  </div>
+</section>
+
+<!-- PRACTICE -->
+<section class="sec" id="practice">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">Practice</span><h2>Problems for each finding</h2>
+      <p class="prose muted">Work them with pencil and paper, or with the instruments above. Enter a number and check it; solutions show the working.</p></div>
+    <div class="row" style="margin-bottom:12px"><span class="mono" id="pScore">0 / 0 solved</span><button class="btn" id="pReset">Clear answers</button></div>
+    <div class="probs" id="probs"></div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section class="sec" id="quiz">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">Check yourself</span><h2>Quiz</h2></div>
+    <div class="quiz" id="quizBox"></div>
+  </div>
+</section>
+
+<!-- FLASHCARDS -->
+<section class="sec" id="cards">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">Spaced repetition</span><h2>Flashcards</h2>
+      <p class="prose muted">Click or press Space to flip. "Again" puts the card back near the front of the deck, "Got it" sends it to the back. Your progress stays in this browser. You can also copy the deck in Anki's import format.</p></div>
+    <div class="cols">
+      <div class="deck">
+        <div class="row" style="justify-content:space-between"><span class="mono" id="fcCount">Card 1 of 30</span><span class="mono" id="fcKnown">0 learned</span></div>
+        <div class="fc" id="fc" tabindex="0" role="button" aria-label="Flashcard, press to flip">
+          <div class="fc-in"><div class="fc-face front"><span class="side">Question</span><div class="txt" id="fcFront"></div></div><div class="fc-face back"><span class="side">Answer</span><div class="txt" id="fcBack"></div></div></div>
+        </div>
+        <div class="row"><button class="btn" id="fcAgain">Again</button><button class="btn primary" id="fcGood">Got it</button><button class="btn" id="fcShuffle">Shuffle</button><button class="btn" id="fcReset">Reset progress</button></div>
+      </div>
+      <div class="plate">
+        <h3>Export to Anki</h3>
+        <p class="cap">In Anki: File → Import, choose a text file containing this, set the field separator to Tab. Or copy it into any spreadsheet.</p>
+        <textarea id="ankiTxt" rows="12" readonly aria-label="Anki deck, tab separated"></textarea>
+        <div class="row"><button class="btn primary" id="ankiCopy">Copy deck</button><span id="ankiMsg" class="muted" style="font-size:.85rem"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GLOSSARY -->
+<section class="sec" id="glossary">
+  <div class="wrap">
+    <div class="sec-head"><span class="tag">Reference</span><h2>Glossary of the paper's terms</h2></div>
+    <dl class="gl" id="gl"></dl>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">Built from a reading of Dupuit's 1849 offprint (Paris, Guillaumin, 80 pp.). Page numbers refer to that offprint. Quotations are translated from the French.</div></footer>
+
+<script type="text/plain" id="ts-src">/**
+ * dupuit.ts — the method of "De l'influence des péages" (1849).
+ * A schedule Q gives the number of uses at toll t = 0, 1, 2, …
+ * Units lost when the toll rises from k−1 to k are each worth k.
+ */
+export type Schedule = readonly number[];
+
+export interface Split {
+  toll: number;
+  uses: number;     // Q[t]
+  lost: number;     // utilité perdue (deadweight loss)
+  revenue: number;  // produit du péage
+  surplus: number;  // utilité restant aux consommateurs
+  total: number;    // utilité possible, at toll 0
+}
+
+export const BRIDGE_A: Schedule = [100, 55, 37, 24, 15, 10, 5, 2, 0];
+export const BRIDGE_B: Schedule = [100, 70, 50, 35, 27, 20, 14, 9, 5, 2, 0];
+export const BRIDGE_C: Schedule = [100, 80, 63, 50, 41, 33, 26, 20, 14, 9, 6, 3, 0];
+export const CANAL: Schedule    = [100, 70, 50, 35, 27, 20, 14, 9, 4, 1, 0];
+export const STONE: Schedule    = [15000, 13500, 12200, 11000, 10400, 0];
+
+/** Relative utility of one use: what you would pay minus what you pay. */
+export const relativeUtility = (maxSacrifice: number, price: number): number =>
+  Math.max(0, maxSacrifice - price);
+
+/** Utility lost when the toll is t: units driven off, each valued at the toll that drove it off. */
+export function lostUtility(Q: Schedule, t: number): number {
+  let lost = 0;
+  for (let k = 1; k <= t; k++) lost += k * (Q[k - 1] - Q[k]);
+  return lost;
+}
+
+/** Total possible utility = utility lost at a toll high enough to stop all use. */
+export const totalUtility = (Q: Schedule): number => lostUtility(Q, Q.length - 1);
+
+/** The three-way split of Fig. "Pont A, B, C". */
+export function split(Q: Schedule, t: number): Split {
+  const total = totalUtility(Q);
+  const lost = lostUtility(Q, t);
+  const revenue = t * Q[t];
+  return { toll: t, uses: Q[t], lost, revenue, surplus: total - lost - revenue, total };
+}
+
+/** What a concession company does: maximise the toll's revenue. */
+export function revenueMaximizingToll(Q: Schedule): number {
+  let best = 0;
+  for (let t = 1; t < Q.length; t++) if (t * Q[t] > best * Q[best]) best = t;
+  return best;
+}
+
+/** What the state does: take the lowest toll that repays interest, upkeep, amortisation. */
+export function lowestCoveringToll(Q: Schedule, required: number): number | null {
+  for (let t = 0; t < Q.length; t++) if (t * Q[t] >= required) return t;
+  return null;
+}
+
+/** J.-B. Say's estimate of a price cut: the cut times all units now used. */
+export const sayEstimate = (priceCut: number, usesAfter: number): number =>
+  priceCut * usesAfter;
+
+/** Dupuit's estimate of moving from oldToll to newToll: the utility no longer lost. */
+export const dupuitGain = (Q: Schedule, oldToll: number, newToll: number): number =>
+  lostUtility(Q, oldToll) - lostUtility(Q, newToll);
+
+export interface TwoClass {
+  upper: number; lower: number; riders: number;
+  traction: number; net: number; riderSurplus: number;
+}
+
+/**
+ * A two-class tariff (low ≤ high) with traction cost c per rider.
+ * `leak` is the share of high payers who trade down to the low class.
+ */
+export function twoClass(Q: Schedule, low: number, high: number, c: number, leak = 0): TwoClass {
+  const upper = Q[high] * (1 - leak);
+  const riders = Q[low];
+  const lower = riders - upper;
+  const net = (high - c) * upper + (low - c) * lower;
+  const traction = c * riders;
+  const served = totalUtility(Q) - lostUtility(Q, low); // utility of everyone who rides
+  return { upper, lower, riders, traction, net, riderSurplus: served - traction - net };
+}
+
+/** Fig. 8: the cheapest way from V to X — road to T, or road to S plus the train. */
+export function cheapestRoute(costVT: number, costVS: number, railST: number) {
+  const viaRail = costVS + railST;
+  return viaRail <= costVT
+    ? { route: "V→S→T (rail)", cost: viaRail }
+    : { route: "V→T (road)", cost: costVT };
+}
+</script>
+
+<script>
+(() => {
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const fmt = n => (Math.round(n * 100) / 100).toLocaleString("en-US");
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("dupuit:" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("dupuit:" + k, JSON.stringify(v)); } catch (e) {} }
+};
+
+/* ---------- engine (same logic as the TypeScript module) ---------- */
+const BRIDGES = {
+  A: [100, 55, 37, 24, 15, 10, 5, 2, 0],
+  B: [100, 70, 50, 35, 27, 20, 14, 9, 5, 2, 0],
+  C: [100, 80, 63, 50, 41, 33, 26, 20, 14, 9, 6, 3, 0]
+};
+const CANAL = [100, 70, 50, 35, 27, 20, 14, 9, 4, 1, 0];
+const STONE = [15000, 13500, 12200, 11000, 10400, 0];
+const relativeUtility = (m, p) => Math.max(0, m - p);
+function lostUtility(Q, t) { let l = 0; for (let k = 1; k <= t; k++) l += k * (Q[k - 1] - Q[k]); return l; }
+const totalUtility = Q => lostUtility(Q, Q.length - 1);
+function split(Q, t) { const total = totalUtility(Q), lost = lostUtility(Q, t), revenue = t * Q[t]; return { toll: t, uses: Q[t], lost, revenue, surplus: total - lost - revenue, total }; }
+function revenueMaximizingToll(Q) { let b = 0; for (let t = 1; t < Q.length; t++) if (t * Q[t] > b * Q[b]) b = t; return b; }
+function lowestCoveringToll(Q, req) { for (let t = 0; t < Q.length; t++) if (t * Q[t] >= req) return t; return null; }
+const sayEstimate = (cut, after) => cut * after;
+const dupuitGain = (Q, o, n) => lostUtility(Q, o) - lostUtility(Q, n);
+function twoClass(Q, low, high, c, leak = 0) {
+  const upper = Q[high] * (1 - leak), riders = Q[low], lower = riders - upper;
+  const net = (high - c) * upper + (low - c) * lower, traction = c * riders;
+  const served = totalUtility(Q) - lostUtility(Q, low);
+  return { upper, lower, riders, traction, net, riderSurplus: served - traction - net };
+}
+function cheapestRoute(vt, vs, st) { const v = vs + st; return v <= vt ? { route: "V→S→T (rail)", cost: v } : { route: "V→T (road)", cost: vt }; }
+
+/* ---------- nav highlight ---------- */
+const navLinks = $$("#navlist a");
+const secs = navLinks.map(a => document.getElementById(a.getAttribute("href").slice(1)));
+if ("IntersectionObserver" in window) {
+  const io = new IntersectionObserver(es => {
+    es.forEach(e => { if (e.isIntersecting) { navLinks.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id)); } });
+  }, { rootMargin: "-45% 0px -50% 0px" });
+  secs.forEach(s => s && io.observe(s));
+}
+
+/* ---------- HERO canvas ---------- */
+(function hero() {
+  const cv = $("#hero"), ctx = cv.getContext("2d");
+  const Q = BRIDGES.A, slider = $("#heroToll");
+  let toll = 2, W = 0, H = 0, walkers = [], col = {}, last = 0, spawnAcc = 0, frame = 0;
+  function readCols() { const s = getComputedStyle(document.documentElement); ["--ink", "--ink-2", "--rule", "--paper-2", "--card", "--lost", "--prod", "--cons", "--accent"].forEach(k => col[k] = s.getPropertyValue(k).trim()); }
+  function size() { const dpr = Math.min(2, window.devicePixelRatio || 1); W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  const geo = () => { const x0 = W * 0.26, x1 = W * 0.86, base = H * 0.62, rise = Math.min(46, H * 0.18); return { x0, x1, base, rise, booth: x0 - 26 }; };
+  function deckY(x) { const g = geo(); if (x <= g.x0 || x >= g.x1) return g.base; return g.base - g.rise * Math.sin(Math.PI * (x - g.x0) / (g.x1 - g.x0)); }
+  // value class k drawn from Bridge A: share (Q[k-1]-Q[k])/100
+  function drawK() { let r = Math.random() * 100; for (let k = 1; k < Q.length; k++) { r -= Q[k - 1] - Q[k]; if (r <= 0) return k; } return 1; }
+  function spawn(x) { walkers.push({ x: x ?? -12, k: drawK(), st: "go", a: 1, sp: 34 + Math.random() * 14, ph: Math.random() * 6, paid: false }); }
+  function prefill() { walkers = []; const g = geo(); for (let i = 0; i < 9; i++) { spawn(Math.random() * (W + 20) - 10); } walkers.forEach(w => { if (w.x > g.booth) { if (w.k > toll) { w.st = "cross"; } else { w.x = g.booth - Math.random() * 60; w.st = "back"; } } }); }
+  function person(x, y, c, a, ph) {
+    ctx.globalAlpha = a; ctx.strokeStyle = c; ctx.fillStyle = c; ctx.lineWidth = 2;
+    const sw = Math.sin(ph) * 3;
+    ctx.beginPath(); ctx.arc(x, y - 17, 3.6, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x, y - 13); ctx.lineTo(x, y - 6); ctx.moveTo(x, y - 6); ctx.lineTo(x - sw, y); ctx.moveTo(x, y - 6); ctx.lineTo(x + sw, y); ctx.moveTo(x - 3, y - 10); ctx.lineTo(x + 3, y - 10); ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  function scene() {
+    const g = geo();
+    ctx.clearRect(0, 0, W, H);
+    // river
+    ctx.fillStyle = col["--paper-2"]; ctx.fillRect(g.x0 - 4, g.base + 4, g.x1 - g.x0 + 8, H - g.base);
+    ctx.strokeStyle = col["--rule"]; ctx.lineWidth = 1;
+    for (let r = 0; r < 4; r++) { ctx.beginPath(); const yy = g.base + 26 + r * 18; for (let x = g.x0; x <= g.x1; x += 6) { const y = yy + Math.sin((x + frame * 0.6 + r * 40) / 18) * 2; x === g.x0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.stroke(); }
+    // banks
+    ctx.fillStyle = col["--rule"]; ctx.fillRect(0, g.base, g.x0, H - g.base); ctx.fillRect(g.x1, g.base, W - g.x1, H - g.base);
+    // arch
+    ctx.strokeStyle = col["--ink"]; ctx.lineWidth = 2; ctx.beginPath();
+    for (let x = g.x0; x <= g.x1; x += 4) { const y = deckY(x); x === g.x0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.stroke();
+    ctx.lineWidth = 1.2; ctx.beginPath();
+    for (let x = g.x0 + 10; x <= g.x1 - 10; x += 4) { const t = (x - g.x0 - 10) / (g.x1 - g.x0 - 20); const y = g.base + 6 - (g.rise + 22) * Math.sin(Math.PI * t) + 10; x === g.x0 + 10 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.stroke();
+    // balustrade posts
+    ctx.lineWidth = 1; for (let x = g.x0 + 8; x < g.x1; x += 14) { const y = deckY(x); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - 9); ctx.stroke(); }
+    ctx.beginPath(); for (let x = g.x0; x <= g.x1; x += 4) { const y = deckY(x) - 9; x === g.x0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.stroke();
+    // toll booth
+    const bx = g.booth - 26; ctx.fillStyle = col["--card"]; ctx.strokeStyle = col["--ink"]; ctx.lineWidth = 1.5;
+    ctx.fillRect(bx, g.base - 34, 22, 34); ctx.strokeRect(bx, g.base - 34, 22, 34);
+    ctx.beginPath(); ctx.moveTo(bx - 4, g.base - 34); ctx.lineTo(bx + 11, g.base - 46); ctx.lineTo(bx + 26, g.base - 34); ctx.stroke();
+    ctx.fillStyle = col["--prod"]; ctx.font = "600 11px 'IBM Plex Mono', monospace"; ctx.textAlign = "center";
+    ctx.fillText("PÉAGE", bx + 11, g.base - 52);
+    ctx.fillStyle = col["--ink"]; ctx.font = "500 12px 'IBM Plex Mono', monospace"; ctx.fillText(toll + " c", bx + 11, g.base - 16);
+    // gate bar
+    ctx.strokeStyle = col["--lost"]; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(g.booth - 2, g.base - 22); ctx.lineTo(g.booth + 4, g.base - 22 - (toll === 0 ? 20 : 0)); ctx.stroke();
+    // labels
+    ctx.fillStyle = col["--ink-2"]; ctx.font = "11px 'IBM Plex Mono', monospace"; ctx.textAlign = "left";
+    ctx.fillText("left bank", 8, g.base + 18); ctx.textAlign = "right"; ctx.fillText("right bank", W - 8, g.base + 18);
+    // walkers
+    walkers.forEach(w => { const c = w.st === "back" ? col["--lost"] : (w.st === "cross" ? col["--cons"] : col["--ink-2"]); person(w.x, deckY(w.x), c, w.a, w.ph); if (w.coin > 0) { ctx.globalAlpha = w.coin; ctx.fillStyle = col["--prod"]; ctx.beginPath(); ctx.arc(w.x - 8, deckY(w.x) - 30 - (1 - w.coin) * 14, 3.5, 0, 7); ctx.fill(); ctx.globalAlpha = 1; } });
+  }
+  function step(dt) {
+    const g = geo(); frame++;
+    spawnAcc += dt; if (spawnAcc > 0.55) { spawnAcc = 0; spawn(); }
+    walkers.forEach(w => {
+      w.ph += dt * 9;
+      if (w.coin > 0) w.coin -= dt * 1.4;
+      if (w.st === "go") { w.x += w.sp * dt; if (w.x >= g.booth) { if (w.k > toll) { w.st = "cross"; if (toll > 0) w.coin = 1; } else { w.st = "back"; } } }
+      else if (w.st === "cross") { w.x += w.sp * dt; if (w.x > W + 20) w.dead = true; }
+      else if (w.st === "back") { w.x -= w.sp * dt; w.a -= dt * 0.35; if (w.a <= 0 || w.x < -20) w.dead = true; }
+    });
+    walkers = walkers.filter(w => !w.dead);
+  }
+  function loop(ts) { const dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts; if (frame % 60 === 0) readCols(); step(dt); scene(); requestAnimationFrame(loop); }
+  function kpis() { const s = split(Q, toll); $("#heroTollOut").textContent = toll; $("#hk-cross").textContent = s.uses; $("#hk-rev").textContent = s.revenue; $("#hk-sur").textContent = s.surplus; $("#hk-lost").textContent = s.lost; }
+  slider.addEventListener("input", () => { toll = +slider.value; kpis(); if (reduce) { prefill(); scene(); } });
+  addEventListener("resize", () => { size(); scene(); });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => { readCols(); scene(); });
+  new MutationObserver(() => { readCols(); scene(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  readCols(); size(); prefill(); kpis(); scene();
+  if (!reduce) requestAnimationFrame(t => { last = t; requestAnimationFrame(loop); });
+})();
+
+/* ---------- TIMELINE ---------- */
+const TL = [
+  ["1803", "Say's Traité d'économie politique", "J.-B. Say treats the market value of a thing as the measure of its utility. Dupuit's paper is largely an argument against this.", false],
+  ["1804", "Jules Dupuit is born", "Born in Fossano, Piedmont, then part of France. He trains at the École polytechnique and joins the state corps of Ponts et Chaussées.", false],
+  ["1821", "Ricardo writes to Say", "In letters of 1821–22, Ricardo accuses Say of forgetting the difference between value in use and value in exchange. Say promises to correct \"this logomachy\" and never does. Dupuit quotes the exchange.", false],
+  ["1830s", "Rossi at the Collège de France", "Pellegrino Rossi, Say's successor, teaches that value in use is essential to economics. Dupuit sides with Rossi.", false],
+  ["1844", "De la mesure de l'utilité des travaux publics", "Dupuit's first paper: utility is measured by the maximum sacrifice, and a price cut does not give every user the full saving.", true],
+  ["1847", "Bordas and Comoy reply", "Bordas publishes a rebuttal in the Annales. Comoy values a canal at 1.90 F per tonne from its cost. Both follow Say.", false],
+  ["1849", "De l'influence des péages", "This paper, dated Angers, 28 March 1849. Bridges A, B and C, the three-way split, state versus company, price classes, distance pricing.", true],
+  ["1866", "Dupuit dies in Paris", "By then Inspector General of Ponts et Chaussées. His economics is little read outside engineering circles.", false],
+  ["1890", "Marshall names consumer's surplus", "Alfred Marshall's Principles of Economics makes Dupuit's relative utility a standard tool, drawn as the area under the demand curve.", true],
+  ["1920", "Pigou's degrees of discrimination", "A. C. Pigou classifies first-, second- and third-degree price discrimination, the theory behind Dupuit's tariff classes.", false],
+  ["1927", "Ramsey pricing", "Frank Ramsey shows how to raise a required revenue with the least loss of welfare. It is the formal version of Dupuit's state that needs only to cover its costs.", false],
+  ["1938", "Hotelling revives Dupuit", "Harold Hotelling cites Dupuit in a paper on taxation and railway and utility rates, arguing for marginal-cost pricing of bridges and railways.", true],
+  ["1964", "Harberger triangles", "Arnold Harberger popularises measuring deadweight loss with triangles under the demand curve. It is Dupuit's utilité perdue.", false],
+  ["1974", "The Laffer curve", "Arthur Laffer's revenue-versus-tax-rate curve is the shape Dupuit described: zero, a peak, zero.", false],
+  ["1980s", "Airline yield management", "After US airline deregulation (1978), carriers build fare classes with restrictions to sort travellers by willingness to pay. These are Dupuit's railway classes.", false],
+  ["2003", "London congestion charge", "A road toll whose main aim is to reduce traffic, an externality Dupuit did not model. Its appraisal still uses his consumer surplus.", false]
+];
+(function timeline() {
+  const ol = $("#tl");
+  ol.innerHTML = TL.map(([y, t, d, k]) => `<li class="${k ? "key" : ""}"><span class="yr">${y}</span><div class="body"><b>${t}</b><p>${d}</p></div></li>`).join("");
+  if (!reduce && "IntersectionObserver" in window) {
+    ol.classList.add("anim");
+    const items = $$("li", ol);
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.remove("pre"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -10% 0px" });
+    // items start visible; only those below the fold get the subtle "pre" state
+    items.forEach(li => { if (li.getBoundingClientRect().top > innerHeight) { li.classList.add("pre"); io.observe(li); } });
+  }
+})();
+
+/* ---------- COMOY + wine ---------- */
+(function comoy() {
+  const tons = 500000, utility = 1500000;
+  function upd() {
+    const C = +$("#cCost").value, up = +$("#cUp").value * 1000;
+    const annual = C * 1e6 * 0.05 + up;
+    $("#cCostOut").textContent = C.toFixed(1); $("#cUpOut").textContent = up / 1000;
+    $("#cComoy").textContent = (annual / tons).toFixed(2);
+    const net = utility - annual; $("#cNet").textContent = Math.round(net).toLocaleString("en-US");
+    $("#cNet").style.color = net < 0 ? "var(--lost)" : "";
+    $("#cMsg").textContent = C < 16 ? `Built ${(16 - C).toFixed(1)}M F cheaper: Comoy's "wealth per tonne" fell, though the country saved money and gets the same canal.` : C > 16 ? `Built ${(C - 16).toFixed(1)}M F dearer: Comoy's "wealth per tonne" rose, yet the country is poorer by the extra interest.` : "Comoy's number falls when the canal gets cheaper. Dupuit's net benefit rises.";
+  }
+  $("#cCost").addEventListener("input", upd); $("#cUp").addEventListener("input", upd); upd();
+  // wine & cloth bars
+  const items = [["Wine (bottle)", 20, 6, 3], ["Cloth (metre)", 30, 15, 20]];
+  const x = v => 120 + v * 12;
+  let s = ""; items.forEach(([n, u, v, c], i) => {
+    const y0 = 16 + i * 78;
+    s += `<text x="0" y="${y0 + 26}" class="lbl">${n}</text>`;
+    [["utility", u, "var(--cons)"], ["price", v, "var(--prod)"], ["cost", c, "var(--ink-2)"]].forEach(([lab, val, colr], j) => {
+      const y = y0 + j * 20; s += `<rect x="120" y="${y}" width="${val * 12}" height="15" fill="${colr}" rx="2"/><text x="${x(val) + 6}" y="${y + 12}">${lab} ${val} F</text>`;
+    });
+  });
+  $("#wineSvg").innerHTML = s;
+})();
+
+/* ---------- AUCTION ---------- */
+(function auction() {
+  let wtp = 40, price = 20, timer = null, found = false;
+  const say = $("#aSay");
+  function draw() {
+    const lo = 15, hi = 65, X = v => 20 + (v - lo) / (hi - lo) * 480;
+    let s = `<line x1="20" x2="500" y1="70" y2="70" class="axis"/>`;
+    for (let v = lo; v <= hi; v += 5) s += `<line x1="${X(v)}" x2="${X(v)}" y1="66" y2="74" class="axis"/><text x="${X(v)}" y="90" text-anchor="middle">${v}</text>`;
+    s += `<text x="260" y="112" text-anchor="middle">price asked (sous)</text>`;
+    if (found) s += `<rect x="${X(lo)}" y="58" width="${X(wtp) - X(lo)}" height="10" fill="var(--cons)" opacity=".5"/><text x="${X(wtp)}" y="50" text-anchor="middle" class="lbl">max = ${wtp}</text>`;
+    s += `<circle cx="${X(price)}" cy="70" r="7" fill="${price <= wtp ? "var(--cons)" : "var(--lost)"}"/>`;
+    $("#aSvg").innerHTML = s; $("#aPrice").textContent = price;
+  }
+  function respond() {
+    const yes = price <= wtp;
+    say.textContent = yes ? `"At ${price} sous? I'll buy."` : `"At ${price} sous? No, I'll do without."`;
+    if (!yes && price - 1 === wtp) { found = true; $("#aFound").innerHTML = `Accepts at <b>${wtp}</b>, refuses at <b>${wtp + 1}</b>. The kilo's utility to this customer is ${wtp} sous (${(wtp / 20).toFixed(2)} F), to within a sou. If the butcher charges 20 sous, the customer keeps ${wtp - 20} sous of relative utility.`; }
+    draw();
+  }
+  $("#aUp").onclick = () => { price = Math.min(65, price + 1); respond(); };
+  $("#aDown").onclick = () => { price = Math.max(15, price - 1); respond(); };
+  $("#aNew").onclick = () => { clearInterval(timer); wtp = 18 + Math.floor(Math.random() * 42); price = 20; found = false; $("#aFound").textContent = "New customer. Their maximum is hidden; find it."; respond(); };
+  $("#aAuto").onclick = () => {
+    clearInterval(timer); price = 20; found = false; respond();
+    if (reduce) { price = wtp + 1; respond(); return; }
+    timer = setInterval(() => { if (found) { clearInterval(timer); return; } price++; respond(); }, 160);
+  };
+  respond();
+})();
+
+/* ---------- generic step chart ---------- */
+function stepChart(Q, t, opts = {}) {
+  const W = 560, H = 300, L = 46, R = 14, T = 16, B = 44, n = Q.length - 1;
+  const qmax = Q[0];
+  const x = q => L + q / qmax * (W - L - R), y = p => H - B - p / n * (H - T - B);
+  let s = "";
+  for (let p = 0; p <= n; p++) s += `<line x1="${L}" x2="${W - R}" y1="${y(p)}" y2="${y(p)}" class="grid"/><text x="${L - 8}" y="${y(p) + 4}" text-anchor="end">${p}</text>`;
+  for (let i = 0; i <= 5; i++) { const q = qmax * i / 5; s += `<text x="${x(q)}" y="${H - B + 16}" text-anchor="middle">${Math.round(q).toLocaleString("en-US")}</text>`; }
+  s += `<text x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle">${opts.xl || "uses (per 100 at toll 0)"}</text>`;
+  s += `<text transform="translate(12 ${(T + H - B) / 2}) rotate(-90)" text-anchor="middle">${opts.yl || "toll"}</text>`;
+  const upto = opts.upto ?? n;
+  for (let k = 1; k <= n; k++) {
+    if (k > upto && opts.mode === "build") continue;
+    const x0 = x(Q[k]), x1 = x(Q[k - 1]), w = x1 - x0; if (w <= 0) continue;
+    if (opts.mode === "build") {
+      s += `<rect x="${x0}" y="${y(k)}" width="${w}" height="${y(0) - y(k)}" class="sur" style="opacity:${k === upto ? 0.95 : 0.6}"/>`;
+      if (w > 18) s += `<text x="${x0 + w / 2}" y="${y(k) - 5}" text-anchor="middle" class="lbl" style="font-size:11px">${k * (Q[k - 1] - Q[k])}</text>`;
+    } else if (k <= t) s += `<rect x="${x0}" y="${y(k)}" width="${w}" height="${y(0) - y(k)}" class="lost"/>`;
+    else { s += `<rect x="${x0}" y="${y(t)}" width="${w}" height="${y(0) - y(t)}" class="rev"/><rect x="${x0}" y="${y(k)}" width="${w}" height="${y(t) - y(k)}" class="sur"/>`; }
+  }
+  let d = `M${x(0)},${y(n)}`;
+  for (let k = n; k >= 1; k--) d += ` L${x(Q[k])},${y(k)} L${x(Q[k - 1])},${y(k)}`;
+  d += ` L${x(qmax)},${y(0)}`;
+  s += `<path d="${d}" class="step"/>`;
+  s += `<line x1="${L}" x2="${W - R}" y1="${y(0)}" y2="${y(0)}" class="axis"/><line x1="${L}" x2="${L}" y1="${T}" y2="${y(0)}" class="axis"/>`;
+  if (opts.mode !== "build" && t > 0) s += `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" class="tollline"/><text x="${W - R}" y="${y(t) - 6}" text-anchor="end" class="lbl">toll = ${t}</text>`;
+  if (opts.mode !== "build") s += `<line x1="${x(Q[t])}" x2="${x(Q[t])}" y1="${y(0)}" y2="${T}" class="tollline" style="opacity:.5"/><text x="${x(Q[t]) + 4}" y="${T + 10}" class="lbl">Q = ${Q[t]}</text>`;
+  return s;
+}
+
+/* ---------- CANAL ---------- */
+(function canal() {
+  const svg = $("#canalSvg"); let anim = null;
+  const draw = up => { svg.innerHTML = stepChart(CANAL, 0, { mode: "build", upto: up, xl: "tonnes (per 100 at toll 0)", yl: "toll (F per tonne)" }); let tot = 0; for (let k = 1; k <= up; k++) tot += k * (CANAL[k - 1] - CANAL[k]); $("#canalSum").textContent = `Total utility = ${tot}${up < 10 ? " …" : ""}`; };
+  let rows = `<tr><th>Toll</th><th>Tonnes</th><th>Lost</th><th>Partial utility</th><th>Canal utility</th></tr>`;
+  for (let t = 0; t < CANAL.length; t++) { const d = t ? CANAL[t - 1] - CANAL[t] : ""; rows += `<tr><td>${t}</td><td>${CANAL[t]}</td><td>${d}</td><td>${t ? t * d : ""}</td><td>${totalUtility(CANAL) - lostUtility(CANAL, t)}</td></tr>`; }
+  $("#canalTbl").innerHTML = rows;
+  draw(10);
+  $("#canalPlay").onclick = () => { clearInterval(anim); if (reduce) { draw(10); return; } let k = 0; draw(0); anim = setInterval(() => { k++; draw(k); if (k >= 10) clearInterval(anim); }, 520); };
+})();
+
+/* ---------- STONE ---------- */
+(function stone() {
+  const W = 560, H = 300, L = 54, R = 14, T = 16, B = 44;
+  const x = q => L + q / 15000 * (W - L - R), y = p => H - B - (p - 15) / 5.6 * (H - T - B);
+  let s = `<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--lost)" stroke-width="2"/></pattern></defs>`;
+  for (let p = 15; p <= 20; p++) s += `<line x1="${L}" x2="${W - R}" y1="${y(p)}" y2="${y(p)}" class="grid"/><text x="${L - 8}" y="${y(p) + 4}" text-anchor="end">${p} F</text>`;
+  for (let q = 0; q <= 15000; q += 3000) s += `<text x="${x(q)}" y="${H - B + 16}" text-anchor="middle">${q.toLocaleString("en-US")}</text>`;
+  s += `<text x="${(L + W) / 2}" y="${H - 6}" text-anchor="middle">tonnes of stone per year</text>`;
+  s += `<rect x="${x(0)}" y="${y(20)}" width="${x(15000) - x(0)}" height="${y(15) - y(20)}" fill="url(#hatch)" opacity=".55"/>`;
+  for (let k = 1; k <= 5; k++) { const x0 = x(STONE[k]), x1 = x(STONE[k - 1]); s += `<rect x="${x0}" y="${y(15 + k)}" width="${x1 - x0}" height="${y(15) - y(15 + k)}" class="sur" style="opacity:.92"/>`; }
+  s += `<rect x="${x(0)}" y="${y(20)}" width="${x(15000) - x(0)}" height="${y(15) - y(20)}" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-dasharray="6 3"/>`;
+  s += `<line x1="${x(10000)}" x2="${x(10000)}" y1="${y(15)}" y2="${y(20)}" class="tollline"/><text x="${x(10000) - 6}" y="${y(20) - 6}" text-anchor="end" class="lbl">old use 10,000 t</text>`;
+  s += `<text x="${x(12500)}" y="${y(19.6)}" text-anchor="middle" class="lbl">Say's rectangle 75,000</text>`;
+  s += `<text x="${x(5000)}" y="${y(17.5)}" text-anchor="middle" class="lbl" style="fill:#fff">Dupuit 62,100</text>`;
+  $("#stoneSvg").innerHTML = s;
+})();
+
+/* ---------- SPLIT ---------- */
+const splitState = { b: "B", t: 5 };
+function renderSplit() {
+  const Q = BRIDGES[splitState.b], n = Q.length - 1;
+  const sl = $("#sToll"); sl.max = n; if (splitState.t > n) splitState.t = n; sl.value = splitState.t;
+  const t = splitState.t, s = split(Q, t);
+  $("#sTollOut").textContent = t;
+  $("#sQ").textContent = s.uses; $("#sL").textContent = s.lost; $("#sR").textContent = s.revenue; $("#sS").textContent = s.surplus; $("#sT").textContent = s.total;
+  const st = $$("#sStack div");
+  [[s.lost, "lost"], [s.revenue, "rev"], [s.surplus, "surplus"]].forEach(([v, lab], i) => { st[i].style.flexGrow = v; st[i].style.flexBasis = "0"; st[i].textContent = v / s.total > 0.09 ? `${v}` : ""; });
+  $("#stepSvg").innerHTML = stepChart(Q, t);
+  // revenue / utility chart
+  const W = 560, H = 300, L = 46, R = 14, T = 16, B = 44;
+  const umax = s.total, x = v => L + v / n * (W - L - R), y = v => H - B - v / umax * (H - T - B);
+  let g = "";
+  for (let i = 0; i <= 4; i++) { const v = Math.round(umax * i / 4); g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" class="grid"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`; }
+  for (let k = 0; k <= n; k++) g += `<text x="${x(k)}" y="${H - B + 16}" text-anchor="middle">${k}</text>`;
+  g += `<text x="${(L + W) / 2}" y="${H - 6}" text-anchor="middle">toll</text>`;
+  let pu = "", pr = "";
+  for (let k = 0; k <= n; k++) { const sp = split(Q, k); pu += `${k ? "L" : "M"}${x(k)},${y(sp.total - sp.lost)} `; pr += `${k ? "L" : "M"}${x(k)},${y(sp.revenue)} `; }
+  g += `<path d="${pu}" fill="none" stroke="var(--cons)" stroke-width="2.2"/><path d="${pr}" fill="none" stroke="var(--prod)" stroke-width="2.2"/>`;
+  const best = revenueMaximizingToll(Q), bs = split(Q, best);
+  g += `<circle cx="${x(best)}" cy="${y(bs.revenue)}" r="4" fill="none" stroke="var(--prod)" stroke-width="2"/><text x="${x(best)}" y="${y(bs.revenue) - 10}" text-anchor="middle" class="lbl">max revenue ${bs.revenue} at toll ${best}</text>`;
+  g += `<line x1="${x(t)}" x2="${x(t)}" y1="${T}" y2="${H - B}" class="tollline"/>`;
+  g += `<circle cx="${x(t)}" cy="${y(s.revenue)}" r="5.5" fill="var(--prod)"/><circle cx="${x(t)}" cy="${y(s.total - s.lost)}" r="5.5" fill="var(--cons)"/>`;
+  g += `<line x1="${L}" x2="${W - R}" y1="${y(0)}" y2="${y(0)}" class="axis"/>`;
+  $("#revSvg").innerHTML = g;
+  // note
+  const twin = []; for (let k = 0; k <= n; k++) if (k !== t && k * Q[k] === s.revenue && s.revenue > 0) twin.push(k);
+  let note = `At toll ${t}, ${s.uses} of 100 cross. Users get ${s.revenue + s.surplus} of utility from the bridge: ${s.revenue} goes to the owner as revenue and ${s.surplus} stays with them. ${s.lost} is lost to everyone.`;
+  if (t === best) note += " This is the toll a company would choose.";
+  if (twin.length) note += ` Toll ${twin.join(" and ")} brings in the same revenue (${s.revenue}).`;
+  if (t > 0) { const s0 = split(Q, 0); note += ` Against a free bridge, traffic is down ${100 - s.uses}% but utility produced is down ${Math.round(s.lost / s0.total * 100)}%.`; }
+  $("#sNote").textContent = note;
+  // table
+  let rows = `<tr><th>Toll</th><th>Crossings</th><th>Lost by rise</th><th>Utility lost this step</th><th>Total lost</th><th>Utility produced</th><th>Revenue</th></tr>`;
+  for (let k = 0; k <= n; k++) { const sp = split(Q, k), d = k ? Q[k - 1] - Q[k] : 0; const flag = splitState.b === "B" && k === 3; rows += `<tr class="${k === t ? "cur" : ""}"><td>${k}</td><td>${Q[k]}</td><td>${k ? d : ""}</td><td>${k ? k * d : ""}</td><td>${sp.lost}</td><td>${sp.total - sp.lost}</td><td class="${flag ? "flag" : ""}">${sp.revenue}${flag ? " (Dupuit printed 115)" : ""}${k === best ? " ★" : ""}</td></tr>`; }
+  $("#sTbl").innerHTML = rows;
+}
+$$("#split .seg button").forEach(b => b.addEventListener("click", () => { $$("#split .seg button").forEach(x => x.setAttribute("aria-pressed", x === b)); splitState.b = b.dataset.b; renderSplit(); }));
+$("#sToll").addEventListener("input", e => { splitState.t = +e.target.value; renderSplit(); });
+renderSplit();
+
+/* ---------- STATE vs COMPANY ---------- */
+(function state() {
+  const rows = [["Utility", 42500, 27600], ["Revenue", 8000, 16500]];
+  const X = v => v / 42500 * 330;
+  let s = "";
+  rows.forEach(([n, a, b], i) => {
+    const y = 10 + i * 88;
+    s += `<text x="0" y="${y + 14}" class="lbl">${n}</text>`;
+    s += `<rect x="90" y="${y + 2}" width="${X(a)}" height="18" fill="var(--accent)" rx="2"/><text x="${96 + X(a)}" y="${y + 16}">state ${a.toLocaleString("en-US")}</text>`;
+    s += `<rect x="90" y="${y + 26}" width="${X(b)}" height="18" fill="var(--ink-2)" rx="2"/><text x="${96 + X(b)}" y="${y + 40}">company ${b.toLocaleString("en-US")}</text>`;
+    if (i === 0) s += `<rect x="${90 + X(b)}" y="${y + 26}" width="${X(a - b)}" height="18" fill="var(--lost)" opacity=".85"/><text x="${90 + X(b) + X(a - b) / 2}" y="${y + 62}" text-anchor="middle" class="lbl" style="fill:var(--lost)">−14,900 lost for good</text>`;
+    else s += `<rect x="${90 + X(a)}" y="${y + 2}" width="${X(b - a)}" height="18" fill="var(--prod)" opacity=".35" stroke="var(--prod)" stroke-dasharray="3 2"/><text x="${90 + X(a) + X(b - a) / 2}" y="${y + 62}" text-anchor="middle" class="lbl" style="fill:var(--prod)">+8,500 moved to shareholders</text>`;
+  });
+  $("#stateSvg").innerHTML = s;
+  // Arcole
+  const Q = BRIDGES.A;
+  const msgs = {
+    5: "The old tariff. Ten crossings, 50 in revenue, 67 of utility. The company could earn more and serve more people at once.",
+    2: "The company's choice: the toll with the highest revenue. Receipts rise by half (50 → 74), utility goes from 67 to 167, and 37 people cross instead of 10. \"Instead of one bridge you have two.\"",
+    1: "The city's choice: the lowest toll that still pays the company its old 50. Receipts 55, utility 203, three times the old figure, and 55 crossers. 35 of them are people for whom the bridge, at toll 5, might as well not have existed.",
+    0: "Free: 100 crossings and the full 248 of utility, with no revenue. Dupuit leaves open which other tax should replace the toll. That question belongs to a general theory of taxation."
+  };
+  function upd(t) { const s = split(Q, t); $("#arQ").textContent = s.uses; $("#arR").textContent = s.revenue; $("#arU").textContent = s.total - s.lost; $("#arB").textContent = ((s.total - s.lost) / 67).toFixed(1) + "×"; $("#arMsg").textContent = msgs[t]; }
+  $$("#arcSeg button").forEach(b => b.addEventListener("click", () => { $$("#arcSeg button").forEach(x => x.setAttribute("aria-pressed", x === b)); upd(+b.dataset.t); }));
+  upd(5);
+})();
+
+/* ---------- FOOTBRIDGE ---------- */
+(function footbridge() {
+  function upd() {
+    const L = +$("#fbLeak").value;
+    $("#fbLeakOut").textContent = L.toLocaleString("en-US");
+    const full = (100000 - L) * 0.05, leak = L * 0.01, newp = 300000 * 0.01, tot = full + leak + newp;
+    $("#fbTbl").innerHTML = `<tr><th>Crossings</th><th>Toll</th><th>Revenue (F)</th></tr>
+      <tr><td>${(100000 - L).toLocaleString("en-US")} old crossers still paying full toll</td><td>5 c</td><td>${fmt(full)}</td></tr>
+      <tr><td>${L.toLocaleString("en-US")} old crossers dressed as workers</td><td>1 c</td><td>${fmt(leak)}</td></tr>
+      <tr><td>300,000 new crossings by workers</td><td>1 c</td><td>${fmt(newp)}</td></tr>
+      <tr><td><b>Total</b></td><td></td><td><b>${fmt(tot)}</b></td></tr>`;
+    const bars = [["5 c for all", 5000], ["1 c for all", 4000], ["two-tier", tot]];
+    let s = ""; bars.forEach(([n, v], i) => { const w = v / 8000 * 340; s += `<text x="0" y="${24 + i * 44}" class="lbl">${n}</text><rect x="100" y="${10 + i * 44}" width="${w}" height="22" rx="2" fill="${i === 2 ? "var(--prod)" : "var(--ink-2)"}"/><text x="${106 + w}" y="${26 + i * 44}">${fmt(v)} F</text>`; });
+    $("#fbSvg").innerHTML = s;
+  }
+  $("#fbLeak").addEventListener("input", upd); upd();
+})();
+
+/* ---------- RAILWAY ---------- */
+(function railway() {
+  const Q = BRIDGES.C, c = 2, fixed = 110;
+  const lo = $("#rLow"), hi = $("#rHigh");
+  for (let f = 1; f <= 11; f++) { lo.add(new Option(f, f)); hi.add(new Option(f, f)); }
+  lo.value = 4; hi.value = 7;
+  function upd() {
+    let l = +lo.value, h = +hi.value; if (l > h) [l, h] = [h, l];
+    const f = +$("#rLeak").value / 100; $("#rLeakOut").textContent = Math.round(f * 100);
+    const r = l === h ? twoClass(Q, h, h, c, 0) : twoClass(Q, l, h, c, f);
+    const single = l === h;
+    const up = single ? r.riders : r.upper, low = single ? 0 : r.lower;
+    $("#wHi").textContent = fmt(up); $("#wLo").textContent = fmt(low); $("#wNo").textContent = fmt(100 - r.riders);
+    const profit = r.net - fixed;
+    $("#rTbl").innerHTML = `<tr><th>Riders</th><th>Traction</th><th>Net receipts</th><th>Travellers' surplus</th><th>Profit after 110 fixed</th></tr>
+      <tr><td>${fmt(r.riders)}</td><td>${fmt(r.traction)}</td><td>${fmt(r.net)}</td><td>${fmt(r.riderSurplus)}</td><td style="color:${profit < 0 ? "var(--lost)" : "var(--cons)"}">${profit >= 0 ? "+" : ""}${fmt(profit)}</td></tr>`;
+    const st = $$("#rStack div"); [r.traction, Math.max(0, r.net), Math.max(0, r.riderSurplus)].forEach((v, i) => { st[i].style.flexGrow = v; st[i].style.flexBasis = "0"; st[i].textContent = v > 30 ? fmt(v) : ""; });
+    const base = twoClass(Q, 6, 6, c);
+    let msg = single ? `Single fare ${h}.` : `Fares ${l} and ${h}${f ? `, with ${Math.round(f * 100)}% of high payers trading down` : ""}.`;
+    msg += ` Compared with the best single fare (6: 26 riders, net 104, surplus 78): riders ${r.riders >= base.riders ? "+" : ""}${fmt(r.riders - base.riders)}, net receipts ${r.net >= base.net ? "+" : ""}${fmt(r.net - base.net)}, surplus ${r.riderSurplus >= base.riderSurplus ? "+" : ""}${fmt(r.riderSurplus - base.riderSurplus)}.`;
+    if (r.net < 0) msg += " The fares are below traction cost, so every rider loses money.";
+    else if (profit < 0) msg += " The line still fails to cover its fixed costs.";
+    $("#rMsg").textContent = msg;
+  }
+  [lo, hi].forEach(e => e.addEventListener("change", upd)); $("#rLeak").addEventListener("input", upd);
+  $$("[data-preset]").forEach(b => b.addEventListener("click", () => { const [a, bb, f] = b.dataset.preset.split(",").map(Number); lo.value = a; hi.value = bb; $("#rLeak").value = f; upd(); }));
+  upd();
+})();
+
+/* ---------- VST network ---------- */
+(function vst() {
+  const P = { S: [70, 50], T: [270, 50], X: [410, 50], V: [70, 200] };
+  function upd() {
+    const r = +$("#vFare").value; $("#vFareOut").textContent = r.toFixed(2);
+    const best = cheapestRoute(4.0, 2.4, r), rail = best.route.includes("rail");
+    const ln = (a, b, on, w, dash) => `<line x1="${P[a][0]}" y1="${P[a][1]}" x2="${P[b][0]}" y2="${P[b][1]}" stroke="${on ? "var(--accent)" : "var(--rule)"}" stroke-width="${on ? w + 2 : w}" ${dash ? 'stroke-dasharray="6 4"' : ""}/>`;
+    let s = ln("S", "T", rail, 4, false) + ln("T", "X", true, 4, false) + ln("V", "S", rail, 2, true) + ln("V", "T", !rail, 2, true);
+    s += `<text x="170" y="40" text-anchor="middle">rail 40 km</text><text x="340" y="40" text-anchor="middle">→ X</text><text x="58" y="130" text-anchor="end">road 30 km</text><text x="185" y="140">road 50 km</text>`;
+    Object.entries(P).forEach(([k, [x, y]]) => { s += `<circle cx="${x}" cy="${y}" r="${k === "V" ? 9 : 6}" fill="${k === "V" ? "var(--prod)" : "var(--ink)"}"/><text x="${x + (k === "V" ? 14 : 0)}" y="${y + (k === "V" ? 5 : -12)}" class="lbl" ${k === "V" ? "" : 'text-anchor="middle"'}>${k === "V" ? "V (town)" : k}</text>`; });
+    $("#vstSvg").innerHTML = s;
+    $("#vTbl").innerHTML = `<tr><th>Route V→T</th><th>Cost (F)</th></tr><tr class="${!rail ? "cur" : ""}"><td>Road V→T, 50 km</td><td>4.00</td></tr><tr class="${rail ? "cur" : ""}"><td>Road V→S 2.40 + rail S→T ${r.toFixed(2)}</td><td>${(2.4 + r).toFixed(2)}</td></tr>`;
+    const trav = 10000, extra = rail ? r * trav : 0, cost = rail ? 2000 : 0;
+    $("#vMsg").textContent = rail
+      ? `V's travellers now take the train. With 10,000 of them, the line gains ${fmt(extra)} F in receipts for perhaps 2,000 F in coal and wear: ${fmt(extra - cost)} F of new wealth, because the road would have used horses, coaches and drivers to give the same service. On the same train, other passengers pay 3.20 F for the same seat.`
+      : `At ${r.toFixed(2)} F, going via the train costs ${(2.4 + r).toFixed(2)} F, more than the 4.00 F road. Every traveller from V takes the road and the train runs with empty seats. The fare must be at most 1.60 F.`;
+  }
+  $("#vFare").addEventListener("input", upd); upd();
+})();
+
+/* ---------- CODE: highlight + runs ---------- */
+(function code() {
+  const src = $("#ts-src").textContent.replace(/^\n/, "");
+  const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const KW = /^(export|const|let|function|return|for|if|else|type|interface|readonly|number|string|null|new|import|from|true|false|of|in)$/;
+  const re = /(\/\*[\s\S]*?\*\/|\/\/[^\n]*)|("(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_$][\w$]*)|([\s\S])/g;
+  let out = "", m;
+  while ((m = re.exec(src))) {
+    if (m[1]) out += `<span class="tk-c">${esc(m[1])}</span>`;
+    else if (m[2]) out += `<span class="tk-s">${esc(m[2])}</span>`;
+    else if (m[3]) out += `<span class="tk-n">${m[3]}</span>`;
+    else if (m[4]) out += KW.test(m[4]) ? `<span class="tk-k">${m[4]}</span>` : (/^[A-Z]/.test(m[4]) ? `<span class="tk-t">${m[4]}</span>` : m[4]);
+    else out += esc(m[5]);
+  }
+  $("#tsView").innerHTML = out;
+  const con = $("#console");
+  const show = (label, v) => { con.textContent = `> ${label}\n${typeof v === "string" ? v : JSON.stringify(v, null, 2)}`; };
+  const RUNS = [
+    ["totalUtility(CANAL)", () => totalUtility(CANAL)],
+    ["split(BRIDGE_B, 5)", () => split(BRIDGES.B, 5)],
+    ["split(BRIDGE_B, 3)  // Dupuit printed revenue 115", () => split(BRIDGES.B, 3)],
+    ["[BRIDGE_A, BRIDGE_B, BRIDGE_C].map(revenueMaximizingToll)", () => ["A", "B", "C"].map(k => revenueMaximizingToll(BRIDGES[k]))],
+    ["lowestCoveringToll(BRIDGE_C, 80)  // 8,000 F at scale 1:100", () => lowestCoveringToll(BRIDGES.C, 80)],
+    ["sayEstimate(5, 15000) vs totalUtility(STONE)", () => ({ say: sayEstimate(5, 15000), dupuit: totalUtility(STONE) })],
+    ["Arcole: sayEstimate(5, 100) vs dupuitGain(BRIDGE_A, 5, 0)", () => ({ say: sayEstimate(5, 100), dupuit: dupuitGain(BRIDGES.A, 5, 0) })],
+    ["twoClass(BRIDGE_C, 6, 6, 2)  // single fare", () => twoClass(BRIDGES.C, 6, 6, 2)],
+    ["twoClass(BRIDGE_C, 4, 7, 2)", () => twoClass(BRIDGES.C, 4, 7, 2)],
+    ["twoClass(BRIDGE_C, 4, 7, 2, 0.2)  // with trade-down", () => twoClass(BRIDGES.C, 4, 7, 2, 0.2)],
+    ["cheapestRoute(4.00, 2.40, 1.60)", () => cheapestRoute(4.0, 2.4, 1.6)],
+    ["relativeUtility(15, 1)  // the urgent meeting", () => relativeUtility(15, 1)]
+  ];
+  $("#runs").innerHTML = RUNS.map(([l], i) => `<div class="run"><code>${esc(l)}</code><button class="btn" data-run="${i}">Run</button></div>`).join("");
+  $$("[data-run]").forEach(b => b.addEventListener("click", () => { const [l, f] = RUNS[+b.dataset.run]; show(l, f()); }));
+  $("#pgRun").addEventListener("click", () => {
+    const Q = $("#pgQ").value.split(/[,\s]+/).filter(Boolean).map(Number);
+    if (Q.some(v => !isFinite(v) || v < 0)) return show("analyse", "Error: every entry must be a non-negative number.");
+    if (Q.length < 2) return show("analyse", "Error: give at least two values, for toll 0 and toll 1.");
+    for (let i = 1; i < Q.length; i++) if (Q[i] > Q[i - 1]) return show("analyse", `Error: use rises from ${Q[i - 1]} to ${Q[i]} at toll ${i}. Each value should be no larger than the one before.`);
+    if (Q[Q.length - 1] !== 0) Q.push(0);
+    const t = Math.min(Math.max(0, Math.floor(+$("#pgT").value || 0)), Q.length - 1), K = +$("#pgK").value || 0;
+    const sp = split(Q, t), best = revenueMaximizingToll(Q), cov = lowestCoveringToll(Q, K);
+    show(`analyse([${Q.join(", ")}])`, { [`split at toll ${t}`]: sp, revenueMaximizingToll: best, revenueAtMax: best * Q[best], [`lowestCoveringToll(${K})`]: cov, note: cov == null ? "No toll raises that much." : `The state would charge ${cov}; a company ${best}. Utility given up by the company's choice: ${split(Q, best).lost - split(Q, cov).lost}.` });
+  });
+})();
+
+/* ---------- REAL WORLD ---------- */
+const RW = [
+  ["Basic economy fares", "Pricing classes", "Airlines sell a fare with no seat choice, no carry-on bag and boarding last. The cost of providing the seat barely changes.", "This is the modern open third-class wagon. The restrictions exist to stop business travellers from trading down, the way Dupuit's hard benches were there \"to frighten the rich\".", "Which signs does an airline use in place of Dupuit's cap and smock?"],
+  ["Hardcover, then paperback", "Pricing classes", "A novel appears in hardcover at a high price, then a year later in paperback at a fraction of it.", "This is Dupuit's bookseller: 100 F, 50, 30, 20, 15, 10, 6 F. Readers who can't wait pay more, and the cheap later editions still reach everyone else. He argued the high early price is what makes paying authors well possible.", "Who would lose if publishers were required to sell one edition at one price?"],
+  ["Student and senior discounts", "Pricing classes", "Museums, cinemas and railways charge less to people with a student or pension card.", "This is the footbridge clause, \"for passers in cap, smock or jacket\", with an ID card as a stricter test than costume. Better screening means less leakage, so revenue moves closer to his 8,000 F ideal.", "What is the modern equivalent of rich passers dressing as workers?"],
+  ["Fare-free public transport", "Toll at zero", "Tallinn has run free transit for residents since 2013, and Luxembourg made all public transport free nationwide in 2020.", "Dupuit: utility is greatest when the toll is zero. He adds that this settles nothing until you know which other tax replaces the toll and what that tax destroys.", "Which deadweight loss does a free system move elsewhere?"],
+  ["Rule of a half in project appraisal", "Say vs Dupuit", "Transport appraisal (for example UK guidance) values the benefit to new users of a cheaper trip at half of the cost saving, and existing users at the full saving.", "This is Dupuit's correction to Say in its usual modern form. The new tonnes of stone gained less than the full 5 F, and a straight-line demand curve gives each one half on average.", "Recompute the stone case with the rule of a half. How close is it to 62,100?"],
+  ["Tiered drug pricing across countries", "Third-degree discrimination", "Drug makers charge rich countries far more than poor ones for the same pill.", "Classes defined by observable signs, here the country. Parallel imports from cheap countries back into dear ones are the dressed-up workers on the footbridge.", "Does closing the leakage help or hurt patients in poorer countries?"],
+  ["Toll roads run by concessionaires", "State vs company", "A private road operator sets tolls to maximise revenue, and a public operator sets them to cover costs.", "Bridge C in modern form: the company's toll moves money from drivers to shareholders (a transfer) and also keeps drivers off a road that could carry them at no cost (a loss).", "When the operator is private, what should a regulator's price cap aim at?"],
+  ["Software tiers", "Multi-class tariff", "Free, Pro and Enterprise plans for nearly the same code, with features removed from the cheaper tiers.", "Copying software costs almost nothing, so a single high price loses most users' utility and a single low price leaves the company too little. Dupuit's two-class railway (4 and 7) beat the best single fare on riders, revenue and surplus at once.", "Which feature works as the \"roof\" left off the cheap tier?"],
+  ["Distance-free fares", "Value, not kilometres", "Flat-fare zones, cheap long-distance coach tickets and same-price postage stamps.", "Dupuit: \"the toll's purpose is to make people pay for the utility of a service, and that utility is not proportional to distance.\" The posts charged 20 c to Versailles and 4 c to Marseille.", "Why might a train company charge less for a longer trip?"]
+];
+$("#rwGrid").innerHTML = RW.map(([t, chip, sc, lens, q]) => `<article class="rw"><span class="chip">${chip}</span><div class="t">${t}</div><p>${sc}</p><p class="lens"><b>Dupuit's lens.</b> ${lens}</p><p class="muted" style="font-size:.88rem"><i>Think:</i> ${q}</p></article>`).join("");
+
+/* ---------- PRACTICE ---------- */
+const PROBS = [
+  ["Finding 1 · utility vs price", "A buyer would pay up to 20 F for a bottle of wine. It sells for 6 F and costs 3 F to make. What relative utility (consumer surplus) does the buyer get, in francs?", 14, 0.01, "Relative utility = absolute utility − price.", "20 − 6 = <b>14 F</b>. The production cost of 3 F does not enter the buyer's surplus; it determines the seller's margin."],
+  ["Finding 1 · Comoy's method", "A canal costs 12,000,000 F at 5% interest, upkeep is 100,000 F a year, and it carries 500,000 t a year. What is Comoy's \"value of the unit of wealth\" in F per tonne?", 1.4, 0.005, "(interest + upkeep) ÷ tonnage.", "(600,000 + 100,000) ÷ 500,000 = <b>1.40 F/t</b>, down from 1.90 for the 16M canal. By Comoy's logic the cheaper canal creates less wealth, which is Dupuit's reductio."],
+  ["Finding 2 · the interview", "A customer buys meat at 40 sous and refuses at 41. The butcher charges 1 franc. How many sous of relative utility does the customer keep? (1 F = 20 sous)", 20, 0.01, "Convert the price to sous first.", "1 F = 20 sous, so the surplus is 40 − 20 = <b>20 sous</b>."],
+  ["Finding 3 · the staircase", "The canal's schedule at tolls 0–10 is 100, 70, 50, 35, 27, 20, 14, 9, 4, 1, 0. What utility is still produced at toll 3?", 215, 0.01, "Subtract the utility lost at tolls 1, 2 and 3 from 330.", "Lost: 1·30 + 2·20 + 3·15 = 115. Total 330 − 115 = <b>215</b>, as in Dupuit's last column."],
+  ["Finding 4 · Say vs Dupuit", "In the stone example, by how many francs does Say's method overstate the canal's benefit?", 12900, 0.5, "Say: price cut × new quantity. Dupuit: sum over the staircase.", "Say: 5 × 15,000 = 75,000. Dupuit: 1,500 + 2,600 + 3,600 + 2,400 + 52,000 = 62,100. Overstatement <b>12,900 F</b>, all of it on the 5,000 new tonnes (25,000 by Say against 12,100 by Dupuit)."],
+  ["Finding 5 · the split", "Bridge B (100, 70, 50, 35, 27, 20, 14, 9, 5, 2, 0), toll 5. How much utility is lost?", 182, 0.01, "Σ k·(Q[k−1] − Q[k]) for k = 1…5.", "30 + 40 + 45 + 32 + 35 = <b>182</b>. Revenue 5 × 20 = 100, surplus 332 − 182 − 100 = 50."],
+  ["Finding 5 · the revenue curve", "Bridge A (100, 55, 37, 24, 15, 10, 5, 2, 0). Which whole-number toll gives the most revenue?", 2, 0.01, "Compute t × Q[t] for each t.", "0, 55, <b>74</b>, 72, 60, 50, 30, 14, 0. Toll <b>2</b>."],
+  ["Finding 6 · the state's toll", "Bridge C cost 150,000 F. Interest at 4% plus 2,000 F upkeep must be covered. With the schedule meaning hundreds of crossings, what is the lowest whole-number toll (in centimes) that covers the cost? (Revenue in F = toll × Q × 100 ÷ 100.)", 1, 0.01, "Required: 6,000 + 2,000 = 8,000 F. At scale, toll t gives t × Q[t] × 100 centimes… or simply t × Q[t] hundred francs.", "Required 8,000 F. Toll 1 gives 1 × 80 × 100 = 8,000 F. So the state picks <b>1</b>, against the company's 5."],
+  ["Finding 6 · state vs company", "Bridge C: utility 42,500 F at toll 1 and 27,600 F at toll 5. How much utility is destroyed by the company's choice?", 14900, 0.5, "This is the deadweight difference, not the revenue difference.", "42,500 − 27,600 = <b>14,900 F</b>. The 8,500 F difference in revenue is a transfer, not a loss."],
+  ["Finding 6 · Pont des Arts", "Halving the Pont des Arts toll (5 c to 2.5 c) would double traffic without lowering revenue. Each new crosser gains between 0 and 2.5 c, on average 1.25 c. For 10 million new crossings a year, what is the gain in francs?", 125000, 0.5, "10,000,000 × 0.0125 F.", "10,000,000 × 0.0125 = <b>125,000 F</b>, at no cost in receipts. That is why a state operator would cut the toll and a company, wary of the risk, would not."],
+  ["Finding 7 · the footbridge", "With 40,000 of the 100,000 old crossings slipping to the 1 c workers' rate, and 300,000 new 1 c crossings, what is total annual revenue in francs?", 6400, 0.5, "60,000 × 0.05 + 40,000 × 0.01 + 300,000 × 0.01.", "3,000 + 400 + 3,000 = <b>6,400 F</b>, against 5,000 at 5 c alone and 4,000 at 1 c alone."],
+  ["Finding 8 · the railway", "Bridge C demand, traction cost 2, fares 5 and 10, no trade-down. What are net receipts?", 129, 0.01, "Q(10) = 6 ride first class; Q(5) − Q(10) = 27 ride third.", "(10 − 2) × 6 + (5 − 2) × 27 = 48 + 81 = <b>129</b>, as in Dupuit's table."],
+  ["Finding 8 · trade-down", "Fares 3 and 7. Without trade-down, 20 ride at 7 and 30 at 3. Dupuit expects 14 at 7 and 36 at 3. Net receipts (traction 2)?", 106, 0.01, "(7 − 2) × 14 + (3 − 2) × 36.", "70 + 36 = <b>106</b>, down from 130. With fixed costs of 110, a profitable tariff now loses money."],
+  ["Finding 9 · distance", "Town V: road V→S costs 2.40 F and road V→T 4.00 F. What is the highest S→T rail fare, in francs, that brings V's travellers onto the train?", 1.6, 0.005, "Rail wins when 2.40 + r ≤ 4.00.", "r ≤ 4.00 − 2.40 = <b>1.60 F</b>, half the per-km fare of 3.20 F. For 10,000 travellers that is 16,000 F of receipts for about 2,000 F of extra cost."]
+];
+(function practice() {
+  const done = new Set(store.get("solved", []));
+  const box = $("#probs");
+  box.innerHTML = PROBS.map(([tag, q, a, tol, hint, sol], i) => `<div class="prob" data-i="${i}"><span class="eyebrow">${tag}</span><p class="q">${q}</p>
+    <div class="row"><label class="muted" for="pa${i}" style="font-size:.85rem">Answer</label><input type="number" step="any" id="pa${i}"><button class="btn primary" data-check="${i}">Check</button><span class="fb" id="pf${i}" aria-live="polite"></span></div>
+    <details><summary>Hint</summary><div class="sol">${hint}</div></details>
+    <details><summary>Show solution</summary><div class="sol">${sol}</div></details></div>`).join("");
+  const score = () => $("#pScore").textContent = `${done.size} / ${PROBS.length} solved`;
+  PROBS.forEach((p, i) => { if (done.has(i)) { const f = $("#pf" + i); f.textContent = "Solved"; f.className = "fb ok"; } });
+  box.addEventListener("click", e => {
+    const b = e.target.closest("[data-check]"); if (!b) return;
+    const i = +b.dataset.check, [, , a, tol] = PROBS[i], inp = $("#pa" + i), f = $("#pf" + i);
+    const v = parseFloat(inp.value);
+    if (!isFinite(v)) { f.textContent = "Enter a number first."; f.className = "fb no"; return; }
+    if (Math.abs(v - a) <= tol) { f.textContent = "Correct"; f.className = "fb ok"; done.add(i); store.set("solved", [...done]); }
+    else { f.textContent = "Not yet. Try the hint."; f.className = "fb no"; }
+    score();
+  });
+  box.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("input")) { const i = e.target.id.slice(2); $(`[data-check="${i}"]`).click(); } });
+  $("#pReset").onclick = () => { done.clear(); store.set("solved", []); $$(".prob input").forEach(x => x.value = ""); $$(".prob .fb").forEach(x => { x.textContent = ""; x.className = "fb"; }); score(); };
+  score();
+})();
+
+/* ---------- QUIZ ---------- */
+const QUIZ = [
+  ["For Dupuit, what measures the utility of a product to a consumer?", ["Its market price", "Its cost of production", "The largest sacrifice the consumer would make to get it", "The labour it embodies"], 2, "Utility is the maximum sacrifice, the price that would make you go without. Price and cost are separate properties."],
+  ["Comoy valued a canal at (interest + upkeep) ÷ tonnage. What does Dupuit say this implies?", ["A cheaper canal would seem to make the country poorer", "Canals should be free", "Tolls should equal costs", "Nothing; he agrees"], 0, "A more skilful engineer would lower Comoy's figure, so the state would look poorer for spending less."],
+  ["On Bridge B at toll 5, how much utility is lost?", ["50", "100", "150", "182"], 3, "30 + 40 + 45 + 32 + 35 = 182. Revenue is 100 and users keep 50."],
+  ["As a toll rises from zero, its revenue…", ["rises without limit", "falls steadily", "rises, reaches a maximum, then falls to zero", "stays the same"], 2, "Revenue is zero at toll 0 and again when nobody crosses. Every revenue below the maximum is reached by two tolls."],
+  ["Why does Dupuit treat the company's extra 8,500 F on Bridge C as less important than the 14,900 F gap in utility?", ["The 8,500 F is taxed", "The 8,500 F only moves from users to shareholders; the 14,900 F is lost to everyone", "The company spends it on upkeep", "The state takes it back"], 1, "A transfer changes who holds the wealth. Lost utility is service that could have been given at no cost and wasn't."],
+  ["Why does Say's method overstate the gain from cheaper stone?", ["It ignores transport costs", "It values new tonnes at the full price cut, though they go to lower-value uses", "It uses the wrong interest rate", "It forgets the old tonnes"], 1, "If the new tonnes were worth the full 5 F, they would have been bought at 20 F."],
+  ["After the Pont d'Arcole toll was abolished, traffic rose tenfold. What does Dupuit conclude about valuing the abolition at ten times the old revenue?", ["It is correct", "It understates the gain", "It overstates it: only 1 crosser in 10 gains the full sou", "It cannot be measured"], 2, "The nine new crossers out of ten valued the crossing at less than the old toll; that is why they hadn't crossed before."],
+  ["Why, according to Dupuit, were third-class wagons left uncovered with hard benches?", ["To save construction money", "To make the poor suffer", "To stop those who could afford second class from trading down", "Because the law required it"], 2, "\"They strike at the poor… to frighten the rich.\" A state subsidy for roofs would have been refused."],
+  ["What is Dupuit's ideal tariff?", ["One price for everyone", "A price proportional to distance", "Each user pays a fixed share of their own utility", "Price equal to cost for each user"], 2, "Nobody is priced off, so no utility is lost, and revenue still covers costs. In practice classes approximate it."],
+  ["Why does Dupuit reject tolls proportional to distance?", ["They are hard to collect", "What a trip is worth depends on the alternatives, not the kilometres", "Railways cost nothing to run", "The law forbids them"], 1, "A circuitous Châteauroux–Tours journey at 19 F loses travellers to a 10 F road; charging 10 F fills empty seats."],
+  ["With traction costs of 2 per traveller on Bridge C's demand, the fare that maximises net receipts is…", ["the same as the gross maximum, 5", "higher, 6", "lower, 4", "zero"], 1, "Net = (t − 2)·Q(t): 99 at 5, 104 at 6, 100 at 7."],
+  ["In the canal freight example, which good gets the highest toll per tonne?", ["Coffee and groceries", "Coal", "Fertiliser", "All the same"], 2, "Fertiliser has no land alternative at that price, so 6 is its revenue-maximising toll. Coffee would switch to the road above 3."],
+  ["Compared with the best single fare (6), the two-class tariff 4 and 7 gives…", ["more revenue but fewer riders", "more riders, more net receipts and more traveller surplus", "less of everything", "the same receipts"], 1, "41 riders against 26, net 142 against 104, surplus 92 against 78. \"There is gain for everybody.\""]
+];
+(function quiz() {
+  const box = $("#quizBox"); let i = 0, score = 0, answered = false, order = QUIZ.map((_, k) => k);
+  function render() {
+    if (i >= order.length) {
+      box.innerHTML = `<div class="plate"><h3>You scored ${score} / ${order.length}</h3><p>${score === order.length ? "Every answer right." : score >= order.length * 0.7 ? "Solid. Review the explanations for the ones you missed." : "Go back to the three-part split and the state-versus-company sections, then try again."}</p><div class="row"><button class="btn primary" id="qAgain">Take it again</button></div></div>`;
+      store.set("quizBest", Math.max(score, store.get("quizBest", 0)));
+      $("#qAgain").onclick = () => { i = 0; score = 0; order.sort(() => Math.random() - 0.5); render(); };
+      return;
+    }
+    const [q, opts, a, ex] = QUIZ[order[i]]; answered = false;
+    box.innerHTML = `<div class="qbar"><div style="width:${i / order.length * 100}%"></div></div><span class="mono muted" style="font-size:.8rem">Question ${i + 1} of ${order.length} · score ${score} · best ${store.get("quizBest", 0)}</span>
+      <h3>${q}</h3><div class="qopt">${opts.map((o, k) => `<button data-k="${k}">${String.fromCharCode(65 + k)}. ${o}</button>`).join("")}</div><p id="qEx" class="callout" hidden></p><div class="row"><button class="btn primary" id="qNext" hidden>Next question</button></div>`;
+    $$(".qopt button", box).forEach(b => b.onclick = () => {
+      if (answered) return; answered = true; const k = +b.dataset.k;
+      if (k === a) { score++; b.classList.add("right"); } else { b.classList.add("wrong"); $$(".qopt button", box)[a].classList.add("right"); }
+      const e = $("#qEx"); e.textContent = (k === a ? "Correct. " : "Not quite. ") + ex; e.hidden = false; $("#qNext").hidden = false; $("#qNext").focus();
+    });
+    $("#qNext").onclick = () => { i++; render(); };
+  }
+  render();
+})();
+
+/* ---------- FLASHCARDS ---------- */
+const CARDS = [
+  ["Who was Jules Dupuit?", "A French state civil engineer (1804–1866), ingénieur en chef des Ponts et Chaussées when he wrote this paper in Angers in March 1849."],
+  ["Full title and venue of the 1849 paper", "De l'influence des péages sur l'utilité des voies de communication, in the Annales des Ponts et Chaussées, March–April 1849."],
+  ["Whom is Dupuit answering?", "Bordas (1847), who attacked his 1844 paper, and Comoy (1847), who valued a canal by its cost per tonne. Both followed J.-B. Say."],
+  ["Dupuit's measure of utility", "The maximum sacrifice a person would make to obtain a thing: the price that would make them go without it."],
+  ["Utility vs value vs cost: Dupuit's wine", "Utility 20 F, value (price) 6 F, production cost 3 F. Three different numbers."],
+  ["Relative utility", "Absolute utility minus the price paid. Today: consumer surplus."],
+  ["The urgent meeting on the bridge", "Would pay up to 15 sous; toll is 1 sou → relative utility 14 sous."],
+  ["Loi de consommation", "The demand schedule: quantity used at each price. Learned from experience, and convex, since cuts at low prices gain the most users."],
+  ["How to compute total utility from demand", "Raise a tax by small steps; multiply the quantity that disappears at each step by that tax; add the products."],
+  ["Total utility of Dupuit's canal", "330 (100 t at toll 0, falling to 0 at toll 10)."],
+  ["Why Say's method overstates gains", "It values new consumption at the full price cut, but new units serve lower-value uses that only pay at the lower price."],
+  ["The stone figures", "Say/Bordas: 75,000 F. Dupuit: 62,100 F. Overstatement 12,900 F, all on the new tonnes."],
+  ["The three parts of utility under a toll", "1) Utility lost (deadweight). 2) Utility collected by the owner (revenue). 3) Utility kept by users (surplus)."],
+  ["Bridge B at toll 5", "Lost 182, revenue 100, surplus 50; total 332. Only 20 of 100 cross."],
+  ["Shape of revenue vs toll", "Zero at toll 0, rises to a maximum, falls back to zero. Two tolls give each lower revenue."],
+  ["Revenue-maximising tolls on bridges A, B, C", "2, 3 and 5."],
+  ["Company vs state toll rule", "Company: the toll with maximum revenue. State: the lowest toll covering interest, upkeep and amortisation."],
+  ["Bridge C, state vs company", "State (toll 1): utility 42,500, 80 users, revenue 8,000. Company (toll 5): 27,600, 33, 16,500. Gaps: 14,900 / 47 / 8,500."],
+  ["Transfer vs loss", "The company's extra 8,500 F only moves wealth to shareholders. The 14,900 F of utility is lost to everyone."],
+  ["Pont d'Arcole conclusion", "The old toll of 5 was bad. A company should cut to 2 (revenue 74, utility 167); the city to 1 (revenue 55, utility 203)."],
+  ["\"Les tarifs bâtissent des ponts…\"", "Tariffs build bridges, canals and railways without spending a penny, and can destroy them. A 100-franc toll would equal demolition."],
+  ["Dupuit's ideal toll", "Each user pays a fixed share (e.g. half) of their own utility. No utility is lost and costs are still covered."],
+  ["The workers' footbridge clause", "\"For passers in cap, smock or jacket, the toll is 1 centime.\" Revenue rises from 5,000 to 6,400 F, and towards 8,000 F with tighter rules."],
+  ["Railway: single fare 6 vs classes 4 & 7", "26 riders, net 104, surplus 78 against 41 riders, net 142, surplus 92. Everyone gains."],
+  ["Why third-class wagons were roofless", "\"Not to make the poor suffer, but to frighten the rich\": to stop those who can pay for second class from trading down."],
+  ["Principle for freight tariffs", "Charge by the utility of transport to the shipper, not by the nature or value of the goods."],
+  ["Distance principle", "Tolls should not be proportional to distance, not even to \"distance usefully travelled\". Value depends on the alternatives."],
+  ["Châteauroux to Tours", "19 F by rail via Orléans against about 10 F by road. Charge 10 F and fill seats that would otherwise be empty."],
+  ["Modern names for Dupuit's ideas", "Consumer surplus, deadweight loss, Laffer curve, price discrimination, Ramsey pricing, value-of-service pricing."],
+  ["The closing \"talent\"", "Guessing the importance of a service from signs, describing those signs clearly and classing users by them in the tariff. A natural gift that study can improve."]
+];
+(function cards() {
+  const N = CARDS.length;
+  let st = store.get("fc", null);
+  if (!st || !Array.isArray(st.order) || st.order.length !== N) st = { order: CARDS.map((_, i) => i), known: [] };
+  const fc = $("#fc");
+  function show() {
+    const id = st.order[0]; fc.classList.remove("flip");
+    setTimeout(() => { $("#fcFront").textContent = CARDS[id][0]; $("#fcBack").textContent = CARDS[id][1]; }, fc.classList.contains("flip") ? 200 : 0);
+    $("#fcFront").textContent = CARDS[id][0]; $("#fcBack").textContent = CARDS[id][1];
+    $("#fcCount").textContent = `Card ${id + 1} of ${N}`; $("#fcKnown").textContent = `${st.known.length} learned`;
+    store.set("fc", st);
+  }
+  const flip = () => fc.classList.toggle("flip");
+  fc.addEventListener("click", flip);
+  fc.addEventListener("keydown", e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); } });
+  $("#fcAgain").onclick = () => { const id = st.order.shift(); st.order.splice(Math.min(3, st.order.length), 0, id); st.known = st.known.filter(k => k !== id); show(); };
+  $("#fcGood").onclick = () => { const id = st.order.shift(); st.order.push(id); if (!st.known.includes(id)) st.known.push(id); show(); };
+  $("#fcShuffle").onclick = () => { for (let i = st.order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [st.order[i], st.order[j]] = [st.order[j], st.order[i]]; } show(); };
+  $("#fcReset").onclick = () => { st = { order: CARDS.map((_, i) => i), known: [] }; show(); };
+  show();
+  const tsv = CARDS.map(([f, b]) => `${f.replace(/\t/g, " ")}\t${b.replace(/\t/g, " ")}\tdupuit1849`).join("\n");
+  $("#ankiTxt").value = "#separator:tab\n#html:false\n#tags column:3\n" + tsv;
+  $("#ankiCopy").onclick = () => {
+    const ta = $("#ankiTxt");
+    const fallback = () => { ta.focus(); ta.select(); $("#ankiMsg").textContent = "Selected. Press Ctrl+C or ⌘C to copy."; };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(() => { $("#ankiMsg").textContent = `Copied ${N} cards.`; }, fallback); else fallback();
+  };
+})();
+
+/* ---------- GLOSSARY ---------- */
+const GL = [
+  ["péage", "A toll: a charge for using a bridge, road, canal or railway."],
+  ["voie de communication", "Any transport route: road, bridge, canal, railway."],
+  ["Ponts et Chaussées", "France's state corps of civil engineers for bridges and roads. Dupuit was ingénieur en chef; the Annales were its journal."],
+  ["utilité absolue", "The full value of a use to the user: the most they would sacrifice for it."],
+  ["utilité relative", "Absolute utility minus the price paid: consumer surplus."],
+  ["utilité perdue", "Utility lost because a toll keeps some uses from happening: deadweight loss."],
+  ["utilité publique", "Public utility: the sum of all users' utilities. Dupuit compares private and public utility to his oven at home versus the village bakehouse (four banal)."],
+  ["loi de consommation / de fréquentation", "The demand schedule: how many uses (tonnes, crossings, travellers) at each price."],
+  ["produit du péage", "Toll revenue."],
+  ["tarif", "The schedule of tolls or fares, possibly by class of good, traveller or distance."],
+  ["frais de traction", "Running cost per traveller or tonne (fuel, wear), which rises with traffic."],
+  ["frais fixes / frais généraux", "Fixed costs: interest on capital, administration. They barely change with traffic."],
+  ["compagnie concessionnaire", "A private company granted the right to build and operate a route and collect its tolls."],
+  ["sou, centime", "Old French money: 1 franc = 20 sous = 100 centimes, so 1 sou = 5 centimes."],
+  ["logomachie", "A dispute about words. Ricardo's charge against Say's confusion of value and utility."],
+  ["livret", "A worker's booklet, the identity document Dupuit suggests for restricting the footbridge discount."]
+];
+$("#gl").innerHTML = GL.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join("");
+})();
+</script>
+
+</body></html>
