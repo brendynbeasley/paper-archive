@@ -1,0 +1,962 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Dupuit's Bridge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: an engineer's drafting sheet — one reading column on grid paper, figures break wider; sticky chapter rail on top. */
+:root{
+  --paper:#edf1f4; --paper-2:#e2e8ed; --card:#f8fafb; --ink:#14233a; --ink-2:#4a5a70; --rule:#c4cfd8;
+  --grid:rgba(20,35,58,.055);
+  --accent:#a8681a;        /* consumer surplus — brass */
+  --revenue:#2b5a8a;       /* toll / tax revenue */
+  --loss:#b23a48;          /* utility nobody gets */
+  --good:#2f7d5b;
+  --neutral:#b9c4ce;
+  --accent-soft:rgba(168,104,26,.16);
+  --loss-soft:rgba(178,58,72,.14);
+  --rev-soft:rgba(43,90,138,.14);
+  --f-display:"Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif;
+  --f-body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --radius:6px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0d1520; --paper-2:#142030; --card:#172435; --ink:#e5ecf3; --ink-2:#9fb1c4; --rule:#2b3c51;
+    --grid:rgba(190,215,240,.05);
+    --accent:#e2a74e; --revenue:#72a8dd; --loss:#e66f7d; --good:#5cc596; --neutral:#3b4d63;
+    --accent-soft:rgba(226,167,78,.18); --loss-soft:rgba(230,111,125,.16); --rev-soft:rgba(114,168,221,.16);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0d1520; --paper-2:#142030; --card:#172435; --ink:#e5ecf3; --ink-2:#9fb1c4; --rule:#2b3c51;
+  --grid:rgba(190,215,240,.05);
+  --accent:#e2a74e; --revenue:#72a8dd; --loss:#e66f7d; --good:#5cc596; --neutral:#3b4d63;
+  --accent-soft:rgba(226,167,78,.18); --loss-soft:rgba(230,111,125,.16); --rev-soft:rgba(114,168,221,.16);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--ink); font-family:var(--f-body); font-size:16.5px; line-height:1.6;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--paper)}
+a{color:var(--revenue)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* rail */
+.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+.rail-in{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1180px;margin:0 auto}
+.rail-in::-webkit-scrollbar{display:none}
+.rail a{flex:none;font:600 12.5px/1 var(--f-body);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);text-decoration:none;padding:8px 10px;border-radius:999px}
+.rail a:hover{color:var(--ink);background:var(--paper-2)}
+.rail a.on{color:var(--paper);background:var(--ink)}
+.progress{height:2px;background:var(--accent);transform-origin:0 50%;transform:scaleX(0)}
+
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+section{padding-block:72px 24px;border-top:1px solid var(--rule)}
+.col{max-width:68ch}
+.eyebrow{font:600 12px/1.2 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);display:flex;gap:10px;align-items:center}
+.eyebrow .pg{color:var(--ink-2)}
+h1,h2,h3{font-family:var(--f-display);font-weight:500;text-wrap:balance;line-height:1.08;margin:0}
+h1{font-size:clamp(40px,7vw,84px);letter-spacing:-.01em}
+h2{font-size:clamp(30px,4.4vw,48px);margin-top:10px}
+h3{font-size:22px;font-weight:700}
+p{margin:14px 0}
+.lede{font-size:19px;color:var(--ink-2)}
+em.fr{font-family:var(--f-display);font-style:italic;font-size:1.06em}
+blockquote{margin:22px 0;padding:4px 0 4px 20px;border-left:3px solid var(--accent);font-family:var(--f-display);font-style:italic;font-size:21px;line-height:1.4}
+blockquote cite{display:block;font:400 13px/1.4 var(--f-mono);font-style:normal;color:var(--ink-2);margin-top:8px}
+.num{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--f-mono)}
+
+/* figure frames */
+.fig{margin:28px 0;background:var(--card);border:1px solid var(--rule);border-radius:var(--radius);padding:20px;min-width:0}
+.fig-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px;align-items:baseline;margin-bottom:12px}
+.fig-title{font:700 15px/1.3 var(--f-body)}
+.fig-note{font:400 12.5px/1.4 var(--f-mono);color:var(--ink-2)}
+.svgbox{overflow-x:auto}
+svg{display:block;width:100%;height:auto}
+svg text{fill:var(--ink-2);font-family:var(--f-mono);font-size:11px}
+.two{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.two{grid-template-columns:1fr}}
+
+/* controls */
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+button,.btn{font:600 14px/1 var(--f-body);color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:999px;padding:10px 14px;cursor:pointer}
+button:hover{border-color:var(--ink-2)}
+button[aria-pressed="true"],button.sel{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+input[type=range]{width:100%;accent-color:var(--accent)}
+label.sl{display:grid;gap:6px;font:600 13px/1.3 var(--f-body);color:var(--ink-2)}
+label.sl b{color:var(--ink);font:600 22px/1 var(--f-mono)}
+
+/* readouts */
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.ro{border-top:3px solid var(--rule);padding-top:8px}
+.ro .k{font:600 11.5px/1.3 var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.ro .v{font:600 24px/1.2 var(--f-mono);font-variant-numeric:tabular-nums}
+.ro.cs{border-color:var(--accent)} .ro.rev{border-color:var(--revenue)} .ro.loss{border-color:var(--loss)} .ro.tot{border-color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-2)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+/* equations */
+.eq{margin:22px 0;padding:18px 20px;background:var(--paper-2);border-radius:var(--radius);overflow-x:auto}
+.eq math{font-size:1.35em;color:var(--ink)}
+.eq .cap{font:400 13px/1.5 var(--f-body);color:var(--ink-2);margin-top:8px}
+.eq .cap b{color:var(--ink)}
+
+/* hero */
+.hero{padding-block:48px 40px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:28px}
+.hero .meta{display:flex;flex-wrap:wrap;gap:8px 20px;font:400 13px/1.4 var(--f-mono);color:var(--ink-2);margin-top:20px}
+.hero-canvas{width:100%;height:260px;display:block;border-radius:var(--radius);border:1px solid var(--rule);background:var(--card)}
+.canvas-cap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font:400 12.5px/1.4 var(--f-mono);color:var(--ink-2);margin-top:8px}
+.canvas-cap .c-yes{color:var(--accent)} .canvas-cap .c-no{color:var(--loss)}
+
+/* wall */
+.wall-stage{position:relative}
+#darkness{transition:opacity 1.2s ease}
+.wall-stage.day #darkness{opacity:0}
+#trueH{opacity:0;transition:opacity .8s ease .6s}
+.wall-stage.day #trueH{opacity:1}
+#ladder{transform:translateY(40px);opacity:0;transition:transform .9s ease,opacity .5s}
+.wall-stage.day #ladder{transform:none;opacity:1}
+
+/* water grid */
+.cells{display:grid;grid-template-columns:repeat(20,1fr);gap:3px;max-width:520px}
+@media (max-width:520px){.cells{grid-template-columns:repeat(10,1fr)}}
+.cell{aspect-ratio:1;border-radius:3px;border:1px solid var(--rule);background:transparent;transition:background .35s,transform .35s}
+.cell.on{border-color:transparent;transform:scale(1)}
+.needs{display:grid;gap:6px;margin-top:14px;font-size:14px}
+.need{display:grid;grid-template-columns:14px 1fr auto;gap:10px;align-items:center;color:var(--ink-2);transition:color .3s}
+.need.on{color:var(--ink)}
+.need i{width:14px;height:14px;border-radius:3px}
+
+/* canal */
+.bars{display:grid;gap:14px}
+.bar-row{display:grid;gap:4px}
+.bar-row .lab{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.bar-track{height:28px;background:var(--paper-2);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;width:0;transition:width 1.6s cubic-bezier(.2,.7,.2,1)}
+.ran .bar-fill{width:var(--w)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:right;padding:7px 10px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+th{font:600 11.5px/1.3 var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+tfoot td{font-weight:700;border-bottom:none;border-top:2px solid var(--ink)}
+.tablebox{overflow-x:auto}
+
+/* cards (sorter / world) */
+.grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:24px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:var(--radius);padding:18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h3{font-size:20px}
+.card .tag{font:600 11px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.card .lens{border-top:1px dashed var(--rule);padding-top:10px;font-size:14.5px}
+.card .lens b{color:var(--accent)}
+.card svg.icon{width:44px;height:44px}
+.verdict{font-size:14.5px;padding:10px 12px;border-radius:4px;background:var(--paper-2)}
+.verdict.ok{background:color-mix(in srgb,var(--good) 14%,transparent)}
+.verdict.no{background:var(--loss-soft)}
+.sorter-score{font:600 14px/1.4 var(--f-mono);color:var(--ink-2)}
+
+/* code */
+pre.code{margin:0;background:#0f1a28;color:#d7e2ee;border-radius:var(--radius);padding:18px;overflow-x:auto;font:400 13.5px/1.6 var(--f-mono)}
+pre.code .k{color:#ff9e7a} pre.code .c{color:#7f93a8;font-style:italic} pre.code .n{color:#f3c86b} pre.code .f{color:#8fd0ff} pre.code .s{color:#a6e3a1}
+.console{margin-top:12px;background:#0b141f;color:#b9f3c9;border-radius:var(--radius);padding:14px;font:400 13px/1.6 var(--f-mono);min-height:84px;white-space:pre-wrap;overflow-x:auto}
+.console .p{color:#7f93a8}
+
+/* flashcards */
+.fc-stage{perspective:1400px;max-width:640px;margin:24px auto 0}
+.fc{position:relative;height:300px;cursor:pointer;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.3,.7,.2,1)}
+.fc.flip{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:10px;padding:28px;display:flex;flex-direction:column;justify-content:center;gap:12px;border:1px solid var(--rule);overflow:auto}
+.fc-front{background:var(--card)}
+.fc-back{background:var(--ink);color:var(--paper);transform:rotateY(180deg)}
+.fc-front .q{font:500 clamp(22px,3.4vw,30px)/1.2 var(--f-display);text-wrap:balance}
+.fc-back .a{font-size:17px;line-height:1.55}
+.fc-face .tiny{font:600 11px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;opacity:.65}
+.fc-bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin-top:16px}
+.dots{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:14px}
+.dots span{width:9px;height:9px;border-radius:50%;background:var(--rule)}
+.dots span.known{background:var(--good)} .dots span.cur{outline:2px solid var(--accent);outline-offset:1px}
+
+/* quiz */
+.quiz{display:grid;gap:18px;margin-top:24px;max-width:780px}
+.qitem{background:var(--card);border:1px solid var(--rule);border-radius:var(--radius);padding:18px}
+.qitem .qq{font-weight:700;margin-bottom:10px}
+.opts{display:grid;gap:8px}
+.opts button{text-align:left;border-radius:6px;font-weight:400;line-height:1.4}
+.opts button.right{background:color-mix(in srgb,var(--good) 18%,transparent);border-color:var(--good);color:var(--ink)}
+.opts button.wrong{background:var(--loss-soft);border-color:var(--loss);color:var(--ink)}
+.qexp{font-size:14.5px;color:var(--ink-2);margin-top:10px}
+.score{position:sticky;bottom:12px;display:inline-flex;gap:12px;align-items:center;background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:999px;font:600 14px/1 var(--f-mono);margin-top:18px}
+
+/* timeline */
+.tl{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;margin-top:28px;border-top:2px solid var(--ink)}
+.tl div{padding:14px 14px 14px 0;position:relative}
+.tl div::before{content:"";position:absolute;top:-7px;left:0;width:12px;height:12px;border-radius:50%;background:var(--paper);border:2px solid var(--ink)}
+.tl div.me::before{background:var(--accent);border-color:var(--accent)}
+.tl .y{font:700 26px/1 var(--f-display);margin-top:6px}
+.tl .t{font-size:13.5px;color:var(--ink-2);margin-top:6px}
+
+footer{padding-block:48px 64px;color:var(--ink-2);font-size:13.5px;border-top:1px solid var(--rule);margin-top:48px}
+
+/* hero line draw */
+.draw{stroke-dasharray:1200;stroke-dashoffset:0;animation:draw 2.2s ease-out both}
+@keyframes draw{from{stroke-dashoffset:1200}to{stroke-dashoffset:0}}
+.fadein{animation:fade 1s ease-out .9s both}
+@keyframes fade{from{opacity:.0}to{opacity:1}}
+.pulse{animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+
+<nav class="rail" aria-label="Chapters">
+  <div class="rail-in" id="rail">
+    <a href="#wall">The wall</a><a href="#water">Water</a><a href="#utility">Utility</a><a href="#canal">The canal</a><a href="#bridge">The bridge</a><a href="#taxes">Taxes</a><a href="#transfers">Transfers</a><a href="#world">Today</a><a href="#code">In code</a><a href="#cards">Flashcards</a><a href="#quiz">Quiz</a><a href="#timeline">Timeline</a>
+  </div>
+  <div class="progress" id="progress"></div>
+</nav>
+
+<header class="wrap hero">
+  <div class="hero-grid">
+    <div>
+      <div class="eyebrow">Jules Dupuit · Annales des ponts et chaussées · 1844</div>
+      <h1 style="margin-top:14px">How much is a bridge worth?</h1>
+      <p class="lede col" style="margin-top:18px">An interactive guide to <em class="fr">De la mesure de l'utilité des travaux publics</em>, the paper in which a French road engineer invented consumer surplus, deadweight loss and cost–benefit analysis decades before economics had names for them.</p>
+      <div class="meta"><span>Revue française d'économie reprint, pp. 55–94</span><span>~25 min</span><span>12 parts · simulators · flashcards · quiz</span></div>
+    </div>
+    <figure style="margin:0">
+      <canvas class="hero-canvas" id="heroCanvas" aria-label="Animated footbridge: walkers who value the crossing above the 0.05 franc toll cross, the rest turn back"></canvas>
+      <figcaption class="canvas-cap"><span>Toll 0,05 F. Each walker carries a private value for crossing.</span><span><span class="c-yes">● crossed <b id="heroYes" class="num">0</b></span> &nbsp; <span class="c-no">● turned back <b id="heroNo" class="num">0</b></span></span></figcaption>
+    </figure>
+  </div>
+</header>
+
+<!-- 1 WALL -->
+<section id="wall"><div class="wrap">
+  <div class="eyebrow">Part I <span class="pg">pp. 56–57</span></div>
+  <h2>The wall in the dark</h2>
+  <div class="two" style="margin-top:12px">
+    <div class="col">
+      <p>Engineers of the 1840s valued France's royal roads at <b>500 million francs a year</b>, which was what society paid for the transport on them. They reasoned, with J.-B. Say, that if people pay 500 million they must get 500 million of satisfaction.</p>
+      <p>Dupuit asks what happens when a better road halves the cost. Say's rule now says the roads are worth 250 million, so they became <i>less</i> useful by improving. In fact their utility rose by at least 250 million.</p>
+      <blockquote>A man measuring a wall in the dark finds he cannot reach the top, and declares: this wall is two metres high.<cite>Dupuit, p. 57 (paraphrased)</cite></blockquote>
+      <p>The hand stopping at 2 m proves only that the wall is <b>at least</b> 2 m. A price is the same kind of fact: <b>a lower bound on utility, never its measure.</b></p>
+    </div>
+    <div class="fig wall-stage" id="wallStage">
+      <div class="fig-head"><span class="fig-title">Price = how high your hand reaches</span></div>
+      <svg viewBox="0 0 320 300" role="img" aria-label="A figure reaching up a tall wall in darkness; with daylight the wall is revealed to be far taller">
+        <rect x="0" y="0" width="320" height="300" fill="var(--paper-2)"/>
+        <line x1="0" y1="270" x2="320" y2="270" stroke="var(--ink-2)" stroke-width="1.5"/>
+        <!-- wall -->
+        <g>
+          <rect x="150" y="20" width="110" height="250" fill="var(--neutral)"/>
+          <g stroke="var(--card)" stroke-width="1.5">
+            <line x1="150" y1="50" x2="260" y2="50"/><line x1="150" y1="80" x2="260" y2="80"/><line x1="150" y1="110" x2="260" y2="110"/><line x1="150" y1="140" x2="260" y2="140"/><line x1="150" y1="170" x2="260" y2="170"/><line x1="150" y1="200" x2="260" y2="200"/><line x1="150" y1="230" x2="260" y2="230"/>
+            <line x1="205" y1="20" x2="205" y2="50"/><line x1="180" y1="50" x2="180" y2="80"/><line x1="230" y1="50" x2="230" y2="80"/><line x1="205" y1="80" x2="205" y2="110"/><line x1="180" y1="110" x2="180" y2="140"/><line x1="230" y1="110" x2="230" y2="140"/><line x1="205" y1="140" x2="205" y2="170"/><line x1="180" y1="170" x2="180" y2="200"/><line x1="230" y1="170" x2="230" y2="200"/><line x1="205" y1="200" x2="205" y2="230"/><line x1="180" y1="230" x2="180" y2="270"/><line x1="230" y1="230" x2="230" y2="270"/>
+          </g>
+        </g>
+        <!-- darkness -->
+        <g id="darkness">
+          <rect x="0" y="0" width="320" height="196" fill="var(--ink)" opacity=".92"/>
+          <text x="20" y="40" style="fill:var(--paper);font-size:12px">night: only what the hand touches is known</text>
+        </g>
+        <!-- figure -->
+        <g stroke="var(--ink)" stroke-width="3" stroke-linecap="round" fill="none">
+          <circle cx="120" cy="222" r="8" fill="var(--paper-2)"/>
+          <line x1="120" y1="230" x2="120" y2="252"/><line x1="120" y1="252" x2="112" y2="270"/><line x1="120" y1="252" x2="128" y2="270"/>
+          <line x1="120" y1="236" x2="146" y2="198"/><line x1="120" y1="236" x2="106" y2="250"/>
+        </g>
+        <line x1="140" y1="196" x2="290" y2="196" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 4"/>
+        <text x="266" y="190" style="fill:var(--accent);font-weight:600">2 m</text>
+        <text x="266" y="212" style="fill:var(--accent)">price</text>
+        <g id="trueH">
+          <line x1="280" y1="20" x2="280" y2="270" stroke="var(--loss)" stroke-width="1.5"/>
+          <line x1="274" y1="20" x2="286" y2="20" stroke="var(--loss)" stroke-width="1.5"/>
+          <text x="236" y="14" style="fill:var(--loss);font-weight:600">true height: 50 m</text>
+        </g>
+        <g id="ladder" stroke="var(--accent)" stroke-width="2.5">
+          <line x1="128" y1="270" x2="148" y2="30"/><line x1="140" y1="270" x2="160" y2="30" opacity="0"/>
+          <line x1="132" y1="230" x2="146" y2="230" opacity=".8"/><line x1="135" y1="190" x2="149" y2="190" opacity=".8"/><line x1="138" y1="150" x2="150" y2="150" opacity=".8"/><line x1="141" y1="110" x2="151" y2="110" opacity=".8"/><line x1="144" y1="70" x2="151" y2="70" opacity=".8"/>
+        </g>
+      </svg>
+      <div class="controls"><button id="dayBtn" class="primary">Bring a ladder in daylight</button></div>
+      <p class="fig-note" id="wallNote">"Utility ≥ 500 million" is true. "Utility = 500 million" is the mistake.</p>
+    </div>
+  </div>
+</div></section>
+
+<!-- 2 WATER -->
+<section id="water"><div class="wrap">
+  <div class="eyebrow">Part II <span class="pg">pp. 59–61</span></div>
+  <h2>Every hectolitre has a different value</h2>
+  <div class="col">
+    <p>A hilltop town hauls its water up by hand: one hectolitre a day costs a <b>50-franc yearly subscription</b>. Public pumps lower the price step by step. The same household buys more each time, but each extra hectolitre goes to a less pressing need: drinking first, then washing, the garden, a pond, and finally a fountain that runs all day.</p>
+    <p>So it is wrong to say the pumped water is "worth 50 F a hectolitre". Only the first hectolitre is. Pick a price and watch which needs are met.</p>
+  </div>
+  <div class="fig">
+    <div class="fig-head"><span class="fig-title">One household, 100 hectolitres, six needs</span><span class="fig-note">each square = 1 hl per day, for a year</span></div>
+    <div class="controls" id="waterBtns" role="group" aria-label="Price per hectolitre"></div>
+    <div class="two">
+      <div>
+        <div class="cells" id="cells"></div>
+        <div class="needs" id="needs"></div>
+      </div>
+      <div class="readouts" style="grid-template-columns:1fr">
+        <div class="ro"><div class="k">Hectolitres bought</div><div class="v" id="wQ">1</div></div>
+        <div class="ro rev"><div class="k">Bill (price × quantity)</div><div class="v" id="wBill">50 F</div></div>
+        <div class="ro loss"><div class="k">Error: "50 F per hl" × quantity</div><div class="v" id="wErr">50 F</div></div>
+        <div class="ro cs"><div class="k">Dupuit: value is at least</div><div class="v" id="wVal">50 F</div><div class="fig-note" id="wSur">surplus ≥ 0 F</div></div>
+      </div>
+    </div>
+  </div>
+  <p class="col">Dupuit's test: raise the price again with a tax. A 4 F tax on 1 F water cuts use from 100 to 20 hl, a 9 F tax from 20 to 10, and so on back up to one hectolitre at 50 F. <b>The tax that makes a unit disappear tells you what that unit was worth.</b> You have just drawn a demand curve.</p>
+</div></section>
+
+<!-- 3 UTILITY -->
+<section id="utility"><div class="wrap">
+  <div class="eyebrow">Part III <span class="pg">pp. 65–67</span></div>
+  <h2>Absolute and relative utility</h2>
+  <div class="col">
+    <p><b>Absolute utility</b> is the largest sacrifice a buyer would make to get the thing. <b>Relative utility</b> is what is left after paying: the gain the buyer pockets. Today we call it <b>consumer surplus</b>.</p>
+  </div>
+  <div class="eq">
+    <math display="block"><mrow><msub><mi>u</mi><mi>i</mi></msub><mo>=</mo><msub><mi>v</mi><mi>i</mi></msub><mo>−</mo><mi>p</mi></mrow></math>
+    <div class="cap"><b>u<sub>i</sub></b> relative utility of buyer <i>i</i> · <b>v<sub>i</sub></b> the most they would pay (absolute utility) · <b>p</b> the price. Something found for free that you'd pay 30 F for gives 30 F; the same thing bought for 20 F gives 10 F.</div>
+  </div>
+  <blockquote>Il n'y a d'utilité réelle que celle qu'on consent à payer.<cite>The only real utility is the utility people are willing to pay for. (p. 66)</cite></blockquote>
+  <div class="fig">
+    <div class="fig-head"><span class="fig-title">Sixteen buyers, one object costing 20 F to produce</span><span class="fig-note">bar height = what each buyer would pay</span></div>
+    <div class="controls" role="group" aria-label="Scenario">
+      <button class="sel" data-u="base">Price 20 F</button>
+      <button data-u="tax">Add a 5 F tax</button>
+      <button data-u="cut">Cut cost by 5 F</button>
+    </div>
+    <div class="svgbox"><svg id="uChart" viewBox="0 0 640 300" role="img" aria-label="Bar chart of sixteen buyers' values split into price, tax, surplus and lost utility"></svg></div>
+    <div class="legend" style="margin:8px 0 14px"><span><i style="background:var(--neutral)"></i>price paid to cover cost</span><span><i style="background:var(--accent)"></i>consumer surplus</span><span><i style="background:var(--revenue)"></i>tax revenue</span><span><i style="background:var(--loss)"></i>lost: nobody gets it</span><span><i style="border:1.5px dashed var(--ink-2)"></i>not buying</span></div>
+    <div class="readouts">
+      <div class="ro cs"><div class="k">Consumer surplus</div><div class="v" id="uCS">55 F</div></div>
+      <div class="ro rev"><div class="k">Tax revenue</div><div class="v" id="uRev">0 F</div></div>
+      <div class="ro loss"><div class="k">Lost utility</div><div class="v" id="uLoss">0 F</div></div>
+    </div>
+    <p class="fig-note" id="uNote" style="margin-top:12px"></p>
+  </div>
+  <p class="col">Dupuit's general law (p. 67): a price change moves the utility of buyers who stay by exactly the change. Buyers who leave lose their whole surplus, and buyers who arrive gain theirs. <b>A tax hurts people who never pay it</b>, because they stop buying.</p>
+</div></section>
+
+<!-- 4 CANAL -->
+<section id="canal"><div class="wrap">
+  <div class="eyebrow">Part IV <span class="pg">pp. 68–76, 82–83</span></div>
+  <h2>Navier's canal and the 27-fold error</h2>
+  <div class="col">
+    <p>The engineer Navier valued canals by transport savings: a tonne costs 1 F per league by road and 0.13 F by canal, so the canal "creates" <b>0.87 F per tonne per league</b>. Dupuit takes the method apart with a city that uses 10,000 tonnes of building stone a year.</p>
+  </div>
+  <div class="fig">
+    <div class="fig-head"><span class="fig-title">Where the stone comes from</span><span class="fig-note">delivered cost per tonne</span></div>
+    <div class="svgbox"><svg viewBox="0 0 680 210" role="img" aria-label="Map: old quarry 4 leagues away by road at 20 francs; new quarry 100 leagues away by canal at 15 francs">
+      <rect width="680" height="210" fill="var(--paper-2)"/>
+      <path d="M0 150 C120 130 200 175 330 150 S560 120 680 140" fill="none" stroke="var(--revenue)" stroke-width="10" opacity=".22"/>
+      <path d="M150 110 C230 150 330 165 420 150 S590 120 640 136" fill="none" stroke="var(--revenue)" stroke-width="3" stroke-dasharray="8 6"/>
+      <line x1="150" y1="104" x2="70" y2="60" stroke="var(--ink-2)" stroke-width="3"/>
+      <rect x="128" y="86" width="44" height="30" fill="var(--ink)"/><polygon points="124,88 150,66 176,88" fill="var(--ink)"/>
+      <text x="118" y="136" style="fill:var(--ink);font-weight:600">CITY</text>
+      <circle cx="62" cy="54" r="10" fill="var(--neutral)" stroke="var(--ink-2)"/>
+      <text x="20" y="30" style="fill:var(--ink)">old quarry · 4 leagues by road</text>
+      <text x="20" y="84">16 F cut + 4 F haul = <tspan style="fill:var(--ink);font-weight:600">20 F</tspan></text>
+      <circle cx="642" cy="134" r="12" fill="var(--accent)" opacity=".8"/>
+      <text x="470" y="106" style="fill:var(--ink)">new quarry · 100 leagues by canal</text>
+      <text x="470" y="186">2 F cut + 13 F haul = <tspan style="fill:var(--ink);font-weight:600">15 F</tspan></text>
+    </svg></div>
+    <p class="fig-note">Haulage goes <b>up</b> from 4 F to 13 F, yet the stone gets cheaper. A good transport link changes where goods come from.</p>
+  </div>
+
+  <div class="fig" id="canalFig">
+    <div class="fig-head"><span class="fig-title">Utility of the canal for stone, two methods</span><button id="runCanal">Replay</button></div>
+    <div class="bars">
+      <div class="bar-row"><div class="lab"><span>Navier: 30,000 t × 100 leagues × 0.87 F</span><b class="mono num">2,610,000 F</b></div><div class="bar-track"><div class="bar-fill" style="--w:100%;background:var(--loss)"></div></div></div>
+      <div class="bar-row"><div class="lab"><span>Dupuit: 50,000 F (old tonnes) + 46,000 F (new tonnes)</span><b class="mono num">96,000 F</b></div><div class="bar-track"><div class="bar-fill" style="--w:3.68%;background:var(--accent)"></div></div></div>
+    </div>
+  </div>
+
+  <div class="two">
+    <div class="col">
+      <h3>The four errors</h3>
+      <ol>
+        <li><b>Comparing transport costs instead of production costs.</b> The real gain per old tonne is 20 − 15 = <b>5 F</b>. Navier gives 87 F, which is 17 times too much.</li>
+        <li><b>Giving new tonnes the full saving.</b> Cheaper stone draws in 20,000 more tonnes, but those buyers refused it at 20 F, so each gains between 0 and 5 F. A rising imaginary tax shows the average is <b>2.30 F</b>.</li>
+        <li><b>Valuing new products at their old impossible price.</b> Slate that "would have cost 1,000 F by mule" and now costs 20 F is not worth 980 F to anyone, because no one bought it at 1,000.</li>
+        <li><b>Ignoring quality.</b> Roads are faster and safer. If a merchant switches to the canal for a few centimes' net gain, those centimes are the true utility.</li>
+      </ol>
+    </div>
+    <div class="fig" style="margin-top:0">
+      <div class="fig-head"><span class="fig-title">Pricing the 20,000 new tonnes</span><span class="fig-note">p. 74</span></div>
+      <div class="tablebox"><table>
+        <thead><tr><th>Tonnes that vanish</th><th>at a tax of</th><th>utility</th></tr></thead>
+        <tbody><tr><td>7,000</td><td>1 F</td><td>7,000 F</td></tr><tr><td>5,000</td><td>2 F</td><td>10,000 F</td></tr><tr><td>4,000</td><td>3 F</td><td>12,000 F</td></tr><tr><td>3,000</td><td>4 F</td><td>12,000 F</td></tr><tr><td>1,000</td><td>5 F</td><td>5,000 F</td></tr></tbody>
+        <tfoot><tr><td>20,000</td><td>avg 2.30 F</td><td>46,000 F</td></tr></tfoot>
+      </table></div>
+    </div>
+  </div>
+  <div class="eq">
+    <math display="block"><mrow><mi>U</mi><mo>=</mo><munder><mo>∑</mo><mi>k</mi></munder><msub><mi>t</mi><mi>k</mi></msub><mo>·</mo><mi>Δ</mi><msub><mi>q</mi><mi>k</mi></msub><mspace width="0.8em"/><mo stretchy="false">⟶</mo><mspace width="0.8em"/><msubsup><mo>∫</mo><mn>0</mn><mi>Q</mi></msubsup><mi>P</mi><mo>(</mo><mi>q</mi><mo>)</mo><mspace width="0.17em"/><mi>d</mi><mi>q</mi></mrow></math>
+    <div class="cap"><b>Dupuit's rule (p. 76): the utility of a product is the tax that would stop its consumption.</b> Raise an imaginary tax in small steps <b>t<sub>k</sub></b>, multiply each by the units <b>Δq<sub>k</sub></b> it drives away, and add. In the limit (his footnote 12 says the calculus is exact) this is the area under the demand curve <b>P(q)</b>.</div>
+  </div>
+</div></section>
+
+<!-- 5 BRIDGE -->
+<section id="bridge"><div class="wrap">
+  <div class="eyebrow">Part V <span class="pg">pp. 77–78, 90</span></div>
+  <h2>The footbridge simulator</h2>
+  <div class="col">
+    <p>A free footbridge carries <b>2,080,000 crossings a year</b>. Dupuit imagines tolls in 1-centime steps and counts how many crossings each one would remove. Each block below is a group of walkers. Its width is how many crossings they make, and its height is the toll that would turn them away, which is what the crossing is worth to them.</p>
+  </div>
+  <div class="fig">
+    <div class="two">
+      <div style="min-width:0">
+        <label class="sl" for="toll">Toll per crossing <b id="tollOut" class="num">0,05 F</b><input id="toll" type="range" min="0" max="15" step="1" value="5"></label>
+        <div class="svgbox" style="margin-top:12px"><svg id="bChart" viewBox="0 0 640 340" role="img" aria-label="Stepped demand curve for the footbridge, coloured into toll revenue, walkers' surplus and lost utility"></svg></div>
+        <div class="legend"><span><i style="background:var(--revenue)"></i>toll revenue</span><span><i style="background:var(--accent)"></i>walkers' surplus</span><span><i style="background:var(--loss)"></i>lost: deterred crossings</span></div>
+      </div>
+      <div style="display:grid;gap:16px;min-width:0">
+        <div class="readouts" style="grid-template-columns:1fr 1fr">
+          <div class="ro rev"><div class="k">Toll collector</div><div class="v" id="bRev">38,500</div></div>
+          <div class="ro cs"><div class="k">Walkers keep</div><div class="v" id="bCS">27,500</div></div>
+          <div class="ro loss"><div class="k">Lost</div><div class="v" id="bLoss">36,000</div></div>
+          <div class="ro tot"><div class="k">Crossings</div><div class="v" id="bQ">770,000</div></div>
+        </div>
+        <div>
+          <div class="fig-title" style="font-size:13px">Revenue and loss as the toll rises</div>
+          <svg id="bMini" viewBox="0 0 320 170" role="img" aria-label="Revenue rises then falls with the toll; lost utility keeps rising"></svg>
+        </div>
+      </div>
+    </div>
+    <canvas class="hero-canvas" id="simCanvas" style="height:200px;margin-top:16px" aria-label="Walkers on the bridge respond to the toll you set"></canvas>
+    <div class="canvas-cap"><span>The same toll, on the bridge</span><span><span class="c-yes">● crossed <b id="simYes" class="num">0</b></span> &nbsp; <span class="c-no">● turned back <b id="simNo" class="num">0</b></span></span></div>
+  </div>
+  <div class="eq">
+    <math display="block"><mrow><msub><mi>U</mi><mtext>abs</mtext></msub><mo>=</mo><mi>t</mi><mo>·</mo><mi>Q</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>+</mo><mi>CS</mi><mo>+</mo><mi>DWL</mi><mspace width="1.2em"/><mn>102 000</mn><mo>=</mo><mn>38 500</mn><mo>+</mo><mn>27 500</mn><mo>+</mo><mn>36 000</mn></mrow></math>
+    <div class="cap"><b>Total utility = toll revenue + walkers' surplus + deadweight loss</b>, shown with Dupuit's figures for a 0.05 F toll. The toll collector's share is not lost to society; it only moves money around. The red area is gone for good. Dupuit compares it to <b>friction in a machine</b>: walkers who valued the Pont des Arts at 0.04, 0.03 or 0.02 F walk round by the Pont-Neuf instead (p. 90).</div>
+  </div>
+  <p class="col">Things to try: at <b>0 F</b> the whole 102,000 F goes to walkers. Revenue peaks at <b>0.04 F</b> (38,720 F), yet 0.05 F raises almost as much (38,500 F) while losing more. At <b>0.15 F</b> revenue and utility are both zero. Dupuit's conclusion is that tolls are neither always good nor always bad, and should be set by principle so they cover costs while destroying as little utility as possible.</p>
+</div></section>
+
+<!-- 6 TAXES -->
+<section id="taxes"><div class="wrap">
+  <div class="eyebrow">Part VI <span class="pg">pp. 84–89</span></div>
+  <h2>The square law of taxes</h2>
+  <div class="col">
+    <p>Put a 5 F tax back on the canal's stone. Use falls to 10,000 tonnes and the tax raises 50,000 F, which is only a transfer to the state. The 20,000 tonnes no longer bought take away <b>46,000 F</b> of utility that nobody receives. For small taxes, the loss grows with the <b>square</b> of the rate.</p>
+  </div>
+  <div class="fig">
+    <div class="two">
+      <div style="min-width:0">
+        <label class="sl" for="tax">Tax per unit <b id="taxOut" class="num">5,0 F</b><input id="tax" type="range" min="0" max="15" step="0.5" value="5"></label>
+        <div class="svgbox" style="margin-top:12px"><svg id="tChart" viewBox="0 0 640 330" role="img" aria-label="Linear demand with a tax wedge: revenue rectangle and deadweight-loss triangle"></svg></div>
+        <div class="legend"><span><i style="background:var(--accent)"></i>consumer surplus</span><span><i style="background:var(--revenue)"></i>tax revenue</span><span><i style="background:var(--loss)"></i>deadweight loss</span></div>
+      </div>
+      <div style="display:grid;gap:16px;min-width:0">
+        <div class="readouts" style="grid-template-columns:1fr 1fr">
+          <div class="ro rev"><div class="k">Revenue</div><div class="v" id="tRev">500</div></div>
+          <div class="ro loss"><div class="k">Deadweight loss</div><div class="v" id="tDWL">125</div></div>
+          <div class="ro"><div class="k">Units sold</div><div class="v" id="tQ">100</div></div>
+          <div class="ro"><div class="k">Loss per franc raised</div><div class="v" id="tRatio">0.25</div></div>
+        </div>
+        <svg id="tMini" viewBox="0 0 320 170" role="img" aria-label="Revenue hill and deadweight-loss parabola against the tax rate"></svg>
+        <p class="fig-note">The revenue curve is a hill, so any amount below the peak can be raised by two rates, one low and one high, with very different losses (p. 89). This is a Laffer curve, 130 years early.</p>
+      </div>
+    </div>
+  </div>
+  <div class="eq">
+    <math display="block"><mrow><mi>DWL</mi><mo>≈</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mspace width="0.1em"/><mrow><mo>|</mo><mfrac><mrow><mi>d</mi><mi>Q</mi></mrow><mrow><mi>d</mi><mi>p</mi></mrow></mfrac><mo>|</mo></mrow><mspace width="0.1em"/><msup><mi>t</mi><mn>2</mn></msup><mspace width="2em"/><mi>Δ</mi><mi>U</mi><mo>≤</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mspace width="0.1em"/><mi>Δ</mi><mi>p</mi><mo>·</mo><mi>Δ</mi><mi>q</mi></mrow></math>
+    <div class="cap"><b>Left:</b> the loss from tax <b>t</b> is proportional to t², so a 10 F tax destroys about 100 times what a 1 F tax does. <b>Right:</b> Dupuit's upper bound (p. 88). Demand grows faster as price falls, like a pyramid of cannonballs that is widest at the bottom, so a price change Δp that adds or removes Δq units moves utility by at most half their product. Check: ½ × 5 F × 20,000 t = 50,000 F, above the true 46,000 F.</div>
+  </div>
+  <div class="fig">
+    <div class="fig-head"><span class="fig-title">Raise the same money two ways</span><span class="fig-note">10 similar goods, loss ∝ t²</span></div>
+    <div class="bars">
+      <div class="bar-row"><div class="lab"><span>One good taxed 10 F → loss 10²</span><b class="mono">100 units</b></div><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--loss)"></div></div></div>
+      <div class="bar-row"><div class="lab"><span>Ten goods taxed 1 F each → loss 10 × 1²</span><b class="mono">10 units</b></div><div class="bar-track"><div class="bar-fill" style="width:10%;background:var(--good)"></div></div></div>
+    </div>
+    <p class="fig-note" style="margin-top:10px">"In place of taxing one object 10 francs, taxing ten objects 1 franc can cut the loss of utility by 90 percent." (p. 89)</p>
+  </div>
+</div></section>
+
+<!-- 7 TRANSFERS -->
+<section id="transfers"><div class="wrap">
+  <div class="eyebrow">Part VII <span class="pg">pp. 79–81</span></div>
+  <h2>Real gains or just transfers?</h2>
+  <div class="col"><p>Dupuit's rule: unless quality changes, <b>utility is created only when production costs fall</b>. A price change on its own moves money from sellers to buyers or back. The state should care who wins and who loses, but these moves don't belong in the utility count. Sort each case.</p></div>
+  <div class="grid-cards" id="sorter"></div>
+  <p class="sorter-score" id="sortScore" style="margin-top:14px">0 / 6 sorted</p>
+</div></section>
+
+<!-- 8 WORLD -->
+<section id="world"><div class="wrap">
+  <div class="eyebrow">Part VIII</div>
+  <h2>Dupuit in today's world</h2>
+  <div class="col"><p>The 1844 paper still underlies how governments value railways, set tolls and design taxes. Here are six places it shows up now.</p></div>
+  <div class="grid-cards" id="world-cards"></div>
+</div></section>
+
+<!-- 9 CODE -->
+<section id="code"><div class="wrap">
+  <div class="eyebrow">Part IX</div>
+  <h2>The method in TypeScript</h2>
+  <div class="col"><p>Dupuit's footbridge table is an algorithm. Each group of walkers values the crossing at the toll that would drive it away. Groups above the toll pay it and keep the rest, and groups at or below it are lost. The simulator above runs this same logic.</p></div>
+  <div class="two" style="margin-top:20px">
+    <pre class="code" id="tsCode"></pre>
+    <div style="min-width:0">
+      <label class="sl" for="codeToll">splitUtility( <b id="codeTollOut" class="num">0.05</b> )<input id="codeToll" type="range" min="0" max="15" step="1" value="5"></label>
+      <div class="controls"><button class="primary" id="runCode">Run</button><button id="runHalf">Run rule of a half</button></div>
+      <div class="console" id="console"><span class="p">// press Run</span></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- 10 FLASHCARDS -->
+<section id="cards"><div class="wrap">
+  <div class="eyebrow">Part X</div>
+  <h2>Flashcards</h2>
+  <div class="col"><p>Tap a card to flip it. Mark it known or keep it in the pile. Your progress stays in this browser.</p></div>
+  <div class="fc-stage">
+    <div class="fc" id="fc" tabindex="0" role="button" aria-label="Flip card">
+      <div class="fc-face fc-front"><div class="tiny" id="fcNum">Card 1</div><div class="q" id="fcQ"></div><div class="tiny">tap to flip</div></div>
+      <div class="fc-face fc-back"><div class="tiny">Answer</div><div class="a" id="fcA"></div></div>
+    </div>
+    <div class="fc-bar">
+      <button id="fcPrev" aria-label="Previous card">← Prev</button>
+      <button id="fcAgain">Again</button>
+      <button id="fcKnow" class="primary">Got it</button>
+      <button id="fcNext" aria-label="Next card">Next →</button>
+      <button id="fcShuffle">Shuffle</button>
+    </div>
+    <div class="dots" id="fcDots"></div>
+    <p class="fig-note" id="fcStat" style="text-align:center"></p>
+  </div>
+</div></section>
+
+<!-- 11 QUIZ -->
+<section id="quiz"><div class="wrap">
+  <div class="eyebrow">Part XI</div>
+  <h2>Check yourself</h2>
+  <div class="quiz" id="quizBox"></div>
+  <div class="score" id="score"><span id="scoreTxt">0 / 9</span><button id="quizReset" style="padding:6px 10px;font-size:12px">Reset</button></div>
+</div></section>
+
+<!-- 12 TIMELINE -->
+<section id="timeline"><div class="wrap">
+  <div class="eyebrow">Part XII</div>
+  <h2>Where the paper sits</h2>
+  <div class="tl">
+    <div><div class="y">1776</div><div class="t">Adam Smith separates value in use from value in exchange.</div></div>
+    <div><div class="y">1803</div><div class="t">J.-B. Say's <i>Traité</i>: price is the measure of utility.</div></div>
+    <div><div class="y">1832</div><div class="t">Navier values canals at 0.87 F saved per tonne-league.</div></div>
+    <div class="me"><div class="y">1844</div><div class="t"><b>Dupuit</b>: relative utility, the tax-sum method, deadweight loss, the t² law.</div></div>
+    <div><div class="y">1849</div><div class="t">Dupuit's follow-up on tolls and differential pricing.</div></div>
+    <div><div class="y">1890</div><div class="t">Marshall names it <i>consumer's surplus</i> and draws the triangle.</div></div>
+    <div><div class="y">1936</div><div class="t">US Flood Control Act: benefits must exceed costs.</div></div>
+    <div><div class="y">1964</div><div class="t">Harberger popularises the "triangle" for measuring tax waste.</div></div>
+    <div><div class="y">1974</div><div class="t">The Laffer curve: revenue first rises with the rate, then falls.</div></div>
+  </div>
+</div></section>
+
+<footer class="wrap">
+  Source: Jules Dupuit, "De la mesure de l'utilité des travaux publics" (1844), reprinted in <i>Revue française d'économie</i> 10(2), 1995, pp. 55–94. Page numbers refer to that reprint. Figures from the paper are Dupuit's own illustrative numbers. The tax-chart demand curve and the hectolitre values above 50 F are teaching assumptions.
+</footer>
+
+<script>
+(() => {
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const fmt = n => Math.round(n).toLocaleString('en-US');
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs={}, parent) => { const e=document.createElementNS(NS,tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if(parent) parent.appendChild(e); return e; };
+const store = { get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }, set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} } };
+
+/* ---------- rail + progress ---------- */
+const links = $$('#rail a'); const secs = links.map(a => $(a.getAttribute('href')));
+function onScroll(){
+  const h = document.documentElement; const p = h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight);
+  $('#progress').style.transform = `scaleX(${p})`;
+  let cur = -1; secs.forEach((s,i) => { if (s.getBoundingClientRect().top < 120) cur = i; });
+  links.forEach((a,i) => a.classList.toggle('on', i===cur));
+  if (cur>=0) { const a=links[cur]; const r=$('#rail'); if (a.offsetLeft < r.scrollLeft || a.offsetLeft+a.offsetWidth > r.scrollLeft+r.clientWidth) r.scrollTo({left:a.offsetLeft-16, behavior: reduce?'auto':'smooth'}); }
+}
+addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+/* ---------- bridge data (p. 77) ---------- */
+const DROPS = [330000,294000,260000,228000,198000,170000,144000,120000,98000,78000,60000,44000,30000,18000,8000];
+const TOTAL = DROPS.reduce((a,b)=>a+b,0);
+function splitCents(k){ // toll k centimes
+  let rev=0, cs=0, lost=0, q=0;
+  DROPS.forEach((d,i) => { const j=i+1; if (j>k){ q+=d; rev+=d*k/100; cs+=d*(j-k)/100; } else lost+=d*j/100; });
+  return {rev, cs, lost, q};
+}
+function sampleValue(){ let r=Math.random()*TOTAL; for (let i=0;i<DROPS.length;i++){ r-=DROPS[i]; if (r<=0) return (i+1)/100; } return .15; }
+
+/* ---------- walkers canvas ---------- */
+function walkers(canvas, getToll, onCount){
+  const ctx = canvas.getContext('2d'); let W=0,H=0, dpr=1, list=[], yes=0, no=0, last=0, spawnT=0, running=false, colors={}, frame=0;
+  function readColors(){ colors={card:css('--card'),ink:css('--ink'),ink2:css('--ink-2'),rule:css('--rule'),accent:css('--accent'),loss:css('--loss'),rev:css('--revenue'),neutral:css('--neutral'),paper2:css('--paper-2')}; }
+  function size(){ dpr=Math.min(2,devicePixelRatio||1); W=canvas.clientWidth; H=canvas.clientHeight; canvas.width=W*dpr; canvas.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  const deckY = () => H*0.52, booth = () => W*0.3;
+  function drawScene(t){
+    ctx.fillStyle=colors.card; ctx.fillRect(0,0,W,H);
+    const dy=deckY();
+    // river
+    ctx.fillStyle=colors.rev; ctx.globalAlpha=.13; ctx.fillRect(0,H*0.78,W,H*0.22); ctx.globalAlpha=1;
+    ctx.strokeStyle=colors.rev; ctx.globalAlpha=.35; ctx.lineWidth=1.2;
+    for (let r=0;r<3;r++){ ctx.beginPath(); const yy=H*0.83+r*H*0.05; for(let x=0;x<=W;x+=8){ const y=yy+Math.sin(x/22 + t/700 + r)*2; x?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.stroke(); }
+    ctx.globalAlpha=1;
+    // arches
+    const n = Math.max(3, Math.round(W/170)); const span=W/n;
+    ctx.strokeStyle=colors.ink2; ctx.lineWidth=2;
+    for (let i=0;i<n;i++){ const x0=i*span, x1=x0+span; ctx.beginPath(); ctx.moveTo(x0, H*0.8); ctx.quadraticCurveTo((x0+x1)/2, dy-4, x1, H*0.8); ctx.stroke();
+      // hangers
+      ctx.save(); ctx.globalAlpha=.35; for (let s=1;s<6;s++){ const x=x0+span*s/6; const a=(x-x0)/span; const yA=(1-a)*(1-a)*H*0.8+2*(1-a)*a*(dy-4)+a*a*H*0.8; ctx.beginPath(); ctx.moveTo(x,dy); ctx.lineTo(x,yA); ctx.stroke(); } ctx.restore(); }
+    // piers
+    ctx.fillStyle=colors.neutral; for (let i=0;i<=n;i++){ ctx.fillRect(i*span-5, H*0.78, 10, H*0.22); }
+    // deck & rail
+    ctx.fillStyle=colors.ink; ctx.fillRect(0,dy,W,4);
+    ctx.strokeStyle=colors.ink2; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(0,dy-16); ctx.lineTo(W,dy-16); ctx.stroke();
+    for (let x=6;x<W;x+=14){ ctx.beginPath(); ctx.moveTo(x,dy); ctx.lineTo(x,dy-16); ctx.stroke(); }
+    // booth
+    const bx=booth(); ctx.fillStyle=colors.ink; ctx.fillRect(bx-14,dy-44,28,44); ctx.beginPath(); ctx.moveTo(bx-19,dy-44); ctx.lineTo(bx,dy-58); ctx.lineTo(bx+19,dy-44); ctx.fill();
+    ctx.fillStyle=colors.accent; ctx.fillRect(bx-24,dy-82,48,18);
+    ctx.fillStyle=colors.card; ctx.font='600 11px "JetBrains Mono", monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(getToll().toFixed(2).replace('.',',')+' F', bx, dy-73);
+    ctx.fillStyle=colors.ink2; ctx.textAlign='left'; ctx.font='11px "JetBrains Mono", monospace'; ctx.fillText('PÉAGE', bx+20, dy-30);
+  }
+  function drawWalker(w){
+    const dy=deckY(); ctx.globalAlpha=w.a; ctx.fillStyle = w.state==='back'?colors.loss:(w.state==='paid'?colors.accent:colors.ink2); ctx.strokeStyle=ctx.fillStyle; ctx.lineWidth=2;
+    const y=dy-2, x=w.x, sw=Math.sin(w.x/5)*3;
+    ctx.beginPath(); ctx.arc(x,y-17,3.4,0,7); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x,y-13); ctx.lineTo(x,y-6); ctx.lineTo(x-sw,y); ctx.moveTo(x,y-6); ctx.lineTo(x+sw,y); ctx.stroke();
+    if (w.coin>0){ ctx.globalAlpha=Math.min(1,w.coin)*w.a; ctx.fillStyle=colors.rev; ctx.font='600 10px "JetBrains Mono", monospace'; ctx.textAlign='center'; ctx.fillText('+'+getToll().toFixed(2), x, y-30-(1-w.coin)*14); }
+    ctx.globalAlpha=1;
+  }
+  function step(dt){
+    const toll=getToll(), bx=booth();
+    spawnT -= dt; if (spawnT<=0){ list.push({x:-8, v:sampleValue(), sp:38+Math.random()*30, dir:1, state:'walk', a:1, coin:0}); spawnT = 260+Math.random()*260; }
+    list.forEach(w => {
+      w.x += w.dir*w.sp*dt/1000;
+      if (w.state==='walk' && w.x>=bx-18){ if (w.v<=toll+1e-9){ w.state='back'; w.dir=-1; no++; } else { w.state='paid'; if (toll>0) w.coin=1.2; yes++; } onCount(yes,no); }
+      if (w.state==='back'){ w.a -= dt/2200; }
+      if (w.coin>0) w.coin -= dt/900;
+    });
+    list = list.filter(w => w.x<W+10 && w.a>0 && w.x>-12);
+  }
+  function loop(ts){ if(!running) return; const dt=Math.min(60, ts-(last||ts)); last=ts; if (++frame%90===0) readColors(); step(dt); drawScene(ts); list.forEach(drawWalker); requestAnimationFrame(loop); }
+  function staticFrame(){ readColors(); drawScene(0); const bx=booth(), toll=getToll(); list=[]; for (let i=0;i<14;i++){ const v=sampleValue(); const x= (i/14)*W; const st = x<bx-18 ? 'walk' : (v>toll?'paid':'back'); if (st!=='back') list.push({x, v, state:st, a:1, coin:0}); } list.forEach(drawWalker); }
+  readColors(); size();
+  new ResizeObserver(()=>{ size(); if (reduce || !running) staticFrame(); }).observe(canvas);
+  const io = new IntersectionObserver(es => { es.forEach(e => { if (reduce){ staticFrame(); return; } if (e.isIntersecting && !running){ running=true; last=0; requestAnimationFrame(loop);} else if (!e.isIntersecting) running=false; }); });
+  io.observe(canvas);
+  const mo = () => { readColors(); if (reduce||!running) staticFrame(); };
+  new MutationObserver(mo).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', mo);
+  staticFrame();
+  return { reset(){ yes=0; no=0; onCount(0,0); }, redraw(){ if (reduce||!running) staticFrame(); } };
+}
+walkers($('#heroCanvas'), () => 0.05, (y,n)=>{ $('#heroYes').textContent=y; $('#heroNo').textContent=n; });
+
+/* ---------- wall ---------- */
+$('#dayBtn').addEventListener('click', () => { const s=$('#wallStage'); const on=s.classList.toggle('day'); $('#dayBtn').textContent = on ? 'Back to the dark' : 'Bring a ladder in daylight'; $('#wallNote').textContent = on ? 'The 2-metre wall is 50 metres tall. Roads "worth 500 million" could be worth many times more.' : '"Utility ≥ 500 million" is true. "Utility = 500 million" is the mistake.'; });
+
+/* ---------- water ---------- */
+const NEEDS = [
+  {n:'Drinking', q:1, lb:50, label:'over 50 F'},
+  {n:'Daily cooking and washing', q:1, lb:30, label:'30–50 F'},
+  {n:'Washing the house every day', q:2, lb:20, label:'20–30 F'},
+  {n:'Watering the garden', q:6, lb:10, label:'10–20 F'},
+  {n:'An ornamental pond', q:10, lb:5, label:'5–10 F'},
+  {n:'A fountain running all day', q:80, lb:1, label:'1–5 F'}
+];
+const shade = [1,.82,.66,.5,.36,.22];
+const cellsBox=$('#cells'), needsBox=$('#needs');
+NEEDS.forEach((nd,i) => { for (let c=0;c<nd.q;c++){ const d=document.createElement('div'); d.className='cell'; d.dataset.i=i; cellsBox.appendChild(d);} const r=document.createElement('div'); r.className='need'; r.dataset.i=i; r.innerHTML=`<i style="background:color-mix(in srgb, var(--accent) ${shade[i]*100}%, transparent)"></i><span>${nd.n} <span class="mono" style="font-size:12px">· ${nd.q} hl</span></span><span class="mono num" style="font-size:12.5px">${nd.label}</span>`; needsBox.appendChild(r); });
+const PRICES=[50,30,20,10,5,1];
+PRICES.forEach(p => { const b=document.createElement('button'); b.textContent=p+' F / hl'; b.dataset.p=p; b.addEventListener('click',()=>setWater(p)); $('#waterBtns').appendChild(b); });
+function setWater(p){
+  $$('#waterBtns button').forEach(b=>b.classList.toggle('sel', +b.dataset.p===p));
+  let q=0, val=0;
+  NEEDS.forEach((nd,i)=>{ const on = nd.lb>=p; if (on){ q+=nd.q; val+=nd.q*nd.lb; } $$(`.need[data-i="${i}"]`).forEach(r=>r.classList.toggle('on',on)); });
+  $$('.cell').forEach((c,idx)=>{ const i=+c.dataset.i; const on=NEEDS[i].lb>=p; c.classList.toggle('on',on); c.style.background = on ? `color-mix(in srgb, var(--accent) ${shade[i]*100}%, transparent)` : 'transparent'; c.style.transitionDelay = reduce?'0ms':(idx*4)+'ms'; });
+  $('#wQ').textContent=q; $('#wBill').textContent=fmt(p*q)+' F'; $('#wErr').textContent=fmt(50*q)+' F'; $('#wVal').textContent=fmt(val)+' F'; $('#wSur').textContent='surplus ≥ '+fmt(val-p*q)+' F (value − bill)';
+}
+setWater(20);
+
+/* ---------- relative utility chart ---------- */
+const VALS = Array.from({length:16},(_,i)=>30-i);
+function drawU(mode){
+  const svg=$('#uChart'); svg.innerHTML='';
+  const L=40,R=10,T=14,B=34, Wd=640-L-R, Ht=300-T-B, ymax=32, y=v=>T+Ht-(v/ymax)*Ht, bw=Wd/16;
+  for (let g=0; g<=30; g+=5){ el('line',{x1:L,x2:640-R,y1:y(g),y2:y(g),stroke:'var(--rule)','stroke-width':g?0.6:1.2},svg); el('text',{x:L-8,y:y(g)+4,'text-anchor':'end'},svg).textContent=g; }
+  const cost = mode==='cut'?15:20, price = mode==='tax'?25:cost;
+  let cs=0, rev=0, lost=0;
+  VALS.forEach((v,i)=>{
+    const x=L+i*bw+bw*0.14, w=bw*0.72;
+    const seg=(a,b,fill,extra={})=>{ if(b>a) el('rect',{x,y:y(b),width:w,height:y(a)-y(b),fill,...extra},svg); };
+    if (v>=price){ seg(0,cost,'var(--neutral)'); if(price>cost) seg(cost,price,'var(--revenue)'); seg(price,v,'var(--accent)'); cs+=v-price; rev+=price-cost; }
+    else if (v>=cost){ seg(0,cost,'none',{stroke:'var(--ink-2)','stroke-dasharray':'3 3'}); seg(cost,v,'var(--loss)'); lost+=v-cost; }
+    else { el('rect',{x,y:y(v),width:w,height:y(0)-y(v),fill:'none',stroke:'var(--ink-2)','stroke-dasharray':'3 3',opacity:.6},svg); }
+    el('text',{x:x+w/2,y:300-B+16,'text-anchor':'middle'},svg).textContent=v;
+  });
+  el('line',{x1:L,x2:640-R,y1:y(price),y2:y(price),stroke:'var(--ink)','stroke-width':1.6,'stroke-dasharray':'6 4'},svg);
+  el('text',{x:640-R,y:y(price)-6,'text-anchor':'end',style:'fill:var(--ink);font-weight:600'},svg).textContent='price '+price+' F';
+  el('text',{x:L,y:300-4},svg).textContent='each buyer’s maximum (absolute utility), F';
+  $('#uCS').textContent=cs+' F'; $('#uRev').textContent=rev+' F'; $('#uLoss').textContent=lost+' F';
+  $('#uNote').textContent = mode==='base' ? 'Eleven buyers value it at 30 down to 20 F. Their surpluses are 10, 9 … 1, 0, for 55 F in total. The five dashed buyers value it below cost and stay out.'
+    : mode==='tax' ? 'The six buyers who stay each lose exactly 5 F, and 30 F of it reaches the treasury. The buyers who valued it at 20–24 F stop buying and lose their whole surplus: 4+3+2+1+0 = 10 F that nobody collects.'
+    : 'Old buyers each gain 5 F, and five new buyers (valuing it at 19–15 F) arrive with surpluses of 4, 3, 2, 1, 0. Total surplus rises from 55 F to 120 F.';
+}
+$$('[data-u]').forEach(b=>b.addEventListener('click',()=>{ $$('[data-u]').forEach(x=>x.classList.toggle('sel',x===b)); drawU(b.dataset.u); }));
+drawU('base');
+
+/* ---------- canal bars ---------- */
+const canalFig=$('#canalFig');
+const runCanal=()=>{ canalFig.classList.remove('ran'); void canalFig.offsetWidth; requestAnimationFrame(()=>canalFig.classList.add('ran')); };
+$('#runCanal').addEventListener('click', runCanal);
+canalFig.classList.add('ran');
+
+/* ---------- bridge chart ---------- */
+const bsvg=$('#bChart');
+const bL=62,bR=12,bT=14,bB=40, bW=640-bL-bR, bH=340-bT-bB, bymax=.16;
+const bx = q => bL + q/TOTAL*bW, by = v => bT + bH - v/bymax*bH;
+for (let g=0; g<=.15+1e-9; g+=.05){ el('line',{x1:bL,x2:640-bR,y1:by(g),y2:by(g),stroke:'var(--rule)','stroke-width':g?0.6:1.2},bsvg); el('text',{x:bL-8,y:by(g)+4,'text-anchor':'end'},bsvg).textContent=g.toFixed(2); }
+[0,500000,1000000,1500000,2000000].forEach(q=>{ el('text',{x:bx(q),y:340-bB+16,'text-anchor':'middle'},bsvg).textContent = q? (q/1e6)+'M':'0'; });
+el('text',{x:bL,y:340-6},bsvg).textContent='crossings per year (ordered from highest value to lowest)';
+el('text',{x:8,y:bT+4,transform:`rotate(-90 8 ${bT+4})`,'text-anchor':'end'},bsvg).textContent='value of a crossing, F';
+const groups=[]; let cum=0;
+for (let j=15;j>=1;j--){ const d=DROPS[j-1]; const g={j,x:bx(cum),w:bx(cum+d)-bx(cum)}; g.base=el('rect',{x:g.x,y:by(j/100),width:Math.max(.5,g.w-.6),height:by(0)-by(j/100),class:'blk'},bsvg); g.low=el('rect',{x:g.x,width:Math.max(.5,g.w-.6),fill:'var(--revenue)'},bsvg); groups.push(g); cum+=d; }
+const tollLine=el('line',{x1:bL,x2:640-bR,stroke:'var(--ink)','stroke-width':1.6,'stroke-dasharray':'6 4'},bsvg);
+const tollTxt=el('text',{x:640-bR,'text-anchor':'end',style:'fill:var(--ink);font-weight:600'},bsvg);
+const style=document.createElement('style'); style.textContent='.blk,#bChart rect{transition:fill .35s,y .35s,height .35s}'; document.head.appendChild(style);
+
+const msvg=$('#bMini'); const mL=34,mR=8,mT=10,mB=24, mW=320-mL-mR, mH=170-mT-mB, mymax=110000;
+const mx=k=>mL+k/15*mW, my=v=>mT+mH-v/mymax*mH;
+[0,50000,100000].forEach(v=>{ el('line',{x1:mL,x2:320-mR,y1:my(v),y2:my(v),stroke:'var(--rule)','stroke-width':.6},msvg); el('text',{x:mL-4,y:my(v)+4,'text-anchor':'end'},msvg).textContent=v?(v/1000)+'k':'0'; });
+[0,5,10,15].forEach(k=>{ el('text',{x:mx(k),y:170-6,'text-anchor':k===15?'end':'middle'},msvg).textContent=(k/100).toFixed(2); });
+const pts=f=>Array.from({length:16},(_,k)=>`${mx(k)},${my(f(splitCents(k)))}`).join(' ');
+el('polyline',{points:pts(s=>s.rev),fill:'none',stroke:'var(--revenue)','stroke-width':2.2},msvg);
+el('polyline',{points:pts(s=>s.lost),fill:'none',stroke:'var(--loss)','stroke-width':2.2},msvg);
+el('polyline',{points:pts(s=>s.cs),fill:'none',stroke:'var(--accent)','stroke-width':1.6,'stroke-dasharray':'4 3'},msvg);
+const mk1=el('circle',{r:4.5,fill:'var(--revenue)'},msvg), mk2=el('circle',{r:4.5,fill:'var(--loss)'},msvg);
+const mvl=el('line',{y1:mT,y2:mT+mH,stroke:'var(--ink-2)','stroke-dasharray':'2 3'},msvg);
+
+let simToll=0.05;
+function setToll(k){
+  simToll=k/100; const s=splitCents(k);
+  groups.forEach(g=>{ const v=g.j/100; if (g.j>k){ g.base.setAttribute('fill','var(--accent)'); g.low.setAttribute('y',by(k/100)); g.low.setAttribute('height',by(0)-by(k/100)); } else { g.base.setAttribute('fill','var(--loss)'); g.low.setAttribute('y',by(0)); g.low.setAttribute('height',0); } });
+  tollLine.setAttribute('y1',by(k/100)); tollLine.setAttribute('y2',by(k/100)); tollTxt.setAttribute('y',by(k/100)-6); tollTxt.textContent='toll '+(k/100).toFixed(2)+' F';
+  $('#tollOut').textContent=(k/100).toFixed(2).replace('.',',')+' F';
+  $('#bRev').textContent=fmt(s.rev)+' F'; $('#bCS').textContent=fmt(s.cs)+' F'; $('#bLoss').textContent=fmt(s.lost)+' F'; $('#bQ').textContent=fmt(s.q);
+  mk1.setAttribute('cx',mx(k)); mk1.setAttribute('cy',my(s.rev)); mk2.setAttribute('cx',mx(k)); mk2.setAttribute('cy',my(s.lost)); mvl.setAttribute('x1',mx(k)); mvl.setAttribute('x2',mx(k));
+  sim && (sim.reset(), sim.redraw());
+}
+const sim = walkers($('#simCanvas'), ()=>simToll, (y,n)=>{ $('#simYes').textContent=y; $('#simNo').textContent=n; });
+$('#toll').addEventListener('input', e=>setToll(+e.target.value));
+setToll(5);
+
+/* ---------- tax chart ---------- */
+// demand P = 20 - 0.1 Q, cost 5 → Q0 = 150; tax t → Q = 150 - 10t; DWL = 5 t^2
+const tsvg=$('#tChart'); const tL=44,tR=12,tT=14,tB=36, tW=640-tL-tR, tH=330-tT-tB;
+const tx=q=>tL+q/200*tW, ty=p=>tT+tH-p/21*tH;
+function drawTax(t){
+  tsvg.innerHTML='';
+  [0,5,10,15,20].forEach(p=>{ el('line',{x1:tL,x2:640-tR,y1:ty(p),y2:ty(p),stroke:'var(--rule)','stroke-width':p?0.6:1.2},tsvg); el('text',{x:tL-8,y:ty(p)+4,'text-anchor':'end'},tsvg).textContent=p; });
+  [0,50,100,150,200].forEach(q=>{ el('text',{x:tx(q),y:330-tB+16,'text-anchor':'middle'},tsvg).textContent=q; });
+  el('text',{x:tL,y:330-4},tsvg).textContent='quantity';
+  const Q=Math.max(0,150-10*t), P=5+t;
+  el('polygon',{points:`${tx(0)},${ty(20)} ${tx(Q)},${ty(Math.min(P,20))} ${tx(0)},${ty(Math.min(P,20))}`,fill:'var(--accent)',opacity:.55},tsvg);
+  el('rect',{x:tx(0),y:ty(Math.min(P,20)),width:tx(Q)-tx(0),height:ty(5)-ty(Math.min(P,20)),fill:'var(--revenue)',opacity:.75},tsvg);
+  el('polygon',{points:`${tx(Q)},${ty(Math.min(P,20))} ${tx(150)},${ty(5)} ${tx(Q)},${ty(5)}`,fill:'var(--loss)',opacity:.8},tsvg);
+  el('line',{x1:tx(0),y1:ty(20),x2:tx(200),y2:ty(0),stroke:'var(--ink)','stroke-width':2.2},tsvg);
+  el('line',{x1:tL,x2:640-tR,y1:ty(5),y2:ty(5),stroke:'var(--ink-2)','stroke-width':1.4},tsvg);
+  el('text',{x:640-tR,y:ty(5)-6,'text-anchor':'end'},tsvg).textContent='production cost 5';
+  if (t>0){ el('line',{x1:tL,x2:640-tR,y1:ty(P),y2:ty(P),stroke:'var(--ink)','stroke-dasharray':'6 4','stroke-width':1.4},tsvg); el('text',{x:640-tR,y:ty(P)-6,'text-anchor':'end',style:'fill:var(--ink);font-weight:600'},tsvg).textContent='price with tax '+P.toFixed(1); }
+  el('text',{x:tx(150)+6,y:ty(0)-8,'text-anchor':'start'},tsvg).textContent='demand';
+  const rev=t*Q, dwl=0.5*t*(150-Q);
+  $('#taxOut').textContent=t.toFixed(1).replace('.',',')+' F';
+  $('#tRev').textContent=fmt(rev); $('#tDWL').textContent=fmt(dwl); $('#tQ').textContent=fmt(Q); $('#tRatio').textContent= rev>0 ? (dwl/rev).toFixed(2) : (t>0?'∞':'0');
+  tm1.setAttribute('cx',tmx(t)); tm1.setAttribute('cy',tmy(rev)); tm2.setAttribute('cx',tmx(t)); tm2.setAttribute('cy',tmy(dwl));
+}
+const tmsvg=$('#tMini'); const tmL=34,tmR=8,tmT=10,tmB=24, tmW=320-tmL-tmR, tmH=170-tmT-tmB;
+const tmx=t=>tmL+t/15*tmW, tmy=v=>tmT+tmH-v/1150*tmH;
+[0,500,1000].forEach(v=>{ el('line',{x1:tmL,x2:320-tmR,y1:tmy(v),y2:tmy(v),stroke:'var(--rule)','stroke-width':.6},tmsvg); el('text',{x:tmL-4,y:tmy(v)+4,'text-anchor':'end'},tmsvg).textContent=v; });
+[0,5,10,15].forEach(t=>{ el('text',{x:tmx(t),y:170-6,'text-anchor':t===15?'end':'middle'},tmsvg).textContent=t+' F'; });
+const tp=f=>Array.from({length:61},(_,i)=>{const t=i/4; return `${tmx(t)},${tmy(f(t))}`;}).join(' ');
+el('polyline',{points:tp(t=>t*(150-10*t)),fill:'none',stroke:'var(--revenue)','stroke-width':2.2},tmsvg);
+el('polyline',{points:tp(t=>5*t*t),fill:'none',stroke:'var(--loss)','stroke-width':2.2},tmsvg);
+el('text',{x:tmx(7.5),y:tmy(562)-8,'text-anchor':'middle',style:'fill:var(--revenue)'},tmsvg).textContent='revenue';
+el('text',{x:tmx(13.6),y:tmy(925)-4,'text-anchor':'end',style:'fill:var(--loss)'},tmsvg).textContent='loss ∝ t²';
+const tm1=el('circle',{r:4.5,fill:'var(--revenue)'},tmsvg), tm2=el('circle',{r:4.5,fill:'var(--loss)'},tmsvg);
+$('#tax').addEventListener('input',e=>drawTax(+e.target.value));
+drawTax(5);
+
+/* ---------- sorter ---------- */
+const SORT = [
+  {s:'A canal cuts the delivered cost of stone from 20 F to 15 F a tonne.', a:'real', why:'Production cost fell, so less labour and capital produce the same stone. That is new utility.'},
+  {s:'Coal brought by the canal pushes local firewood down 2 F a stère. 100,000 stères are still sold.', a:'transfer', why:'Buyers gain 200,000 F and woodland owners lose 200,000 F. The cost of growing wood did not change, so it is a transfer (p. 80).'},
+  {s:'A monopolist selling at 50 F an item that costs 20 F is forced to cut the price to 40 F.', a:'transfer', why:'Buyers gain 10 F each and the producer loses 10 F each. It cancels out. (Any new buyers it attracts do gain, but that gain could have come from a law, not a public work.)'},
+  {s:'A rival company builds a second bridge. Nobody uses it, but it forces the first bridge to halve its toll and traffic doubles.', a:'transfer', why:'The extra crossings are real gains, but they belong to the lower toll, which a law could have achieved. The second bridge itself produced nothing and used up capital (p. 81).'},
+  {s:'A 5 F tax on stone raises 50,000 F for the treasury.', a:'transfer', why:'Money moves from stone buyers to the state, which presumably spends it usefully. The real loss is the 46,000 F from the 20,000 tonnes that are no longer bought.'},
+  {s:'A railway replaces a long, badly laid-out road where transport was slow and costly.', a:'real', why:'Each traveller saves real time and resources. A railway running beside a steamboat service that saves only a few minutes would add very little (pp. 83–84).'}
+];
+let sorted=0, right=0;
+SORT.forEach((c,i)=>{
+  const d=document.createElement('div'); d.className='card';
+  d.innerHTML=`<span class="tag">Case ${i+1}</span><div>${c.s}</div><div class="controls" style="margin:0"><button data-a="real">New utility</button><button data-a="transfer">Transfer / not the work's doing</button></div><div class="verdict" hidden></div>`;
+  $$('button',d).forEach(b=>b.addEventListener('click',()=>{
+    const v=$('.verdict',d); if (!v.hidden) return;
+    const ok=b.dataset.a===c.a; b.classList.add('sel'); v.hidden=false; v.className='verdict '+(ok?'ok':'no');
+    v.innerHTML=`<b>${ok?'Right.':'Not quite.'}</b> ${c.why}`; sorted++; if(ok) right++;
+    $('#sortScore').textContent=`${sorted} / ${SORT.length} sorted · ${right} correct`;
+  }));
+  $('#sorter').appendChild(d);
+});
+
+/* ---------- world cards ---------- */
+const ICON = {
+  rail:'<svg class="icon" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2"><rect x="10" y="6" width="24" height="24" rx="4"/><line x1="10" y1="20" x2="34" y2="20"/><circle cx="16" cy="25" r="1.6" fill="currentColor"/><circle cx="28" cy="25" r="1.6" fill="currentColor"/><line x1="14" y1="30" x2="8" y2="40"/><line x1="30" y1="30" x2="36" y2="40"/></svg>',
+  car:'<svg class="icon" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 28 L9 18 Q10 15 13 15 H31 Q34 15 35 18 L38 28 Z"/><circle cx="13" cy="30" r="3.5"/><circle cx="31" cy="30" r="3.5"/><line x1="4" y1="8" x2="40" y2="8" stroke-dasharray="3 3"/></svg>',
+  museum:'<svg class="icon" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 16 L22 6 L38 16 Z"/><line x1="11" y1="18" x2="11" y2="32"/><line x1="18" y1="18" x2="18" y2="32"/><line x1="26" y1="18" x2="26" y2="32"/><line x1="33" y1="18" x2="33" y2="32"/><line x1="6" y1="36" x2="38" y2="36"/></svg>',
+  tax:'<svg class="icon" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 36 L36 8"/><circle cx="12" cy="12" r="4"/><circle cx="32" cy="32" r="4"/></svg>',
+  ticket:'<svg class="icon" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 12 H38 V18 A4 4 0 0 0 38 26 V32 H6 V26 A4 4 0 0 0 6 18 Z"/><line x1="16" y1="12" x2="16" y2="32" stroke-dasharray="2 3"/></svg>',
+  phone:'<svg class="icon" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2"><rect x="13" y="5" width="18" height="34" rx="3"/><line x1="19" y1="33" x2="25" y2="33"/><text x="22" y="24" text-anchor="middle" font-size="10" fill="currentColor" stroke="none" font-family="monospace">0 $</text></svg>'
+};
+const WORLD = [
+  {i:'rail', tag:'Transport appraisal', t:'The "rule of a half"', b:'Cost–benefit methods for new rail lines and roads, such as the UK Department for Transport\'s appraisal guidance, value trips by new users at half the cost saving.', l:'This is Dupuit\'s bound on p. 88, <b>ΔU ≤ ½ Δp Δq</b>, in everyday use. New users gain somewhere between nothing and the full saving.'},
+  {i:'car', tag:'Tolls and congestion', t:'Congestion charges', b:'London (2003) and New York (2025) charge drivers to enter the city centre. The charge is meant to deter the lowest-value trips.', l:'Dupuit would count each deterred trip as lost utility. Today\'s addition is that on a crowded road each car slows everyone else, a cost his footbridge doesn\'t have, so deterring some trips can raise total value. <b>Check whether the extra user really costs nothing.</b>'},
+  {i:'museum', tag:'Free access', t:'Free museums and bridges', b:'When one more visitor costs almost nothing, any entry fee mainly turns people away.', l:'That is his free footbridge: 102,000 F of utility at a zero toll. The building still has to be paid for, and general taxes carry their own <b>t² losses</b>, which is why he tried to design tolls carefully rather than drop them.'},
+  {i:'tax', tag:'Tax design', t:'Broad base, low rates', b:'Economists favour taxes spread thinly over many goods (as with a broad VAT) over a few very heavy taxes.', l:'This follows from the square law: <b>ten 1 F taxes waste about a tenth as much as one 10 F tax</b>. It also explains why very high rates can bring in less money.'},
+  {i:'ticket', tag:'Pricing', t:'Fare classes and student discounts', b:'Airlines, software firms and cinemas charge different people different prices for almost the same thing.', l:'This is Dupuit\'s "fine, extra-fine, superfine" wine from one barrel, and his bridge tariffs by type of vehicle. Charging by willingness to pay can <b>let in buyers a single price would exclude</b>.'},
+  {i:'phone', tag:'Digital goods', t:'Free apps and missing value', b:'Search engines and social media cost nothing, so GDP records almost no value for them. In a 2019 study, Brynjolfsson and colleagues asked people how much money they would need to give a service up. The median for Facebook was roughly $40–50 a month.', l:'Price says zero, which is Say\'s error again. Asking <b>"what payment would make you stop?"</b> is Dupuit\'s tax-that-stops-consumption test.'}
+];
+WORLD.forEach(w=>{ const d=document.createElement('article'); d.className='card'; d.innerHTML=`<div style="display:flex;gap:12px;align-items:center;color:var(--accent)">${ICON[w.i]}<span class="tag">${w.tag}</span></div><h3>${w.t}</h3><p style="margin:0">${w.b}</p><div class="lens"><span class="tag" style="display:block;margin-bottom:4px">Dupuit's view</span>${w.l}</div>`; $('#world-cards').appendChild(d); });
+
+/* ---------- TypeScript ---------- */
+const TS = `// Dupuit's footbridge (1844): crossings lost at each toll, in francs
+const lostAtToll: Array<[toll: number, crossings: number]> = [
+  [0.01, 330_000], [0.02, 294_000], [0.03, 260_000], [0.04, 228_000],
+  [0.05, 198_000], [0.06, 170_000], [0.07, 144_000], [0.08, 120_000],
+  [0.09,  98_000], [0.10,  78_000], [0.11,  60_000], [0.12,  44_000],
+  [0.13,  30_000], [0.14,  18_000], [0.15,   8_000],
+];
+
+interface Split { revenue: number; walkers: number; lost: number; total: number }
+
+/** A group's value = the toll that would drive it away. */
+function splitUtility(toll: number): Split {
+  let revenue = 0, walkers = 0, lost = 0;
+  for (const [value, crossings] of lostAtToll) {
+    if (value > toll) {
+      revenue += toll * crossings;            // to the toll collector
+      walkers += (value - toll) * crossings;  // consumer surplus
+    } else {
+      lost += value * crossings;              // trips that never happen
+    }
+  }
+  return { revenue, walkers, lost, total: revenue + walkers + lost };
+}
+
+/** Upper bound on the gain from a price change (p. 88). */
+const ruleOfHalf = (dp: number, dq: number): number => 0.5 * dp * dq;`;
+function hl(src){
+  const esc=src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return esc.replace(/(\/\/[^\n]*|\/\*\*[\s\S]*?\*\/)|("[^"]*")|\b(const|let|function|return|interface|for|of|if|else|number|Array)\b|\b(\d[\d_]*(?:\.\d+)?)\b|\b([A-Za-z_]\w*)(?=\s*\()/g,
+    (m,c,s,k,n,f)=> c?`<span class="c">${c}</span>`: s?`<span class="s">${s}</span>`: k?`<span class="k">${k}</span>`: n?`<span class="n">${n}</span>`: `<span class="f">${f}</span>`);
+}
+$('#tsCode').innerHTML=hl(TS);
+const r2=x=>Math.round(x*100)/100;
+$('#codeToll').addEventListener('input',e=>{ $('#codeTollOut').textContent=(e.target.value/100).toFixed(2); });
+$('#runCode').addEventListener('click',()=>{
+  const k=+$('#codeToll').value; const s=splitCents(k);
+  $('#console').innerHTML=`<span class="p">&gt; splitUtility(${(k/100).toFixed(2)})</span>\n{ revenue: ${fmt(s.rev)}, walkers: ${fmt(s.cs)}, lost: ${fmt(s.lost)}, total: ${fmt(s.rev+s.cs+s.lost)} }\n<span class="p">// ${fmt(s.q)} crossings still made</span>`;
+});
+$('#runHalf').addEventListener('click',()=>{
+  $('#console').innerHTML=`<span class="p">&gt; ruleOfHalf(5, 20_000)   // stone: price −5 F, +20,000 t</span>\n${fmt(ruleOfHalf(5,20000))}\n<span class="p">// true value from the tax table: 46,000 — the bound holds</span>`;
+});
+function ruleOfHalf(dp,dq){ return 0.5*dp*dq; }
+
+/* ---------- flashcards ---------- */
+const CARDS = [
+  ['What did J.-B. Say\'s rule claim?', 'That the price paid for something measures its utility. Dupuit replies that price is only a <b>lower bound</b>.'],
+  ['The wall in the dark: what does it teach?', 'If your hand can\'t reach the top at 2 m, the wall is <b>at least</b> 2 m tall, not exactly 2 m. A price shows the minimum value, not the value.'],
+  ['Absolute utility', 'The <b>largest sacrifice</b> a consumer would make to obtain something (willingness to pay).'],
+  ['Relative utility', 'Absolute utility minus the price paid. <b>u = v − p</b>. Today: consumer surplus.'],
+  ['« Il n\'y a d\'utilité réelle que celle qu\'on consent à payer »', 'The only real utility is the utility people are <b>willing to pay for</b>. A good nobody would buy at its cost has produced no utility.'],
+  ['How do you measure the total utility of a good?', 'Imagine a tax rising step by step. Add up (units that disappear) × (tax that made them disappear). That is the <b>area under the demand curve</b>.'],
+  ['Navier\'s 0.87 F per tonne-league: the four errors', '1) transport cost compared instead of production cost, 2) the full saving given to new tonnes, 3) new goods valued at an impossible old price, 4) quality differences ignored.'],
+  ['Stone canal: Navier vs Dupuit', 'Navier: 2,610,000 F. Dupuit: 50,000 (old tonnes) + 46,000 (new tonnes) = <b>96,000 F</b>.'],
+  ['Total utility of the free footbridge', '<b>102,000 F a year</b> from 2,080,000 crossings, found by adding the toll-step table.'],
+  ['Split at a 0.05 F toll', 'Toll collector 38,500 F · walkers 27,500 F · <b>lost 36,000 F</b> (1,310,000 deterred crossings).'],
+  ['How does the loss from a tax grow with its rate?', 'Roughly with the <b>square</b> of the rate: a 10 F tax loses about 100 times what a 1 F tax does.'],
+  ['Upper bound on the gain from a price change', '<b>½ × Δp × Δq</b>: the "rule of a half" still used in transport appraisal.'],
+  ['When is utility actually created?', 'When <b>production costs fall</b> (or quality improves). A price change alone is a transfer between buyers and sellers.'],
+  ['What happens to revenue as a tax rises from 0?', 'It starts at 0, rises, peaks, then falls back to 0. Most revenue targets can be met by <b>two rates</b>, with very different losses.'],
+  ['Price discrimination in Dupuit', 'Wine sold as fine, extra-fine and superfine from the same barrel. Bridge tariffs that charge carts and carriages differently for the same crossing.'],
+  ['Utility of a work = measure of progress', 'It depends on what came before. Two railways with the same traffic and fares can differ hugely in utility: one replaced a bad road, the other a good steamboat service.']
+];
+let order = CARDS.map((_,i)=>i), pos=0, known = new Set(store.get('dupuit-known',[]));
+const fc=$('#fc');
+function showCard(){
+  fc.classList.remove('flip'); const i=order[pos];
+  setTimeout(()=>{ $('#fcQ').innerHTML=CARDS[i][0]; $('#fcA').innerHTML=CARDS[i][1]; }, reduce?0:150);
+  $('#fcNum').textContent=`Card ${pos+1} of ${CARDS.length}${known.has(i)?' · known':''}`;
+  $('#fcDots').innerHTML=order.map((ci,p)=>`<span class="${known.has(ci)?'known':''} ${p===pos?'cur':''}"></span>`).join('');
+  $('#fcStat').textContent=`${known.size} of ${CARDS.length} marked known`;
+}
+const flip=()=>fc.classList.toggle('flip');
+fc.addEventListener('click',flip); fc.addEventListener('keydown',e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); flip(); } if(e.key==='ArrowRight') next(); if(e.key==='ArrowLeft') prev(); });
+const next=()=>{ pos=(pos+1)%order.length; showCard(); }, prev=()=>{ pos=(pos-1+order.length)%order.length; showCard(); };
+$('#fcNext').onclick=next; $('#fcPrev').onclick=prev;
+$('#fcKnow').onclick=()=>{ known.add(order[pos]); store.set('dupuit-known',[...known]); next(); };
+$('#fcAgain').onclick=()=>{ known.delete(order[pos]); store.set('dupuit-known',[...known]); next(); };
+$('#fcShuffle').onclick=()=>{ for(let i=order.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [order[i],order[j]]=[order[j],order[i]]; } pos=0; showCard(); };
+$('#fcQ').innerHTML=CARDS[0][0]; $('#fcA').innerHTML=CARDS[0][1]; showCard();
+
+/* ---------- quiz ---------- */
+const QUIZ = [
+  {q:'Society pays 500 million francs a year for road transport. What can you conclude about the roads\' utility?', o:['It is exactly 500 million','It is at least 500 million','It is at most 500 million','Nothing at all'], a:1, e:'Price is a lower bound: the hand stops at 2 m, so the wall is at least 2 m.'},
+  {q:'Stone falls from 20 F to 15 F. The city used to buy 10,000 tonnes. What utility goes to those original tonnes?', o:['5,000 F','50,000 F','150,000 F','200,000 F'], a:1, e:'Buyers who stay gain the whole price fall: 5 F × 10,000 t.'},
+  {q:'Why does Navier\'s method give 87 F a tonne when Dupuit finds 5 F?', o:['Navier used the wrong interest rate','Navier compared transport costs, not total production costs','Dupuit ignored new consumers','The canal was badly built'], a:1, e:'The new stone travels further (13 F haulage against 4 F) but comes from a cheaper quarry. Only delivered cost matters.'},
+  {q:'At a 0.05 F toll, who receives the 36,000 F?', o:['The toll collector','The walkers','The state, as tax','Nobody: it is lost'], a:3, e:'It is the value of 1,310,000 crossings that no longer happen: deadweight loss.'},
+  {q:'A small tax rises from 2 F to 6 F. Roughly how much does the lost utility grow?', o:['×2','×3','×6','×9'], a:3, e:'The loss grows with t². Tripling the tax multiplies it by about 9.'},
+  {q:'Which of these creates new utility?', o:['A monopolist is forced to cut its price','Firewood gets cheaper because of competing coal','A canal lowers the cost of producing delivered stone','A rival bridge that nobody uses'], a:2, e:'Only a fall in real production cost creates utility. The others move money between people.'},
+  {q:'20,000 new tonnes arrive after a 5 F price fall. What is the most their buyers can have gained?', o:['20,000 F','46,000 F','50,000 F','100,000 F'], a:2, e:'½ × Δp × Δq = ½ × 5 × 20,000 = 50,000 F. The true figure, 46,000 F, is below it.'},
+  {q:'What happens with a 0.15 F toll on Dupuit\'s footbridge?', o:['Revenue is at its maximum','Revenue and utility are both zero','Walkers keep all the utility','Utility doubles'], a:1, e:'No group values the crossing above 0.15 F, so nobody crosses. All 102,000 F is lost.'},
+  {q:'Two railways have the same traffic and the same fares. Are they equally useful?', o:['Yes: same traffic means same utility','Not necessarily: it depends on what each one replaced','Yes, if they cost the same','No: the longer one is always more useful'], a:1, e:'Utility measures progress from the previous situation. A railway replacing a slow, costly road adds far more than one beside a good steamboat service.'}
+];
+let qs = store.get('dupuit-quiz',{});
+function renderQuiz(){
+  const box=$('#quizBox'); box.innerHTML='';
+  QUIZ.forEach((it,qi)=>{
+    const d=document.createElement('div'); d.className='qitem';
+    d.innerHTML=`<div class="qq">${qi+1}. ${it.q}</div><div class="opts">${it.o.map((o,oi)=>`<button data-o="${oi}">${o}</button>`).join('')}</div><div class="qexp" hidden></div>`;
+    const ans=qs[qi];
+    const reveal=(chosen)=>{ $$('button',d).forEach(b=>{ const o=+b.dataset.o; if(o===it.a) b.classList.add('right'); else if(o===chosen) b.classList.add('wrong'); b.disabled=true; }); const e=$('.qexp',d); e.hidden=false; e.innerHTML=(chosen===it.a?'<b>Correct.</b> ':'<b>Not quite.</b> ')+it.e; };
+    if (ans!==undefined) reveal(ans);
+    $$('button',d).forEach(b=>b.addEventListener('click',()=>{ if(qs[qi]!==undefined) return; qs[qi]=+b.dataset.o; store.set('dupuit-quiz',qs); reveal(qs[qi]); score(); }));
+    box.appendChild(d);
+  });
+  score();
+}
+function score(){ const done=Object.keys(qs).length; const ok=Object.entries(qs).filter(([k,v])=>QUIZ[k].a===v).length; $('#scoreTxt').textContent=`${ok} correct · ${done} / ${QUIZ.length} answered`; }
+$('#quizReset').onclick=()=>{ qs={}; store.set('dupuit-quiz',qs); renderQuiz(); };
+renderQuiz();
+})();
+</script>
+
+</body></html>

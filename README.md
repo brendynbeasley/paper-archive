@@ -42,6 +42,21 @@ The repo, and so your progress and notes, is public. GitHub Pages on a private r
 - **+ New field**, **+ New area** and **+ New topic** in the sidebar create groups. An area is optional: a topic can sit directly under a field.
 - **⋯** on any paper sets or fixes its link, a research link (for example the repo where you did the research), notes, or moves it to another field, area or topic.
 
+## Learning guides
+
+Every paper has a **Learn** button. A paper with an interactive guide shows it filled in colour, and clicking it opens the guide. So far only Dupuit (1844) has one: *Dupuit's Bridge*, `learn/mp0001.html`. On a paper with no guide yet, the button shows a ready-made prompt to paste into an AI assistant to make one.
+
+To add a guide:
+
+1. Save the HTML file as `learn/<paper id>.html`. The id is shown in the prompt, for example `mp0001`.
+2. Add it to `data/learn.json`:
+
+   ```json
+   "mp0001": { "file": "learn/mp0001.html", "title": "Dupuit's Bridge", "added": "2026-11-08" }
+   ```
+
+3. Commit and push. That paper's Learn button lights up.
+
 ## Links
 
 Preloaded papers link to their DOI where one was found. `tools/find_links.py` looked each paper up in Crossref, the public registry of journal DOIs, and kept a link only when the title matched closely and the year (and, for a few years' gap, the first author) agreed. Papers without a confident match show **Search Scholar ↗**, which opens a Google Scholar search instead. To retry lookups and rebuild:

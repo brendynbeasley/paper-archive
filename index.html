@@ -147,6 +147,17 @@
   </form>
 </dialog>
 
+<!-- Learn: no guide yet -->
+<dialog id="learnDlg" aria-labelledby="learnDlgTitle">
+  <form method="dialog">
+    <h2 id="learnDlgTitle">No guide yet</h2>
+    <p class="hint">There's no interactive guide for <b id="learnPaper"></b> yet. Copy this prompt into an AI assistant to make one like Dupuit's Bridge. Once it's saved in the repo, this paper's Learn button opens it.</p>
+    <textarea id="learnPrompt" rows="11" readonly aria-label="Prompt for making a guide"></textarea>
+    <p class="formerr" id="learnMsg" hidden></p>
+    <div class="dlgfoot"><span class="grow"></span><button class="pill" value="close">Close</button><button class="pill primary" type="button" id="learnCopy">Copy prompt</button></div>
+  </form>
+</dialog>
+
 <datalist id="fieldList"></datalist>
 <datalist id="areaList"></datalist>
 <datalist id="topicList"></datalist>

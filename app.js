@@ -38,6 +38,7 @@ const S = {
   dirty: { progress: 0, library: 0 },  // change counters not yet pushed
   messages: [],                         // commit message fragments
   cfg: Object.assign({ owner: '', repo: '', branch: 'main', token: '' }, store.get(CFG_KEY) || {}),
+  guides: {},
   view: Object.assign({ field: null, area: null, topic: null, status: 'any', stars: '0', sort: 'order' }, store.get(VIEW_KEY) || {}),
   shown: PAGE,
   papers: [], byId: new Map(),
@@ -343,6 +344,27 @@ function progressHtml(list) {
 function linkLabel(u) {
   try { const h = new URL(u).hostname.replace(/^www\./, ''); return h === 'doi.org' ? 'Open paper' : h; } catch { return 'Open paper'; }
 }
+const LEARN_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 9 12 4 2 9l10 5 10-5z"/><path d="M6 11v5c3 2.5 9 2.5 12 0v-5"/><path d="M22 9v6"/></svg>';
+function learnBtn(p) {
+  const g = S.guides[p.id];
+  if (g) return `<a class="learn has" href="${esc(g.file)}" target="_blank" rel="noopener" title="Open the interactive guide: ${esc(g.title)}">${LEARN_ICON}<span>Learn</span></a>`;
+  return `<button type="button" class="learn" data-learn="1" title="No interactive guide yet">${LEARN_ICON}<span>Learn</span></button>`;
+}
+function learnPrompt(p) {
+  const cite = `${p.a || ''} (${p.y || 'n.d.'}). "${p.t}." ${(p.v || '').replace(/\*/g, '')}`.trim();
+  return `Make an interactive learning page for this paper, in the same style as Dupuit's Bridge (learn/mp0001.html in the brendynbeasley/paper-archive repo):
+
+${cite}${p.link ? `\nLink: ${p.link}` : ''}
+
+Build it as a single self-contained HTML file with:
+- the question the paper asks and why it mattered at the time
+- its argument broken into short parts, each with an interactive simulator or diagram
+- the key equations, with every term explained
+- flashcards, a quiz and a timeline of what came after
+- page references to the original wherever possible; mark anything you're unsure of
+
+Save it as learn/${p.id}.html, add it to data/learn.json under "${p.id}", then commit and push.`;
+}
 function paperRow(p, showWhere) {
   const g = prog(p.id);
   const link = p.link || `https://scholar.google.com/scholar?q=${encodeURIComponent(`${p.t} ${(p.a || '').split(',')[0]}`)}`;
@@ -358,7 +380,7 @@ function paperRow(p, showWhere) {
     <div class="pmain"><a class="ptitle" href="${esc(link)}" target="_blank" rel="noopener" title="${p.link ? 'Open paper' : 'Search Google Scholar'}">${esc(p.t)}</a>
     <div class="pmeta">${meta}${p.s ? `<span class="s" title="${p.s === 2 ? 'Must-read' : 'Influential'}">${'★'.repeat(p.s)}</span>` : ''}${showWhere ? ` · <span class="where">${esc(p.tp)}</span>` : ''}
       <a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? linkLabel(p.link) : 'Search Scholar'} ↗</a></div></div>
-    <div class="btns">${btns}</div>
+    <div class="btns">${btns}${learnBtn(p)}</div>
     <button type="button" class="more-btn" data-edit="1" aria-label="Details and edit" title="Details and edit">${MORE_ICON}</button></article>`;
 }
 
@@ -586,6 +608,19 @@ function exportBackup() {
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 
+function openLearn(id) {
+  const p = S.byId.get(id); if (!p) return;
+  $('learnPaper').textContent = p.t;
+  $('learnPrompt').value = learnPrompt(p);
+  $('learnMsg').hidden = true;
+  $('learnDlg').showModal();
+}
+function copyLearn() {
+  const t = $('learnPrompt'), m = $('learnMsg');
+  const done = () => { m.hidden = false; m.className = 'formerr ok'; m.textContent = 'Copied. Paste it into an AI assistant.'; };
+  const fail = () => { t.focus(); t.select(); m.hidden = false; m.className = 'formerr'; m.textContent = 'Select the text above and copy it.'; };
+  try { navigator.clipboard.writeText(t.value).then(done, fail); } catch { fail(); }
+}
 let toastTimer;
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2200); }
 function saveView() { store.set(VIEW_KEY, { field: S.view.field, area: S.view.area, topic: S.view.topic, status: S.view.status, stars: S.view.stars, sort: S.view.sort }); }
@@ -621,6 +656,7 @@ function bind() {
   $('list').addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.addhere) return openPaper(null);
+    if (b.dataset.learn) return openLearn(b.closest('.paper').dataset.id);
     const row = b.closest('.paper'); if (!row) return;
     if (b.dataset.st) toggle(row.dataset.id, b.dataset.st);
     else if (b.dataset.edit) openPaper(row.dataset.id);
@@ -650,6 +686,7 @@ function bind() {
   $('pDelete').addEventListener('click', deletePaper);
   $('groupForm').addEventListener('submit', (e) => { if (!e.submitter || e.submitter.value !== 'cancel') saveGroup(); });
   $('settingsBtn').addEventListener('click', openSettings);
+  $('learnCopy').addEventListener('click', copyLearn);
   $('setForm').addEventListener('submit', (e) => { if (e.submitter && e.submitter.value === 'save') applySettings(); });
   $('sTest').addEventListener('click', testSettings);
   $('sExport').addEventListener('click', exportBackup);
@@ -669,6 +706,7 @@ async function start() {
   loadCache();
   const cat = await fetchStatic('data/catalog.json', { papers: [] }, false);
   S.catalog = cat.papers || [];
+  S.guides = (await fetchStatic('data/learn.json', { guides: {} })).guides || {};
   rebuild();
   // Views saved before areas existed: work out the area from the topic.
   if (S.view.topic && S.view.area == null) {
