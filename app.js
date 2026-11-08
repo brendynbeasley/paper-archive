@@ -267,7 +267,7 @@ function passFilters(p) {
   if (st === 'complete' && n !== 4) return false;
   if (st[0] === '-' && g[st.slice(1)]) return false;
   if (st[0] === '+' && !g[st.slice(1)]) return false;
-  if ((p.s || 0) < +S.view.stars) return false;
+  if (S.view.stars !== '0' && (p.s || 0) !== +S.view.stars) return false;  // exact star level
   return true;
 }
 function sorted(list) {
@@ -377,6 +377,7 @@ function renderMain() {
   $('progress').innerHTML = progressHtml(scope);
   document.querySelectorAll('[data-filter]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === S.view.status)));
   $('mustRead').setAttribute('aria-pressed', String(S.view.stars === '2'));
+  $('influential').setAttribute('aria-pressed', String(S.view.stars === '1'));
   $('legend').innerHTML = `<span class="key"><b class="s">★★</b> must-read</span><span class="key"><b class="s">★</b> influential</span><span class="gap"></span>`
     + STATUSES.map(([s, l]) => `<span><i style="background:var(--${s})"></i>${l}</span>`).join('') + `<span>${list.length.toLocaleString()} papers</span>`;
   if (!list.length) {
@@ -627,7 +628,8 @@ function bind() {
   let st;
   $('search').addEventListener('input', () => { clearTimeout(st); st = setTimeout(() => { S.shown = PAGE; render(); }, 180); });
   document.querySelectorAll('[data-filter]').forEach((b) => b.addEventListener('click', () => { S.view.status = b.dataset.filter; S.shown = PAGE; saveView(); renderMain(); }));
-  $('mustRead').addEventListener('click', () => { S.view.stars = S.view.stars === '2' ? '0' : '2'; S.shown = PAGE; saveView(); renderMain(); });
+  const starChip = (id, lvl) => $(id).addEventListener('click', () => { S.view.stars = S.view.stars === lvl ? '0' : lvl; S.shown = PAGE; saveView(); renderMain(); });
+  starChip('mustRead', '2'); starChip('influential', '1');
   $('fSort').value = S.view.sort;
   $('fSort').addEventListener('change', () => { S.view.sort = $('fSort').value; S.shown = PAGE; saveView(); renderMain(); });
   $('crumb').addEventListener('click', (e) => {
