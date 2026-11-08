@@ -621,6 +621,28 @@ function copyLearn() {
   const fail = () => { t.focus(); t.select(); m.hidden = false; m.className = 'formerr'; m.textContent = 'Select the text above and copy it.'; };
   try { navigator.clipboard.writeText(t.value).then(done, fail); } catch { fail(); }
 }
+/* ---------- theme: auto (follow device) -> light -> dark ---------- */
+const THEME_ICONS = {
+  auto: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg>',
+  light: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  dark: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
+};
+function applyTheme(t) {
+  if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+  else { document.documentElement.removeAttribute('data-theme'); t = 'auto'; }
+  const label = { auto: 'Theme: auto (follows your device)', light: 'Theme: light', dark: 'Theme: dark' }[t];
+  $('themeBtn').innerHTML = THEME_ICONS[t];
+  $('themeBtn').title = label + '. Click to change.';
+  $('themeBtn').setAttribute('aria-label', label);
+  return t;
+}
+function cycleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') || 'auto';
+  const next = { auto: 'light', light: 'dark', dark: 'auto' }[cur];
+  try { if (next === 'auto') localStorage.removeItem('pa-theme'); else localStorage.setItem('pa-theme', next); } catch { /* storage blocked */ }
+  toast({ auto: 'Theme follows your device', light: 'Light mode', dark: 'Dark mode' }[applyTheme(next)]);
+}
+
 let toastTimer;
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2200); }
 function saveView() { store.set(VIEW_KEY, { field: S.view.field, area: S.view.area, topic: S.view.topic, status: S.view.status, stars: S.view.stars, sort: S.view.sort }); }
@@ -686,6 +708,8 @@ function bind() {
   $('pDelete').addEventListener('click', deletePaper);
   $('groupForm').addEventListener('submit', (e) => { if (!e.submitter || e.submitter.value !== 'cancel') saveGroup(); });
   $('settingsBtn').addEventListener('click', openSettings);
+  applyTheme(document.documentElement.getAttribute('data-theme'));
+  $('themeBtn').addEventListener('click', cycleTheme);
   $('learnCopy').addEventListener('click', copyLearn);
   $('setForm').addEventListener('submit', (e) => { if (e.submitter && e.submitter.value === 'save') applySettings(); });
   $('sTest').addEventListener('click', testSettings);

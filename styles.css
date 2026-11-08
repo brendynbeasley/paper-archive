@@ -3,6 +3,7 @@
    Paper rows are just title + author/year + four round status buttons. */
 :root {
   --bg: #f4f3f9;
+  --mixto: #17152b;
   --surface: #ffffff;
   --ink: #17152b;
   --muted: #6b6884;
@@ -17,12 +18,20 @@
   --top-h: 60px;
   color-scheme: light;
 }
+/* Theme: follows the device unless the header toggle sets data-theme="light" or "dark" on <html>. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #12111c; --surface: #1b1a29; --ink: #f1f0f8; --muted: #a09db8; --line: #2c2a3f; --soft: #242236;
     --pr: #a78bfa; --rd: #60a5fa; --nt: #fbbf24; --rs: #34d399; --danger: #f87171; --star: #fbbf24;
+    --mixto: #f1f0f8;
     color-scheme: dark;
   }
+}
+:root[data-theme="dark"] {
+    --bg: #12111c; --surface: #1b1a29; --ink: #f1f0f8; --muted: #a09db8; --line: #2c2a3f; --soft: #242236;
+    --pr: #a78bfa; --rd: #60a5fa; --nt: #fbbf24; --rs: #34d399; --danger: #f87171; --star: #fbbf24;
+    --mixto: #f1f0f8;
+    color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -60,6 +69,8 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 }
 .add span { font-size: 17px; line-height: 0; margin-right: 2px; }
 .gear, .navbtn { border: 0; background: none; padding: 8px; border-radius: 10px; cursor: pointer; color: var(--muted); display: grid; place-items: center; }
+.theme { border: 0; background: none; padding: 8px; border-radius: 10px; cursor: pointer; color: var(--muted); display: grid; place-items: center; }
+.theme:hover { background: var(--soft); color: var(--ink); }
 .gear:hover, .navbtn:hover { background: var(--soft); color: var(--ink); }
 .navbtn { display: none; }
 
@@ -92,7 +103,7 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .anav .ct { font-size: 11.5px; color: var(--muted); font-weight: 500; font-variant-numeric: tabular-nums; padding-top: 2px; }
 .anav .car { width: 0; height: 0; margin-top: 6px; border-left: 5px solid currentColor; border-top: 4px solid transparent; border-bottom: 4px solid transparent; transition: transform .15s; opacity: .6; }
 .anav[aria-expanded="true"] .car { transform: rotate(90deg); }
-.anav[aria-current="true"] { color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent); }
+.anav[aria-current="true"] { color: color-mix(in srgb, var(--c) 70%, var(--mixto)); background: color-mix(in srgb, var(--c) 12%, transparent); }
 .topics { display: grid; gap: 1px; margin: 0 0 6px 14px; }
 .topics.loose { margin-left: 0; }
 .addrow { display: flex; flex-wrap: wrap; gap: 0 4px; }
@@ -103,7 +114,7 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .tnav:hover { color: var(--ink); background: var(--soft); }
 .tnav .nm { line-height: 1.3; }
 .tnav .ct { font-size: 11.5px; font-variant-numeric: tabular-nums; padding-top: 2px; }
-.tnav[aria-current="true"] { color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent); font-weight: 600; }
+.tnav[aria-current="true"] { color: color-mix(in srgb, var(--c) 70%, var(--mixto)); background: color-mix(in srgb, var(--c) 12%, transparent); font-weight: 600; }
 .navadd { border: 0; background: none; color: var(--muted); font-size: 13px; text-align: left; padding: 6px 10px; cursor: pointer; border-radius: 8px; }
 .navadd:hover { color: var(--ink); background: var(--soft); }
 .navlabel { font: 700 11px var(--f-body); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 14px 12px 4px; }
@@ -164,9 +175,9 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .pmeta .where { color: var(--fc); font-weight: 500; }
 .plink {
   display: inline-block; margin-left: 10px; padding: 1px 9px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
-  text-decoration: none; color: var(--fc); background: color-mix(in srgb, var(--fc) 12%, transparent); white-space: nowrap;
+  text-decoration: none; color: var(--rd); background: color-mix(in srgb, var(--rd) 13%, transparent); white-space: nowrap;
 }
-.plink:hover { background: var(--fc); color: #fff; }
+.plink:hover { background: var(--rd); color: #fff; }
 .plink.alt { color: var(--muted); background: var(--soft); font-weight: 500; }
 .plink.alt:hover { background: var(--muted); color: var(--surface); }
 .btns { display: flex; gap: 6px; }
