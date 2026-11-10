@@ -1,0 +1,1272 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-ser<title>Hadley's Railroad Lesson</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a freight-tariff ledger. One reading column, wide "plates" for diagrams.
+   Two semantic hues run through every figure: PUBLIC (the highway) and PRIVATE (the carrier). */
+:root{
+  --paper:#ECEFE8; --card:#F6F8F3; --ink:#18211D; --muted:#59645D; --rule:#C6CDC3;
+  --public:#2E5B88; --public-soft:#D5E1EC; --private:#A9640F; --private-soft:#F1E1C8;
+  --signal:#B0362C; --ok:#2F7444; --hl:#FFF2B8;
+  --code-bg:#1C2420; --code-fg:#DDE5DE; --code-kw:#E4A757; --code-str:#9FD18B; --code-num:#8BC3EE; --code-com:#7C8A82; --code-ty:#D7A6E8;
+  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --measure:68ch; --wide:1120px; --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#111714; --card:#18201C; --ink:#E4E9E2; --muted:#9BA69F; --rule:#2D3832;
+  --public:#86B4E0; --public-soft:#1E3247; --private:#E5A653; --private-soft:#3B2C17;
+  --signal:#EE7B6F; --ok:#7CC48F; --hl:#4A4220; --code-bg:#0B0F0D; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#111714; --card:#18201C; --ink:#E4E9E2; --muted:#9BA69F; --rule:#2D3832;
+  --public:#86B4E0; --public-soft:#1E3247; --private:#E5A653; --private-soft:#3B2C17;
+  --signal:#EE7B6F; --ok:#7CC48F; --hl:#4A4220; --code-bg:#0B0F0D; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--paper)}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
+a{color:var(--public)}
+:focus-visible{outline:3px solid var(--private);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.02;text-wrap:balance;margin:0}
+h2{font-size:clamp(2.2rem,5vw,3.3rem);font-weight:800;letter-spacing:.01em;text-transform:uppercase}
+h3{font-size:1.5rem;font-weight:800;text-transform:uppercase;letter-spacing:.02em}
+p{margin:0}
+.wrap{max-width:var(--wide);margin:0 auto}
+.col{max-width:var(--measure)}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-mono)}
+.small{font-size:.88rem;color:var(--muted)}
+.pub{color:var(--public);font-weight:600}.pri{color:var(--private);font-weight:600}.sig{color:var(--signal);font-weight:600}
+mark{background:var(--hl);color:inherit;padding:0 .15em}
+
+/* ---------- nav ---------- */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--paper);border-bottom:2px solid var(--ink);
+  margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)))}
+.nav-in{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:8px max(16px,env(safe-area-inset-left,0px));max-width:calc(var(--wide) + 32px);margin:0 auto}
+.nav-in::-webkit-scrollbar{display:none}
+.nav a{font-family:var(--f-mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;text-decoration:none;color:var(--muted);
+  padding:6px 10px;border-radius:3px;white-space:nowrap}
+.nav a:hover,.nav a.on{color:var(--paper);background:var(--ink)}
+.progress{position:absolute;left:0;bottom:-2px;height:2px;background:var(--private);width:0}
+
+/* ---------- hero ---------- */
+.hero{padding-block:48px 28px;display:grid;gap:22px}
+.hero h1{font-size:clamp(3rem,10vw,7.4rem);font-weight:900;text-transform:uppercase;line-height:.88;letter-spacing:-.005em}
+.hero h1 .amp{color:var(--private)}
+.hero h1 .pr{color:var(--public)}
+.citation{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 18px}
+.thesis{font-size:1.32rem;line-height:1.5;max-width:56ch;border-left:4px solid var(--private);padding-left:18px;font-style:italic}
+.train-strip{width:100%;height:90px;overflow:hidden;border-block:1px solid var(--rule)}
+.train-strip svg{width:100%;height:100%;display:block}
+.train{animation:roll 16s linear infinite}
+@keyframes roll{from{transform:translateX(-340px)}to{transform:translateX(1300px)}}
+.smoke{animation:puff 1.4s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes puff{0%{opacity:.7;transform:translate(0,0) scale(.6)}100%{opacity:0;transform:translate(-30px,-26px) scale(1.6)}}
+.keyfacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.keyfacts div{border-top:2px solid var(--ink);padding-top:8px}
+.keyfacts b{font-family:var(--f-display);font-size:1.7rem;display:block;line-height:1}
+.keyfacts span{font-size:.9rem;color:var(--muted)}
+
+/* ---------- sections ---------- */
+section.sec{padding-block:56px;border-top:1px solid var(--rule);display:grid;gap:22px}
+.sec-head{display:grid;gap:10px}
+.lede{font-size:1.15rem;max-width:var(--measure)}
+.quote{font-style:italic;border-left:3px solid var(--rule);padding:4px 0 4px 16px;max-width:var(--measure);color:var(--ink)}
+.quote cite{display:block;font-style:normal;font-family:var(--f-mono);font-size:.72rem;color:var(--muted);margin-top:6px}
+.plate{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);padding:20px;display:grid;gap:14px;min-width:0}
+.plate-title{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.grid2>*,.grid3>*{min-width:0}
+.svgbox{overflow-x:auto}
+.svgbox svg{display:block;width:100%;height:auto;min-width:520px}
+.svgbox.fit svg{min-width:0}
+svg text{font-family:var(--f-mono);fill:var(--ink)}
+
+.btn{font-family:var(--f-mono);font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;border:1.5px solid var(--ink);background:transparent;color:var(--ink);
+  padding:8px 14px;border-radius:3px;cursor:pointer}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn.solid{background:var(--ink);color:var(--paper)}
+.btn.solid:hover{background:var(--private);border-color:var(--private)}
+.btn[disabled]{opacity:.4;cursor:default}
+.seg{display:inline-flex;border:1.5px solid var(--ink);border-radius:3px;overflow:hidden;flex-wrap:wrap}
+.seg button{font-family:var(--f-mono);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;border:0;background:transparent;color:var(--ink);padding:8px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ctrl{display:grid;gap:4px;font-family:var(--f-mono);font-size:.78rem;color:var(--muted);min-width:180px;flex:1}
+.ctrl output{color:var(--ink);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--private)}
+input[type=number],input[type=text],select{font-family:var(--f-mono);font-size:.9rem;padding:6px 8px;border:1.5px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);width:100%}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.readout div{border:1px solid var(--rule);border-radius:4px;padding:10px;background:var(--paper)}
+.readout b{display:block;font-family:var(--f-display);font-size:1.8rem;line-height:1;font-variant-numeric:tabular-nums}
+.readout span{font-family:var(--f-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.verdict{font-size:1rem;padding:10px 14px;border-radius:4px;border:1px solid var(--rule);background:var(--paper)}
+.verdict.bad{border-color:var(--signal);color:var(--signal)}
+.verdict.good{border-color:var(--ok);color:var(--ok)}
+
+table.tbl{border-collapse:collapse;width:100%;font-size:.95rem}
+.tblwrap{overflow-x:auto}
+.tbl th,.tbl td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+.tbl th{font-family:var(--f-mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.tbl td:first-child{font-weight:600}
+
+.chip{display:inline-block;font-family:var(--f-mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;padding:2px 7px;border-radius:999px;border:1px solid currentColor}
+.chip.pub{color:var(--public)}.chip.pri{color:var(--private)}.chip.sig{color:var(--signal)}.chip.ok{color:var(--ok)}.chip.mut{color:var(--muted)}
+
+/* equation blocks */
+.eq{font-family:var(--f-mono);font-size:.92rem;background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:var(--r);overflow-x:auto;white-space:pre;line-height:1.55}
+pre.code{margin:0;font-family:var(--f-mono);font-size:.84rem;background:var(--code-bg);color:var(--code-fg);padding:16px;border-radius:var(--r);overflow-x:auto;line-height:1.55;tab-size:2}
+.tk-kw{color:var(--code-kw)}.tk-str{color:var(--code-str)}.tk-num{color:var(--code-num)}.tk-com{color:var(--code-com);font-style:italic}.tk-ty{color:var(--code-ty)}
+
+/* four ways */
+.ways{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.way{text-align:left;border:1.5px solid var(--rule);background:var(--paper);border-radius:var(--r);padding:12px;cursor:pointer;color:var(--ink);font-family:var(--f-body);font-size:.95rem;display:grid;gap:4px}
+.way b{font-family:var(--f-display);font-size:1.3rem;text-transform:uppercase}
+.way[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 -4px 0 var(--private)}
+.way-detail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,260px);gap:20px;align-items:start}
+@media (max-width:720px){.way-detail{grid-template-columns:1fr}}
+.matrix{display:grid;grid-template-columns:auto 1fr 1fr;gap:4px;font-family:var(--f-mono);font-size:.72rem}
+.matrix .h{color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:4px;display:flex;align-items:center;justify-content:center;text-align:center}
+.matrix .c{border:1.5px dashed var(--rule);border-radius:4px;padding:10px 6px;text-align:center;min-height:62px;display:flex;align-items:center;justify-content:center;transition:all .3s}
+.matrix .c.on{border-style:solid;border-color:var(--private);background:var(--private-soft);font-weight:600}
+
+/* cards */
+.card{border:1px solid var(--rule);border-radius:var(--r);padding:16px;background:var(--card);display:grid;gap:8px;align-content:start}
+.card .n{font-family:var(--f-display);font-size:2.4rem;line-height:.9;color:var(--private)}
+
+/* cycle */
+.cyc-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);gap:20px;align-items:center}
+@media (max-width:760px){.cyc-wrap{grid-template-columns:1fr}}
+.dots{display:flex;flex-wrap:wrap;gap:5px}
+.dots i{width:14px;height:14px;border-radius:50%;background:var(--public);display:block;transition:all .5s}
+.dots i.gone{background:transparent;border:1.5px dashed var(--rule)}
+.dots i.big{background:var(--private);width:30px;height:30px}
+
+/* prussia */
+.blocks{display:flex;gap:6px}
+.blocks i{flex:1;height:52px;border-radius:3px;background:var(--private);display:block}
+.blocks i.t{background:var(--public)}
+
+/* phases */
+.phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0;border:1.5px solid var(--ink);border-radius:var(--r);overflow:hidden}
+.phase{padding:18px;display:grid;gap:8px;align-content:start;border-right:1px solid var(--rule)}
+.phase:last-child{border-right:0}
+.phase .n{font-family:var(--f-display);font-size:3rem;line-height:.8}
+.phase.cur{background:var(--private-soft)}
+.res{font-family:var(--f-mono);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em}
+
+/* timeline */
+.tl{position:relative;display:grid;gap:0;padding-left:0}
+.tl-item{display:grid;grid-template-columns:96px 24px minmax(0,1fr);gap:10px;align-items:start;padding-block:10px}
+.tl-year{font-family:var(--f-display);font-size:1.4rem;font-weight:800;text-align:right;line-height:1.1;font-variant-numeric:tabular-nums}
+.tl-dot{position:relative;height:100%}
+.tl-dot::before{content:"";position:absolute;left:11px;top:0;bottom:-20px;width:2px;background:var(--rule)}
+.tl-dot::after{content:"";position:absolute;left:5px;top:6px;width:14px;height:14px;border-radius:50%;background:var(--paper);border:3px solid var(--private)}
+.tl-item.ctx .tl-dot::after{border-color:var(--public);border-style:dotted}
+.tl-item:last-child .tl-dot::before{display:none}
+.tl-body{display:grid;gap:3px}
+.tl-body b{font-size:1.02rem}
+.tl-body span{font-size:.92rem;color:var(--muted)}
+.tl-item{opacity:1;transform:none;transition:opacity .5s, transform .5s}
+.tl-item.pre{opacity:.15;transform:translateX(12px)}
+@media (max-width:520px){.tl-item{grid-template-columns:62px 24px minmax(0,1fr)}.tl-year{font-size:1.1rem}}
+
+/* disclosure */
+details.reveal{border:1px solid var(--rule);border-radius:var(--r);background:var(--card)}
+details.reveal summary{cursor:pointer;padding:12px 14px;font-weight:600;list-style:none;display:flex;gap:10px;align-items:baseline}
+details.reveal summary::-webkit-details-marker{display:none}
+details.reveal summary::before{content:"+";font-family:var(--f-mono);color:var(--private);font-weight:700}
+details.reveal[open] summary::before{content:"–"}
+details.reveal .body{padding:0 14px 14px;display:grid;gap:10px}
+
+/* practice */
+.prob{border:1px solid var(--rule);border-radius:var(--r);padding:16px;background:var(--card);display:grid;gap:10px;min-width:0}
+.prob .tag{font-family:var(--f-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--private)}
+.prob .ans{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.prob .ans input{max-width:160px}
+.fb{font-family:var(--f-mono);font-size:.85rem}
+.fb.ok{color:var(--ok)}.fb.no{color:var(--signal)}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;font-family:var(--f-body);font-size:.98rem;border:1.5px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:4px;padding:9px 12px;cursor:pointer}
+.opt:hover{border-color:var(--ink)}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--paper))}
+.opt.wrong{border-color:var(--signal);background:color-mix(in srgb,var(--signal) 12%,var(--paper))}
+.opt[disabled]{cursor:default}
+
+/* flashcards */
+.fc-stage{perspective:1400px;display:grid}
+.fc{position:relative;min-height:260px;cursor:pointer;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.2,.7,.2,1)}
+.fc.flip{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:10px;border:1.5px solid var(--ink);padding:24px;display:grid;align-content:center;gap:10px;background:var(--card)}
+.fc-face.back{transform:rotateY(180deg);background:var(--private-soft)}
+.fc-face .q{font-family:var(--f-display);font-size:clamp(1.4rem,3.6vw,2rem);font-weight:800;text-transform:uppercase;line-height:1.05}
+.fc-face .a{font-size:1.08rem}
+.fc-meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:var(--f-mono);font-size:.75rem;color:var(--muted)}
+.boxes{display:flex;gap:6px;flex-wrap:wrap}
+.boxes span{font-family:var(--f-mono);font-size:.72rem;border:1px solid var(--rule);padding:3px 8px;border-radius:3px}
+textarea.export{width:100%;min-height:120px;font-family:var(--f-mono);font-size:.75rem;background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:4px;padding:8px}
+
+/* scenarios */
+.scn{border:1px solid var(--rule);border-radius:var(--r);background:var(--card);padding:16px;display:grid;gap:10px;align-content:start}
+.scn .map{display:flex;gap:6px;flex-wrap:wrap}
+
+/* quiz */
+.qz{display:grid;gap:14px}
+.qz-q{font-size:1.15rem;font-weight:600}
+.score{font-family:var(--f-display);font-size:3rem;line-height:1}
+
+/* highway/carrier diagram */
+.hc-cap{min-height:3.2em}
+.wagon{transition:fill .6s}
+.lane-move{animation:lane 7s linear infinite}
+.lane-move.slow{animation-duration:10s}
+.lane-move.fast{animation-duration:5.5s}
+@keyframes lane{from{transform:translateX(-120px)}to{transform:translateX(760px)}}
+
+footer{padding-block:40px 64px;border-top:2px solid var(--ink);display:grid;gap:8px}
+</style>
+
+<nav class="nav" aria-label="Sections"><div class="nav-in" id="navIn">
+<a href="#thesis">Thesis</a><a href="#theory">Old theory</a><a href="#outgrew">Strain</a><a href="#four">Four ways</a><a href="#tolls">Tolls</a><a href="#warfare">Rate war</a><a href="#cycle">Cycle</a><a href="#shippers">Shippers</a><a href="#granger">Granger</a><a href="#remedy">Remedy</a><a href="#industry">Industry</a><a href="#phases">Phases</a><a href="#timeline">Timeline</a><a href="#today">Today</a><a href="#code">Code lab</a><a href="#practice">Practice</a><a href="#cards">Flashcards</a><a href="#quiz">Quiz</a>
+</div><div class="progress" id="prog"></div></nav>
+
+<main class="wrap">
+
+<!-- HERO -->
+<header class="hero" id="thesis">
+  <div class="eyebrow">Study guide · The Quarterly Journal of Economics · Vol. 1, No. 1 · October 1886</div>
+  <h1><span class="pr">Private Monopolies</span> <span class="amp">&amp;</span> Public Rights</h1>
+  <div class="citation"><span>Arthur Twining Hadley (1856–1930)</span><span>pp. 28–44</span><span>jstor.org/stable/1883107</span></div>
+  <p class="thesis">"The history of transportation law has constituted an exception to the general laws of the past, but it may not improbably constitute an indication as to the general laws of the future."</p>
+  <div class="train-strip" aria-hidden="true">
+    <svg viewBox="0 0 1000 90" preserveAspectRatio="xMidYMid slice">
+      <g stroke="var(--muted)" stroke-width="3">
+        <line x1="0" y1="74" x2="1000" y2="74"/><line x1="0" y1="82" x2="1000" y2="82"/>
+      </g>
+      <g id="ties" stroke="var(--rule)" stroke-width="5"></g>
+      <g class="train">
+        <circle class="smoke" cx="296" cy="22" r="9" fill="var(--muted)" opacity=".5"/>
+        <circle class="smoke" cx="296" cy="22" r="7" fill="var(--muted)" opacity=".5" style="animation-delay:.7s"/>
+        <!-- cars: carrier (private) -->
+        <g fill="var(--private)"><rect x="0" y="40" width="70" height="28" rx="2"/><rect x="78" y="40" width="70" height="28" rx="2"/><rect x="156" y="40" width="70" height="28" rx="2"/></g>
+        <g fill="var(--ink)"><circle cx="14" cy="72" r="6"/><circle cx="56" cy="72" r="6"/><circle cx="92" cy="72" r="6"/><circle cx="134" cy="72" r="6"/><circle cx="170" cy="72" r="6"/><circle cx="212" cy="72" r="6"/></g>
+        <!-- locomotive -->
+        <g fill="var(--ink)"><rect x="236" y="34" width="56" height="34" rx="3"/><rect x="236" y="22" width="24" height="16"/><rect x="290" y="28" width="12" height="12"/><path d="M292 68 L322 68 L310 50 L292 50Z"/><circle cx="252" cy="70" r="9"/><circle cx="280" cy="70" r="9"/></g>
+        <rect x="240" y="40" width="14" height="10" fill="var(--hl)"/>
+      </g>
+    </svg>
+  </div>
+  <div class="keyfacts">
+    <div><b>1 problem</b><span>The railroad is at once highway and carrier.</span></div>
+    <div><b>4 solutions</b><span>Tried by England, Prussia, the U.S. and the courts.</span></div>
+    <div><b>2 tools</b><span>Equality of treatment and publicity of management.</span></div>
+    <div><b>3 phases</b><span>Compete → dictate → regulated combination.</span></div>
+  </div>
+  <div class="grid2">
+    <div class="col"><p><b>The argument in one paragraph.</b> Big firms in industries with heavy fixed investment tend toward monopoly, and laws trying to force them back into competition mostly fail. Railroads met this problem first and hardest. Lawmakers tried keeping road and carrier apart, then state ownership, then building rival lines. Each failed or caused new harm. What worked best was to accept combination as inevitable and attach public rights to it: equal treatment of customers and public disclosure of how the firm is run. Hadley predicted that factories and other capital-heavy industries would take the same path.</p></div>
+    <div class="col"><p><b>How to use this page.</b> Read the sections in order. Each one covers a single step of the argument and has a diagram or simulator you can adjust. Then try the code lab, where Hadley's economics are written as small TypeScript functions. Finish with the practice problems, the flashcards (spaced repetition, exportable to Anki) and the quiz.</p></div>
+  </div>
+</header>
+
+<!-- OLD THEORY -->
+<section class="sec" id="theory">
+  <div class="sec-head"><div class="eyebrow">Step 1 · pp. 28–29</div><h2>Highway versus carrier</h2>
+  <p class="lede">The old law split transportation into two things with opposite rules. The <span class="pub">highway</span> (road or river) is a natural monopoly, so it stays public. The <span class="pri">carrier</span> (whoever drives the wagon or sails the boat) is private, and competition keeps its charges fair.</p></div>
+  <div class="plate">
+    <div class="plate-title"><span>Fig. 1 · Who owns what</span>
+      <span class="seg" role="group" aria-label="Era"><button aria-pressed="true" data-era="old">Road &amp; wagons</button><button aria-pressed="false" data-era="rail">The railroad</button></span></div>
+    <div class="svgbox"><svg id="hcSvg" viewBox="0 0 640 230" role="img" aria-label="Highway and carrier diagram"></svg></div>
+    <p class="hc-cap" id="hcCap"></p>
+  </div>
+  <div class="tblwrap"><table class="tbl">
+    <thead><tr><th></th><th>Highway</th><th>Carrier</th><th>Railroad</th></tr></thead>
+    <tbody>
+      <tr><td>Ownership</td><td class="pub">Public</td><td class="pri">Private</td><td>Both at once</td></tr>
+      <tr><td>Economic nature</td><td>Natural monopoly</td><td>Easy to enter</td><td>Monopoly, privately held</td></tr>
+      <tr><td>Legal principle</td><td>Free public use</td><td>Free competition</td><td>"No middle ground seemed to exist"</td></tr>
+      <tr><td>Who keeps prices fair</td><td>Public authorities</td><td>Rival carriers</td><td>Unclear: this is the problem</td></tr>
+    </tbody></table></div>
+  <blockquote class="quote">"The theory was simple; and, as long as the facts were equally simple, it served its purpose extremely well. Unfortunately, the facts outgrew the theory."<cite>Hadley, p. 29</cite></blockquote>
+</section>
+
+<!-- OUTGREW -->
+<section class="sec" id="outgrew">
+  <div class="sec-head"><div class="eyebrow">Step 2 · pp. 29–31</div><h2>Three strains on the old theory</h2>
+  <p class="lede">Three developments broke the clean split between public road and private carrier.</p></div>
+  <div class="grid3">
+    <div class="card"><div class="n">i</div><h3>Service needed organization</h3><p>Some carrying could only be done well by one organized body. Letter carriage became a monopoly at least two hundred years before Hadley wrote (run by the State in France, privately for a time in Germany and England). Trade with the East Indies needed companies stronger than any single merchant, and Holland and England gave them sweeping privileges.</p><span class="chip pri">Carrier → monopoly</span></div>
+    <div class="card"><div class="n">ii</div><h3>Better highways cost money</h3><p>Turnpikes, canals and wharves were expensive. Paying for them through taxes was an "intolerable burden." France did it and caused deep public grievances. England and America left improvements to private enterprise, so private capital "acquired new rights over the highway."</p><span class="chip pub">Highway → private</span></div>
+    <div class="card"><div class="n">iii</div><h3>Rail and telegraph merged both</h3><p>Each needed organized service and a large permanent investment. Most importantly, the line and the business worked best "owned and controlled by the same head." Highway and carrier became a single firm.</p><span class="chip sig">Highway = carrier</span></div>
+  </div>
+</section>
+
+<!-- FOUR WAYS -->
+<section class="sec" id="four">
+  <div class="sec-head"><div class="eyebrow">Step 3 · pp. 31–39 · the core framework</div><h2>Four ways out</h2>
+  <p class="lede">Hadley sorts every attempted solution into four types. Choose one to see who tried it, what happened, and where it sits on the ownership grid. The same four options come back later when he discusses land, factories and socialism.</p></div>
+  <div class="ways" id="ways"></div>
+  <div class="plate"><div class="way-detail">
+    <div id="wayBody" style="display:grid;gap:12px"></div>
+    <div style="display:grid;gap:8px">
+      <div class="plate-title"><span>Ownership grid</span></div>
+      <div class="matrix" id="matrix"></div>
+      <p class="small">Rows: who holds the road. Columns: who carries. Option 4 keeps both private but attaches public rights of control.</p>
+    </div>
+  </div></div>
+</section>
+
+<!-- TOLLS -->
+<section class="sec" id="tolls">
+  <div class="sec-head"><div class="eyebrow">Finding 1 · pp. 32–33</div><h2>Why outside carriers lose</h2>
+  <p class="lede">Under Option 1, the railroad charges outside carriers a toll for using the track, and the carriers compete with each other. Hadley explains why this fails. A railroad's cost has two parts: <b>fixed charges</b> (interest and maintenance) and <b>transportation expenses</b> (the cost of actually moving goods). An outside carrier must charge at least its running cost plus the toll. The railroad can charge anything above its running cost, because every extra dollar helps pay the fixed charges.</p></div>
+  <div class="eq" id="eqToll"></div>
+  <div class="plate">
+    <div class="plate-title"><span>Fig. 2 · Who can carry this freight?</span><span>dollars per ton</span></div>
+    <div class="row">
+      <label class="ctrl">Transportation expense v <output id="tv"></output><input type="range" id="tV" min="0.5" max="4" step="0.1" value="2"></label>
+      <label class="ctrl">Fixed toll T <output id="tt"></output><input type="range" id="tT" min="0" max="3" step="0.1" value="1.5"></label>
+      <label class="ctrl">Most the freight can bear R <output id="tr"></output><input type="range" id="tR" min="0.5" max="7" step="0.1" value="3"></label>
+    </div>
+    <div class="row"><span class="small">Presets:</span>
+      <button class="btn" data-goods="coal">Coal</button><button class="btn" data-goods="lumber">Lumber</button><button class="btn" data-goods="wheat">Wheat</button><button class="btn" data-goods="silk">Silk (high value)</button></div>
+    <div class="svgbox"><svg id="tollSvg" viewBox="0 0 640 170" role="img" aria-label="Rate floors compared"></svg></div>
+    <div class="verdict" id="tollVerdict"></div>
+  </div>
+  <div class="col"><p>A fixed toll "would raise rates so high as to stop a large part of the existing traffic in coal, in lumber, and even in wheat." Having the legislature revise tolls from time to time does not help either. No one would invest in a railroad whose earnings could be reset by law, and no railroad would expand if it "would thus lose all fruit from its gains."</p></div>
+</section>
+
+<!-- WARFARE -->
+<section class="sec" id="warfare">
+  <div class="sec-head"><div class="eyebrow">Finding 2 · pp. 34–36</div><h2>Cut-throat competition</h2>
+  <p class="lede">Option 3 was to build parallel lines and let them compete. Hadley argues that when railroads compete, rates fall to roughly operating cost and nothing is left to pay fixed charges. This is not because managers are reckless. It follows from the economics, for two reasons.</p></div>
+  <div class="grid2">
+    <div class="card"><h3>1 · Fixed charges are like rent</h3><p>A farmer about to lose his market will still sell wheat for slightly more than it cost to grow, even if the price pays nothing toward rent. In the same way, a railroad about to lose traffic will cut "almost to the level of operating expenses," leaving nothing for interest.</p></div>
+    <div class="card"><h3>2 · No diminishing returns</h3><p>Farming eventually runs into diminishing returns. Railroads do not: the more traffic a road takes, the cheaper each ton becomes. That means "there is thus no direct limit to this cut-throat competition."</p></div>
+  </div>
+  <div class="plate">
+    <div class="plate-title"><span>Fig. 3 · Average cost per ton keeps falling</span><span>AC(q) = F / q + v</span></div>
+    <div class="row">
+      <label class="ctrl">Fixed charges F ($k / yr) <output id="acFo"></output><input type="range" id="acF" min="100" max="2000" step="50" value="900"></label>
+      <label class="ctrl">Transportation expense v ($/ton) <output id="acVo"></output><input type="range" id="acV" min="0.2" max="3" step="0.1" value="1"></label>
+      <label class="ctrl">Traffic q (k tons) <output id="acQo"></output><input type="range" id="acQ" min="50" max="1500" step="10" value="300"></label>
+    </div>
+    <div class="svgbox"><svg id="acSvg" viewBox="0 0 640 300" role="img" aria-label="Average cost curve"></svg></div>
+    <div class="readout" id="acRead"></div>
+  </div>
+
+  <div class="plate">
+    <div class="plate-title"><span>Fig. 4 · Simulate a rate war between two parallel roads</span><span>monthly, per road</span></div>
+    <div class="row">
+      <label class="ctrl">Fixed charges per road per month <output id="wFo"></output><input type="range" id="wF" min="200" max="1200" step="50" value="600"></label>
+      <label class="ctrl">Share of the line under competition <output id="wSo"></output><input type="range" id="wS" min="0.1" max="1" step="0.05" value="1"></label>
+    </div>
+    <div class="row"><button class="btn solid" id="wPlay">Start the war</button><button class="btn" id="wStep">One month</button><button class="btn" id="wCons">Consolidate</button><button class="btn" id="wReset">Reset</button></div>
+    <div class="svgbox"><svg id="warSvg" viewBox="0 0 640 260" role="img" aria-label="Rate war price path"></svg></div>
+    <div class="readout" id="warRead"></div>
+    <div class="tblwrap"><table class="tbl" id="payoff"></table></div>
+    <p class="small">Model: 1,000 tons of competitive freight per month, split equally while both roads charge the same rate. v = $1/ton. Each month one road undercuts the other by about 8%. Traffic on non-competitive stretches is charged monopoly rates. Move the share slider down to see Hadley's "comparatively few points" case: fixed charges get paid, but local rates are far higher than through rates.</p>
+  </div>
+  <blockquote class="quote">"It will involve a worse loss for either of them to stop, while the other goes on; for most of the fixed charges will continue, while the other road gets the whole competitive business."<cite>Hadley, p. 35</cite></blockquote>
+</section>
+
+<!-- CYCLE -->
+<section class="sec" id="cycle">
+  <div class="sec-head"><div class="eyebrow">Finding 3 · pp. 35–36, 40</div><h2>The boom-and-bust cycle</h2>
+  <p class="lede">A rate war "must end in consolidation, followed by a restoration of prices to a non-competitive figure." High rates then attract new capital, a new competitor is built, and the war begins again. Hadley sees the same pattern in factories, and notes that "with each change, the chance for the small independent business man is less."</p></div>
+  <div class="plate"><div class="cyc-wrap">
+    <div class="svgbox fit"><svg id="cycSvg" viewBox="0 0 420 420" role="img" aria-label="Boom and bust cycle"></svg></div>
+    <div style="display:grid;gap:12px">
+      <div class="plate-title"><span>Independent producers left</span><span id="cycN">24</span></div>
+      <div class="dots" id="dots"></div>
+      <p id="cycText" class="small"></p>
+      <div class="row"><button class="btn solid" id="cycGo">Run one cycle</button><button class="btn" id="cycReset">Reset</button></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- SHIPPERS -->
+<section class="sec" id="shippers">
+  <div class="sec-head"><div class="eyebrow">Finding 4 · pp. 34–36, 38–39</div><h2>Shippers lose too</h2>
+  <p class="lede">Competing lines cost investors heavily, and shippers get little in return. Where competition hits a few points, it causes "enormous local differences or discriminations." Where it hits all points, rates swing wildly. Hadley's key claim: <mark>"equality and steadiness of rates are more important to the business community than mere low average charges."</mark></p></div>
+  <div class="plate">
+    <div class="plate-title"><span>Fig. 5 · A year of freight rates</span>
+      <span class="seg" role="group" aria-label="Regime"><button aria-pressed="true" data-reg="war">Competitive (volatile)</button><button aria-pressed="false" data-reg="reg">Regulated combination</button></span></div>
+    <div class="svgbox"><svg id="shipSvg" viewBox="0 0 640 260" role="img" aria-label="Monthly rates"></svg></div>
+    <div class="readout" id="shipRead"></div>
+    <p class="small">The speculator ships only in the three cheapest months. The ordinary merchant ships the same amount every month. Rates are illustrative, in dollars per ton.</p>
+  </div>
+  <h3>Three drawbacks of competing highways (p. 34)</h3>
+  <div class="grid3">
+    <div class="card"><div class="n">1</div><p><b>Often physically impossible.</b> The first route is usually the best, sometimes the only one, and a newcomer struggles to get equal terminal facilities.</p></div>
+    <div class="card"><div class="n">2</div><p><b>Waste for the investor.</b> Most roads could carry far more traffic than they have. Splitting it across two lines "is just so much waste."</p></div>
+    <div class="card"><div class="n">3</div><p><b>No gain to the shipper.</b> Where competition does happen, the investor's loss is "not compensated by any corresponding gain to the shipper,—rather the reverse."</p></div>
+  </div>
+</section>
+
+<!-- GRANGER -->
+<section class="sec" id="granger">
+  <div class="sec-head"><div class="eyebrow">Finding 5 · pp. 36–38</div><h2>The Granger cases: a right, not a method</h2>
+  <p class="lede">The U.S. Supreme Court's Granger decisions (led by <i>Munn v. Illinois</i>, 1877, about Chicago grain elevators) broke with legal tradition, "justified by the logic of facts rather than by legal precedents." In theory, railroads and elevators were governed by free competition. In fact, they were monopolies, and that created a right to regulate them. Hadley insists that having a right to regulate is "a very different thing" from knowing the right way to do it.</p></div>
+  <div class="plate">
+    <div class="plate-title"><span>Fig. 6 · Legislated maximum rates</span><span>$/ton</span></div>
+    <label class="ctrl">State-fixed maximum rate <output id="gRo"></output><input type="range" id="gR" min="1" max="9" step="0.1" value="6.2"></label>
+    <div class="svgbox"><svg id="grSvg" viewBox="0 0 640 140" role="img" aria-label="Rate fixing zones"></svg></div>
+    <div class="verdict" id="grVerdict"></div>
+  </div>
+  <div class="grid2">
+    <div class="plate">
+      <div class="plate-title"><span>Fig. 7 · Even State railroads can't follow a fixed tariff</span><span>Prussia</span></div>
+      <div class="blocks" aria-label="Three of five blocks off-tariff"><i></i><i></i><i></i><i class="t"></i><i class="t"></i></div>
+      <p>After years of experience, the Prussian government built a careful tariff for its own railroads. Even so, <b>three-fifths</b> of their traffic moved at rates different from what the tariff set. <span class="pri">■</span> off-tariff <span class="pub">■</span> at tariff</p>
+    </div>
+    <div class="plate">
+      <div class="plate-title"><span>What actually sets the general level</span></div>
+      <p>"The necessity of competing in the markets of the world controls the <i>general</i> scale of railroad charges far more efficiently than any schedule can do." The real danger is not the average rate. It is "the specific abuses of power against a greater or lesser number of individual shippers."</p>
+    </div>
+  </div>
+</section>
+
+<!-- REMEDY -->
+<section class="sec" id="remedy">
+  <div class="sec-head"><div class="eyebrow">Finding 6 · pp. 38–39 · Hadley's prescription</div><h2>Equality and publicity</h2>
+  <p class="lede">Leave the actual price to the railroad manager. Regulate how customers are treated and how the firm is managed.</p></div>
+  <div class="grid2">
+    <div class="card"><span class="chip pub">Tool 1</span><h3>Equality of treatment</h3><p>At a minimum, prevent all <i>personal</i> discrimination: "equality of treatment should be secured to all persons under substantially like circumstances." How far to go against local differences or unequal classification "can only be decided by long experience."</p></div>
+    <div class="card"><span class="chip pri">Tool 2</span><h3>Publicity of management</h3><p>Even more important in practice. The worst abuses served "inside rings" and hurt stockholders as much as the public. In the long run, investors want flourishing traffic and shippers want better facilities, so their interests line up. An inside ring sacrifices both. "Nothing prevents this sacrifice so well as enforced publicity of management."</p></div>
+  </div>
+  <div class="plate">
+    <div class="plate-title"><span>Fig. 8 · Personal-discrimination checker</span><span>Hadley's minimum test</span></div>
+    <div class="grid2">
+      <div style="display:grid;gap:10px">
+        <label class="ctrl">Shipper A rate ($/ton)<input type="number" id="dA" value="2.00" step="0.05"></label>
+        <label class="ctrl">Shipper B rate ($/ton)<input type="number" id="dB" value="1.40" step="0.05"></label>
+      </div>
+      <div style="display:grid;gap:10px">
+        <label class="ctrl">Same route, goods and volume?<select id="dSame"><option value="yes">Yes, substantially like circumstances</option><option value="local">No, different localities</option><option value="class">No, different class of goods</option></select></label>
+        <label class="ctrl">Is B part of an inside ring or a favored speculator?<select id="dRing"><option value="no">No</option><option value="yes">Yes</option></select></label>
+      </div>
+    </div>
+    <div class="verdict" id="dVerdict"></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>A strong road beats a weak one</h3><p>A strong road or combination "is easier to hold responsible" and "far easier to make pursue a far-sighted policy." A bankrupt road "lives for the day only." Encouraging bankrupt roads to compete drags the strong ones down too: the policy of the whole group is set "by the practice of the worst individual."</p></div>
+    <div class="card"><h3>The conclusion</h3><p class="quote" style="border:0;padding:0">"Where responsibility and equality of treatment can only be secured by combination, regulated combination is better than irresponsible competition."</p><p class="small">France, Germany and England were years ahead of the U.S. here.</p></div>
+  </div>
+</section>
+
+<!-- INDUSTRY -->
+<section class="sec" id="industry">
+  <div class="sec-head"><div class="eyebrow">Step 4 · pp. 39–44 · the generalization</div><h2>Factories are next</h2>
+  <p class="lede">Any industry with large permanent investment has general expenses that "remain, to some extent, the same, whether the business increases or diminishes." That puts it under what Prof. H. C. Adams called <b>the law of increasing returns</b>: big producers win, price wars ignore fixed charges, and "such competition ends in combination." Hadley's examples are Standard Oil, the coal combinations, and the steel-rail business (H. D. Lloyd had already documented many more).</p></div>
+  <div class="tblwrap"><table class="tbl">
+    <thead><tr><th>Railroad world (1870s)</th><th>Factory world (1880s)</th><th>What they share</th></tr></thead>
+    <tbody>
+      <tr><td>Railroad and its shippers</td><td>Factory and its employees</td><td>The firm "is powerless against them as a body: it is all-powerful against them individually"</td></tr>
+      <tr><td>Carrier–shipper contract law</td><td>Employer–employee contract law</td><td>Developed "on the same general lines and for the same general reasons"</td></tr>
+      <tr><td>Organizations of shippers</td><td>Organizations of laborers</td><td>"Many points in common"</td></tr>
+      <tr><td>The Granger movement</td><td>The Knights of Labor</td><td>Industrial and political counterparts</td></tr>
+      <tr><td>Railroad regulation</td><td>Factory regulation</td><td>The second is "the natural successor" of the first</td></tr>
+    </tbody></table></div>
+  <div class="plate">
+    <div class="plate-title"><span>Fig. 9 · Mapping the 1880s debate onto the four ways</span></div>
+    <div class="tblwrap"><table class="tbl">
+      <thead><tr><th>Thinker</th><th>Position</th><th>Transport analogue</th></tr></thead>
+      <tbody>
+        <tr><td>Henry George</td><td>Public land, private capital</td><td><span class="chip pub">Option 1</span> public highway, private carriers</td></tr>
+        <tr><td>H. M. Hyndman</td><td>Socialism in production as well as transport</td><td><span class="chip pub">Option 2</span> State does everything</td></tr>
+        <tr><td>"The majority of men"</td><td>Private land and capital, plus free competition</td><td><span class="chip pri">Option 3</span> competing private lines</td></tr>
+        <tr><td>Hadley</td><td>Accept combination, keep public rights of control</td><td><span class="chip ok">Option 4</span> regulated monopoly</td></tr>
+      </tbody></table></div>
+    <p class="small">Hyndman's point against George: nationalizing land changes little "if capital organization remained as it now is," because control of capital "gives virtual control of the business, howsoever the land is held."</p>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>"Virtual monopoly" is enough</h3><p>Upper Mississippi railroads had "no legal monopoly and little natural monopoly." Regulation was justified anyway, because they were monopolies in fact. The Court described public-use cases as "virtual monopoly," a test broad enough to reach many factories. "Should a serious exigency arise, it is not likely that the wide door here thrown open would remain unused."</p></div>
+    <div class="card"><h3>The danger of business secrets</h3><p>Most people believe manufacturers' profits form a huge fund that could raise wages if divided. It is "easy to show that this is not true in the aggregate," but workers won't believe it while their firm keeps its accounts secret. Railroads found that enforced publicity protected legitimate owners. A firm afraid of informing public opinion "may well be much more afraid of the risk of facing an outbreak of unenlightened public sentiment."</p></div>
+  </div>
+  <blockquote class="quote">"The socialists, on the mere statement of the case, demand State ownership; but, to any one who is familiar with the abuses of State-owned monopolies, there is not even a <i>prima facie</i> ground for such an inference."<cite>Hadley, p. 43</cite></blockquote>
+</section>
+
+<!-- PHASES -->
+<section class="sec" id="phases">
+  <div class="sec-head"><div class="eyebrow">Conclusion · p. 44</div><h2>Three phases of regulation</h2>
+  <p class="lede">Hadley ends with a three-stage history of U.S. railroad legislation, then asks where factory law stands on the same path.</p></div>
+  <div class="row"><span class="seg" role="group" aria-label="Industry"><button aria-pressed="true" data-ind="rail">Railroads, 1886</button><button aria-pressed="false" data-ind="factory">Factories, 1886</button></span></div>
+  <div class="phases" id="phasesBox">
+    <div class="phase" data-p="1"><div class="n">1</div><h3>Enforce competition</h3><p>Really active competition, with consolidation discouraged.</p><div class="res sig">Ended in failure</div></div>
+    <div class="phase" data-p="2"><div class="n">2</div><h3>Shippers dictate</h3><p>Shippers try to dictate terms to the railroad (Granger rate laws).</p><div class="res sig">A failure "much more disastrous"</div></div>
+    <div class="phase" data-p="3"><div class="n">3</div><h3>Regulated combination</h3><p>Combination accepted, at least tacitly, but held to more publicity and responsibility.</p><div class="res" style="color:var(--ok)">Where railroads are now</div></div>
+  </div>
+  <p id="phaseNote" class="col"></p>
+</section>
+
+<!-- TIMELINE -->
+<section class="sec" id="timeline">
+  <div class="sec-head"><div class="eyebrow">Chronology</div><h2>Timeline</h2>
+  <p class="lede">Events Hadley mentions are marked with solid rings. Dotted rings are background added for context and are not in the essay.</p></div>
+  <div class="row"><span class="seg" role="group" aria-label="Filter"><button aria-pressed="true" data-tl="all">All</button><button aria-pressed="false" data-tl="essay">In the essay</button><button aria-pressed="false" data-tl="ctx">Context</button></span></div>
+  <div class="tl" id="tl"></div>
+</section>
+
+<!-- TODAY -->
+<section class="sec" id="today">
+  <div class="sec-head"><div class="eyebrow">Real-life implications</div><h2>Hadley's lens, today</h2>
+  <p class="lede">The highway-versus-carrier problem keeps coming back wherever one firm owns the infrastructure and also competes on it. Read each case, decide which of the four ways it resembles, then reveal Hadley's lens. These are interpretations of his framework, not claims he made.</p></div>
+  <div class="grid2" id="scn"></div>
+</section>
+
+<!-- CODE LAB -->
+<section class="sec" id="code">
+  <div class="sec-head"><div class="eyebrow">In-code method usage</div><h2>Code lab</h2>
+  <p class="lede">Each of Hadley's main mechanisms written as a small TypeScript function, with a usage example. Change the inputs and run it. The page runs a JavaScript copy of each function in your browser, so results are live.</p></div>
+  <div id="lab" style="display:grid;gap:22px"></div>
+</section>
+
+<!-- PRACTICE -->
+<section class="sec" id="practice">
+  <div class="sec-head"><div class="eyebrow">Practice problems · grouped by finding</div><h2>Practice</h2>
+  <p class="lede">Numeric answers are checked automatically (to the cent). Every problem has a worked solution.</p></div>
+  <div class="row"><span class="small mono" id="pScore">0 solved</span></div>
+  <div id="probs" style="display:grid;gap:26px"></div>
+</section>
+
+<!-- FLASHCARDS -->
+<section class="sec" id="cards">
+  <div class="sec-head"><div class="eyebrow">Spaced repetition · Leitner boxes</div><h2>Flashcards</h2>
+  <p class="lede">Tap the card or press Space to flip. Grade yourself with Again, Good or Easy. Cards you miss come back sooner. Your progress is saved in this browser.</p></div>
+  <div class="plate">
+    <div class="fc-meta"><span id="fcPos"></span><span class="boxes" id="fcBoxes"></span></div>
+    <div class="fc-stage"><div class="fc" id="fc" tabindex="0" role="button" aria-label="Flashcard, press to flip">
+      <div class="fc-face front"><div class="eyebrow" id="fcTag"></div><div class="q" id="fcQ"></div><div class="small">Tap to reveal</div></div>
+      <div class="fc-face back"><div class="eyebrow">Answer</div><div class="a" id="fcA"></div></div>
+    </div></div>
+    <div class="row" style="justify-content:space-between">
+      <div class="row"><button class="btn" id="fcAgain">Again (1)</button><button class="btn" id="fcGood">Good (2)</button><button class="btn solid" id="fcEasy">Easy (3)</button></div>
+      <div class="row"><button class="btn" id="fcShuffle">Shuffle</button><button class="btn" id="fcResetBtn">Reset progress</button></div>
+    </div>
+  </div>
+  <details class="reveal"><summary>Export the deck to Anki</summary><div class="body">
+    <p class="small">Copy the text below and save it as <span class="mono">hadley.txt</span>. In Anki choose File → Import, set the field separator to Tab, and map Field 1 to Front and Field 2 to Back. The third column is a tag.</p>
+    <textarea class="export" id="ankiTxt" readonly></textarea>
+    <div class="row"><button class="btn solid" id="ankiCopy">Copy deck</button><span class="fb" id="ankiFb"></span></div>
+  </div></details>
+</section>
+
+<!-- QUIZ -->
+<section class="sec" id="quiz">
+  <div class="sec-head"><div class="eyebrow">Final check</div><h2>Quiz</h2>
+  <p class="lede">Fifteen questions covering the whole essay. Each answer comes with an explanation and a page reference.</p></div>
+  <div class="plate">
+    <div class="row" style="justify-content:space-between"><span class="score" id="qzScore">0 / 15</span><button class="btn" id="qzReset">Restart quiz</button></div>
+    <div class="qz" id="qz"></div>
+  </div>
+</section>
+
+</main>
+<footer class="wrap">
+  <div class="eyebrow">Source</div>
+  <p>Arthur T. Hadley, "Private Monopolies and Public Rights," <i>The Quarterly Journal of Economics</i> 1, no. 1 (Oct. 1886): 28–44. Quotations come from that text. Numbers in the simulators are illustrative models of Hadley's reasoning, not historical data. Timeline items marked as context and the modern scenarios were added for study and are not in the essay.</p>
+</footer>
+
+<script>
+/* ===================== DATA ===================== */
+const WAYS = [
+  {key:1, short:"Keep them apart", title:"Separate highway and carrier",
+   idea:"Treat the railroad as a toll road. Any outside carrier may run trains on it by paying the scheduled toll, and the carriers compete with each other.",
+   who:"England tried hardest, because the idea fit common-law tradition. Early charters set the toll schedules for outsiders. It also appeared in early Prussian charters, was debated in Germany and Austria, and was revived in the U.S. by Hudson's <i>The Railways and the Republic</i>.",
+   outcome:"Parliament's interest faded over time: wanted in 1853, regretted as impossible in 1865–67, \"a mere matter of past history\" by 1872, hardly mentioned in 1881–82. The railroad can always carry more cheaply than an outsider, who must pay the toll as well as running costs.",
+   verdict:"Fails", cell:["pub","pri"], tone:"sig",
+   q:"\"The same reason which had made it fail in the past is sure to make it fail in the future.\" (p. 32)"},
+  {key:2, short:"State owns all", title:"Make the carrier public too",
+   idea:"Treat the carrier like the highway and give the whole railroad business to the State.",
+   who:"\"A large part of the world\": Prussia, France and much of the continent. Financial or industrial reasons sped this up in some places and slowed it in others.",
+   outcome:"Rail and telegraph became as fully public as the old roads and canals, except that the cost of upkeep fell mainly on shippers instead of taxpayers. Hadley says he has \"no room to speak in detail\" of the results, but elsewhere he cites the \"abuses of State-owned monopolies.\"",
+   verdict:"Not argued here", cell:["pub","pub"], tone:"mut",
+   q:"\"The first impulse of most governments was to unite the two under the hands of the State.\" (p. 33)"},
+  {key:3, short:"Build rival roads", title:"Make the highway private too",
+   idea:"If rival carriers cannot share one highway, let carriers compete on rival highways. Charter parallel lines and let competition do the regulating.",
+   who:"England through parallel charters, and America through general laws that \"encouraged indiscriminate railroad building.\"",
+   outcome:"England lost faith after the crisis of 1847. America held on through 1857–59, 1873–77 and 1884–85. Hadley lists three drawbacks: often impossible, wasteful for investors, and no gain for shippers. Competition either ruins the lines, ends in consolidation, or \"actually fostered abuses.\"",
+   verdict:"Distinct failure", cell:["pri","pri"], tone:"sig",
+   q:"\"Competition was supposed to be so good a thing that the more you had of it, the better.\" (p. 34)"},
+  {key:4, short:"Regulate the monopoly", title:"Admit monopoly, keep public rights",
+   idea:"Drop part of the legal tradition. Admit that competition has failed and some monopoly is necessary, but give the community real rights of control over the monopoly.",
+   who:"France, Germany and England got there first. The U.S. was arriving by 1886 through the Granger cases and newer laws stressing equality and publicity.",
+   outcome:"Hadley's preferred path. Leave the absolute rate to managers, since world-market competition controls the general level. Enforce equal treatment and publicity of management, and favor strong, responsible combinations over bankrupt rivals.",
+   verdict:"Hadley's choice", cell:["pri","pri"], tone:"ok", regulated:true,
+   q:"\"Regulated combination is better than irresponsible competition.\" (p. 39)"}
+];
+
+const TIMELINE = [
+  {y:"1600–02", t:"English and Dutch East India Companies chartered", d:"Hadley's example of trade needing \"strong organization, beyond the reach of any individual trader\": monopolies whose privileges lasted long after they were needed.", essay:true},
+  {y:"~1680s", t:"Letter carriage becomes a monopoly", d:"\"Generally recognized at least two hundred years ago.\" Run directly by the State in France and privately for a time in Germany and England.", essay:true},
+  {y:"1700s", t:"Turnpikes, canals and wharves", d:"Expensive improvements end the old idea of free public use. England and America rely on private enterprise. France builds at State expense and causes popular grievances.", essay:true},
+  {y:"1825", t:"Stockton & Darlington Railway opens", d:"Early English railways were chartered as toll highways open to outside carriers, which is Option 1.", essay:false},
+  {y:"1847", t:"English railway crisis", d:"After the Railway Mania, the collapse \"shook\" English faith in competing parallel lines.", essay:true},
+  {y:"1853", t:"Parliamentary inquiry", d:"Still \"an obvious desire\" to see different carriers compete on the same line.", essay:true},
+  {y:"1857–59", t:"American crisis", d:"The first of three crises that taught Americans railroad competition was \"not an unmixed good.\"", essay:true},
+  {y:"1865–67", t:"Royal Commission on Railways", d:"Competing carriers on one line now mentioned \"with obvious regret\" as desirable but impossible.", essay:true},
+  {y:"1869", t:"Knights of Labor founded", d:"Hadley calls them the industrial counterpart of the Granger movement.", essay:false},
+  {y:"1871–74", t:"Granger laws", d:"Midwestern states, Illinois and Wisconsin among them, legislate maximum rates. Hadley says many were later repealed by the same people who passed them.", essay:false},
+  {y:"1872", t:"Joint Select Committee", d:"Separate carriers treated as \"a mere matter of past history.\"", essay:true},
+  {y:"1873–77", t:"Panic and depression", d:"The second American crisis tied to railroad overbuilding and competition.", essay:true},
+  {y:"~1874", t:"German economists take up the idea", d:"\"Twelve years ago, just as it had been thoroughly abandoned in England,\" Germany began debating separate carriers at three congresses. Little came of it.", essay:true},
+  {y:"1877", t:"The Granger Cases (Munn v. Illinois)", d:"The Supreme Court upholds regulation of businesses \"affected with a public interest,\" such as Chicago grain elevators. It establishes the right to regulate, not the method.", essay:true},
+  {y:"1879", t:"Henry George, Progress and Poverty", d:"George's \"public land, private capital\" maps onto Option 1.", essay:false},
+  {y:"1881", t:"H. D. Lloyd, \"The Story of a Great Monopoly\"", d:"Lloyd's exposés of Standard Oil and other combinations. Hadley says Lloyd \"filled page after page.\"", essay:false},
+  {y:"1881–82", t:"Select Committee on railway rates", d:"Separate carriers \"hardly mentioned.\"", essay:true},
+  {y:"1882", t:"Standard Oil Trust formed", d:"Hadley calls the Standard Oil case \"notorious.\"", essay:false},
+  {y:"1883–85", t:"West Shore vs. New York Central", d:"Competition \"all along the line\" leaves \"little or nothing to pay fixed charges.\" The West Shore went bankrupt and was absorbed by the Central in 1885.", essay:true},
+  {y:"1884–85", t:"Commercial crisis of 1884", d:"Third American crisis. Railroad competition on a large scale \"means a commercial crisis.\"", essay:true},
+  {y:"1885", t:"Hadley, Railroad Transportation", d:"Hadley's book on railroad economics, which the essay draws on.", essay:false},
+  {y:"1886", t:"This essay; Hudson's The Railways and the Republic", d:"Published in the first issue of the QJE. Hudson's book revives Option 1 in the U.S.", essay:true},
+  {y:"1887", t:"Interstate Commerce Act", d:"Requires published rates and bans personal discrimination, which are Hadley's two tools in law.", essay:false},
+  {y:"1890", t:"Sherman Antitrust Act", d:"Congress chooses to outlaw combination instead, closer to Phase 1 than Hadley's regulated combination.", essay:false},
+  {y:"1899", t:"Hadley becomes President of Yale", d:"First layman to hold the post.", essay:false}
+];
+
+const SCENARIOS = [
+  {t:"Electricity: wires versus power plants", body:"Many markets split the transmission grid (owned by one firm, rates set by regulators) from generation (competing plant owners who pay to use the wires). Grid operators must give every generator the same access.",
+   tags:["Option 1 revived","Equality"], lens:"This is Option 1, highway separated from carrier, revived a century later. Hadley said it failed for railroads because the track owner could always undercut outside carriers. It works better for power because grid owners are often barred from generating, so they have no reason to favor themselves, and access is enforced as equal treatment. His test still applies: does the infrastructure owner also compete?"},
+  {t:"App stores and platform self-preferencing", body:"A company runs the dominant app store (the highway) and also sells its own apps that compete with third-party developers (the carriers). Developers complain of commission terms and ranking that favor the platform's own products.",
+   tags:["Highway = carrier","Discrimination"], lens:"This is the railroad problem exactly: one firm is both highway and carrier. Hadley would not require forced competition by a rival store (Option 3) or public ownership (Option 2). He would ask for equal treatment of developers in like circumstances (no self-preferencing) and published ranking and fee rules (publicity). Recent European platform rules follow similar ideas."},
+  {t:"Airline fare wars and mergers", body:"Airlines have large fixed costs (aircraft, gates, debt) and low costs per extra passenger. Price wars in the 2000s led to bankruptcies, followed by the Delta–Northwest (2008), United–Continental (2010) and American–US Airways (2013) mergers.",
+   tags:["Cut-throat","Consolidation"], lens:"Hadley's cycle in practice: high fixed costs mean prices fall toward marginal cost, fixed charges go unpaid, bankruptcies follow, and consolidation restores \"a non-competitive figure.\" He would point out that a bankrupt carrier \"lives for the day only\" and drags its stronger rivals down with it."},
+  {t:"Broadband in a one-provider town", body:"A town has a single fiber provider. A city council proposes fixing a maximum monthly price far below what the provider says it needs to cover its build-out debt.",
+   tags:["Granger","Rate-fixing"], lens:"This is a Granger-style problem. The city clearly has a right to regulate a virtual monopoly. A price set too low will \"check development\" because no one will extend the network, and one set too high does nothing. Hadley would favor non-discrimination (the same price for the same service everywhere in town) and published costs before a hard price cap."},
+  {t:"Hospital price transparency", body:"Regulators require hospitals to publish negotiated prices. Before this, identical procedures cost very different amounts depending on the payer, and nobody outside could see the rates.",
+   tags:["Publicity","Equality"], lens:"Publicity of management used as a remedy. Hadley's argument that secret rates benefit insiders and strong shippers carries over: when rates are hidden, the shrewdest negotiators get the best deals. Disclosure makes unequal treatment visible, which is the first step toward equality."},
+  {t:"Cloud and AI computing", body:"Building data centers takes enormous fixed investment, while serving one more customer costs little. A few firms dominate, offer deep discounts to win big contracts, and some also sell AI products that compete with their own customers.",
+   tags:["Increasing returns","Highway = carrier"], lens:"This is H. C. Adams's law of increasing returns as Hadley used it: the larger producer has the advantage and competition tends toward combination. When a provider both supplies compute and competes with its customers, the highway-and-carrier conflict returns. Hadley's tools would be equal access terms and published pricing."}
+];
+
+const CARDS = [
+  ["Basics","Who wrote \"Private Monopolies and Public Rights,\" and where was it published?","Arthur T. Hadley, in <i>The Quarterly Journal of Economics</i> vol. 1, no. 1 (Oct. 1886), pp. 28–44."],
+  ["Basics","What is Hadley's central thesis?","Transportation law, once an exception to the general laws of trade, probably shows where industrial law in general is heading: regulated monopoly with public rights."],
+  ["Theory","What two things did traditional transportation law separate?","The <b>highway</b> (public, a natural monopoly, free public use) and the <b>carrier</b> (private, governed by free competition)."],
+  ["Theory","Why did the old theory once work?","Anyone could put a wagon on the road or a boat on the water, so competition among carriers came naturally and kept charges reasonable."],
+  ["Strain","Name the three developments that strained the old theory.","(1) Some services needed organized monopoly (postal service, East India trade); (2) expensive improvements such as turnpikes and canals brought in private capital; (3) railroads and telegraphs joined line and business under one head."],
+  ["Strain","Why is the railroad such a hard legal problem?","It is highway and carrier at once, and the law had applied opposite principles to each."],
+  ["Four ways","List Hadley's four attempted solutions.","1. Keep highway and carrier separate. 2. Make the carrier public (State ownership). 3. Make the highway private (competing parallel lines). 4. Admit monopoly and reserve public rights of control."],
+  ["Four ways","Which country pushed hardest for separate carriers on the same line?","England, because the idea fit its common-law traditions. Early charters fixed tolls for outside users."],
+  ["Tolls","What are the two parts of railroad cost?","<b>Fixed charges</b> (interest and maintenance) and <b>transportation expenses</b> (the cost of moving the traffic)."],
+  ["Tolls","Why can't outside carriers compete with the railroad company?","The carrier's rate must cover transportation expenses plus the toll. The railroad needs only to cover transportation expenses and can give up part of the toll to win traffic."],
+  ["Tolls","Why not let the legislature revise tolls periodically?","No one would invest under that risk, and no railroad would expand if it lost the gains. Railroad enterprise \"would be almost destroyed.\""],
+  ["Four ways","Where was Option 2 (State ownership) adopted?","\"A large part of the world,\" including Prussia and much of the continent. Upkeep was paid mainly by shippers rather than taxpayers."],
+  ["Competition","Which crises shook faith in competing railroads?","England: 1847. America: 1857–59, 1873–77 and 1884–85."],
+  ["Competition","Name the three drawbacks of competing highways.","1. Often physically impossible (best route, terminals). 2. Waste to the investor, since one road could carry the traffic. 3. No gain to the shipper. Rather the reverse."],
+  ["Competition","Why are fixed charges ignored in a rate war?","For the same reason rent does not set the price of produce: it is better to take any margin above operating cost than to lose the traffic."],
+  ["Competition","Why is railroad competition worse than agricultural competition?","It is not subject to diminishing returns. A road handles extra traffic at lower cost, so there is \"no direct limit\" to cut-throat competition."],
+  ["Competition","Why doesn't one road just stop the rate war?","Its fixed charges continue while the other road takes all the competitive business, so stopping costs more than continuing."],
+  ["Competition","Give Hadley's example of competition \"all along the line.\"","The New York Central and the West Shore railroads. Little or nothing was left to pay fixed charges."],
+  ["Shippers","What do shippers value more than low average rates?","<b>Equality and steadiness</b> of rates."],
+  ["Shippers","Who gains from fluctuating competitive rates?","A few speculators and the strongest shippers, plus inside rings, who time shipments to catch the lowest rates."],
+  ["Granger","What did the Granger Cases establish?","The <b>right</b> to regulate monopolies (businesses \"affected with a public interest\"), but not the right <b>method</b>."],
+  ["Granger","What goes wrong when the State fixes railroad rates?","If rates are too high, they are inoperative. If too low, they check railroad development and do unbounded harm."],
+  ["Granger","Give the Prussian statistic.","Even with a carefully designed State tariff, three-fifths of traffic on Prussian State roads moved at rates different from the tariff."],
+  ["Granger","What controls the general scale of railroad charges?","Competition in the markets of the world, far more efficiently than any schedule can."],
+  ["Remedy","What are Hadley's two regulatory tools?","<b>Equality of treatment</b> and <b>publicity of management</b>."],
+  ["Remedy","Define personal discrimination.","Treating persons unequally when they are in substantially like circumstances. Hadley says it should be prevented without question."],
+  ["Remedy","Why does Hadley rank publicity above equality in practice?","The worst abuses came from inside rings that hurt stockholders and shippers alike. Publicity prevents those rings from sacrificing everyone's permanent interests."],
+  ["Remedy","Why is a strong road better to deal with than a weak one?","It is easier to hold responsible and to keep on a far-sighted policy. A bankrupt road \"lives for the day only.\""],
+  ["Remedy","Complete the quote: \"regulated combination is better than ___.\"","\"…irresponsible competition.\""],
+  ["Industry","Whose \"law of increasing returns\" does Hadley cite?","Prof. H. C. Adams. Large fixed general expenses give large producers the advantage."],
+  ["Industry","Which industrial monopolies does Hadley name?","Standard Oil, the coal combinations and the steel-rail business. He also cites H. D. Lloyd's exposés."],
+  ["Industry","How do George and Hyndman map onto the four ways?","George (public land, private capital) is Option 1. Hyndman (socialism in production and transport) is Option 2. The majority favors Option 3."],
+  ["Industry","Give the factory–railroad parallel.","Factory : employees = railroad : shippers. Knights of Labor = Granger movement. Factory regulation succeeds railroad regulation."],
+  ["Industry","What was the basis of \"public use\" in the Granger Cases, according to Hadley?","\"Virtual monopoly,\" meaning monopoly in fact rather than by law. That test could reach many factories."],
+  ["Industry","What danger comes from business secrecy?","Workers believe there is a huge hidden profit fund that could raise wages. Secrecy keeps them believing it and invites an outbreak of unenlightened public sentiment."],
+  ["Phases","Name the three phases of U.S. railroad legislation.","1. Enforce active competition, which failed. 2. Shippers dictate terms, a worse failure. 3. Regulated combination with more publicity and responsibility."],
+  ["Phases","Where did factory law stand in 1886?","Past the illusions of Phase 1, with labor organization exposing the dangers of Phase 2. \"We cannot stay where we are.\""]
+];
+
+const QUIZ = [
+  {q:"In traditional law, the highway was treated as…", o:["Private property subject to competition","A natural monopoly kept under public control","A State-run carrier business","An unregulated common"], a:1, e:"Making the highway private would have created a natural monopoly, so it stayed under public authorities (p. 29)."},
+  {q:"Why did the railroad create a \"most perplexing problem\" for the law?", o:["It was faster than canals","It was at once highway and carrier","It was foreign-owned","It used public land"], a:1, e:"The law treated highway and carrier under opposite principles, and the railroad was both (p. 31)."},
+  {q:"An outside carrier using railroad track must charge at least…", o:["Transportation expenses only","The fixed charges only","Transportation expenses plus the toll","Whatever the railroad charges"], a:2, e:"The railroad itself can go down to bare transportation expenses, which is why carriers lose (pp. 32–33)."},
+  {q:"Which of these is NOT one of Hadley's three drawbacks of competing highways?", o:["Often physically impossible","Waste to the investor","No gain to the shipper","It raises the general level of rates permanently"], a:3, e:"Hadley says competition drives rates down below the cost of service. He does not claim it raises the general level."},
+  {q:"Railroad competition is worse than farming competition because railroads…", o:["Pay higher rent","Are not subject to diminishing returns","Employ more labor","Are taxed more heavily"], a:1, e:"Extra traffic is handled at better and better advantage, so there is \"no direct limit\" (p. 35)."},
+  {q:"Hadley's example of competition \"all along the line\" is…", o:["Pennsylvania vs. B&O","New York Central vs. West Shore","Union Pacific vs. Central Pacific","Erie vs. Lackawanna"], a:1, e:"There will be \"little or nothing to pay fixed charges\" (p. 35)."},
+  {q:"What matters more to the business community than low average charges?", o:["Speed of delivery","Equality and steadiness of rates","State ownership","Number of competing lines"], a:1, e:"Direct quotation, p. 36."},
+  {q:"The Granger Cases established…", o:["The best method of regulation","The right to regulate","State ownership of elevators","Free competition among elevators"], a:1, e:"\"The establishment of the right to regulate is a very different thing from the establishment of the proper method\" (p. 37)."},
+  {q:"On Prussia's State railroads, what share of traffic moved at rates different from the tariff?", o:["One-fifth","Two-fifths","Three-fifths","Four-fifths"], a:2, e:"Even State ownership needs flexibility for managers (p. 37)."},
+  {q:"Hadley would leave the absolute charge to…", o:["The legislature","The courts","The railroad manager","Shippers' associations"], a:2, e:"Enforce equality of treatment and leave the absolute charge to the manager's discretion (p. 38)."},
+  {q:"Which tool does Hadley call \"in its practical results, even more important\"?", o:["Maximum-rate laws","Publicity of management","Parallel charters","Nationalization"], a:1, e:"Publicity prevents inside rings from sacrificing permanent interests (p. 38)."},
+  {q:"Why prefer a strong road over a weak one?", o:["It charges less","It is easier to hold responsible and is far-sighted","It is State-backed","It has more competitors"], a:1, e:"A bankrupt road \"lives for the day only\" (p. 39)."},
+  {q:"Henry George's position corresponds to which of the four ways?", o:["Option 1","Option 2","Option 3","Option 4"], a:0, e:"Public land and private capital, like a public highway with private carriers (p. 41)."},
+  {q:"The Granger movement's industrial counterpart is…", o:["Standard Oil","The Knights of Labor","The Interstate Commerce Commission","The Grange itself"], a:1, e:"Page 42."},
+  {q:"In 1886, according to Hadley, factory law has…", o:["Reached Phase 3","Never started Phase 1","Passed Phase 1 and faces the dangers of Phase 2","Adopted State ownership"], a:2, e:"Labor organization \"has brought us face to face with the dangers of the second stage\" (p. 44)."}
+];
+</script>
+
+<script>
+/* ===================== HELPERS ===================== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const NS = "http://www.w3.org/2000/svg";
+const money = n => "$" + n.toFixed(2);
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function svgEl(tag, attrs={}, parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k, attrs[k]); if(parent) parent.appendChild(e); return e; }
+function txt(parent, x, y, s, attrs={}){ const t=svgEl("text",Object.assign({x,y,"font-size":12},attrs),parent); t.textContent=s; return t; }
+function store(k, v){ try{ if(v===undefined){ return JSON.parse(localStorage.getItem(k)); } localStorage.setItem(k, JSON.stringify(v)); }catch(e){ return null; } }
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function segGroup(sel, attr, cb){ $$(sel+" button").forEach(b=>b.addEventListener("click",()=>{ $$(sel+" button").forEach(x=>x.setAttribute("aria-pressed", x===b?"true":"false")); cb(b.dataset[attr]); })); }
+
+function highlightTS(code){
+  const re = /(\/\*[\s\S]*?\*\/|\/\/[^\n]*)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|\b(\d[\d_]*(?:\.\d+)?)\b|\b(export|function|const|let|return|if|else|for|of|type|interface|as|new|true|false|import|from|while|switch|case|break|readonly|number|string|boolean)\b|\b([A-Z][A-Za-z0-9]*)\b/g;
+  let out="", last=0, m;
+  while((m=re.exec(code))){
+    out += esc(code.slice(last, m.index));
+    const cls = m[1]?"com":m[2]?"str":m[3]?"num":m[4]?"kw":"ty";
+    out += `<span class="tk-${cls}">${esc(m[0])}</span>`;
+    last = re.lastIndex;
+  }
+  return out + esc(code.slice(last));
+}
+
+/* ===================== NAV ===================== */
+(function(){
+  const links = $$("#navIn a"), prog = $("#prog");
+  const secs = links.map(a => document.getElementById(a.getAttribute("href").slice(1)));
+  function onScroll(){
+    const h = document.documentElement; const pct = h.scrollTop/(h.scrollHeight-h.clientHeight||1);
+    prog.style.width = (pct*100).toFixed(1)+"%";
+    let cur = 0; secs.forEach((s,i)=>{ if(s && s.getBoundingClientRect().top < 140) cur=i; });
+    links.forEach((a,i)=>a.classList.toggle("on", i===cur));
+  }
+  addEventListener("scroll", onScroll, {passive:true}); onScroll();
+  // ties on hero track
+  const ties = $("#ties"); for(let x=0;x<1000;x+=22) svgEl("line",{x1:x,y1:70,x2:x+6,y2:86},ties);
+})();
+
+/* ===================== FIG 1: HIGHWAY / CARRIER ===================== */
+(function(){
+  const svg = $("#hcSvg"), cap = $("#hcCap");
+  function draw(era){
+    svg.innerHTML = "";
+    const rail = era==="rail";
+    txt(svg, 12, 34, rail ? "HIGHWAY ≡ CARRIER · ONE OWNER" : "HIGHWAY · held by public authority", {fill: rail?"var(--signal)":"var(--public)","font-size":13,"font-weight":600});
+    svgEl("rect",{x:0,y:62,width:640,height:96,fill: rail?"var(--private-soft)":"var(--public-soft)",stroke: rail?"var(--private)":"var(--public)","stroke-width":2},svg);
+    if(rail){
+      for(let x=4;x<640;x+=18) svgEl("rect",{x,y:96,width:8,height:34,fill:"var(--rule)"},svg);
+      svgEl("line",{x1:0,y1:102,x2:640,y2:102,stroke:"var(--muted)","stroke-width":3},svg);
+      svgEl("line",{x1:0,y1:124,x2:640,y2:124,stroke:"var(--muted)","stroke-width":3},svg);
+      const g = svgEl("g",{class:"lane-move slow"},svg);
+      for(let i=0;i<4;i++){ svgEl("rect",{x:i*70,y:82,width:62,height:34,rx:3,fill:"var(--private)"},g); svgEl("circle",{cx:i*70+12,cy:120,r:6,fill:"var(--ink)"},g); svgEl("circle",{cx:i*70+50,cy:120,r:6,fill:"var(--ink)"},g); }
+      svgEl("rect",{x:280,y:74,width:52,height:42,rx:3,fill:"var(--ink)"},g); svgEl("circle",{cx:294,cy:120,r:8,fill:"var(--ink)"},g); svgEl("circle",{cx:320,cy:120,r:8,fill:"var(--ink)"},g);
+      txt(g, 8, 104, "ONE COMPANY · track + trains + rates", {fill:"var(--paper)","font-size":11,"font-weight":600});
+      txt(svg, 12, 190, "Public rule (free use)?  Private rule (competition)?", {fill:"var(--signal)","font-size":13,"font-weight":600});
+      txt(svg, 12, 212, "\"No middle ground seemed to exist.\"", {fill:"var(--muted)","font-size":12});
+      cap.innerHTML = "The railroad merges both roles. One company owns the track, runs the trains and sets the rates. The old rules for highways and for carriers now contradict each other, and that conflict drives every later phase of railroad law.";
+    } else {
+      svgEl("line",{x1:0,y1:110,x2:640,y2:110,stroke:"var(--public)","stroke-dasharray":"14 10","stroke-width":2},svg);
+      const owners = [["A",0,"",78],["B",-2.5,"fast",125],["C",-4.6,"",78],["D",-1.2,"fast",125],["E",-6.1,"slow",78]];
+      owners.forEach(([n,delay,spd,y],i)=>{
+        const g = svgEl("g",{class:"lane-move "+spd, style:`animation-delay:${delay}s`},svg);
+        svgEl("rect",{x:0,y,width:76,height:24,rx:2,fill:"var(--private)",opacity:[1,.8,.65,.9,.75][i]},g);
+        svgEl("circle",{cx:12,cy:y+27,r:5,fill:"var(--ink)"},g); svgEl("circle",{cx:62,cy:y+27,r:5,fill:"var(--ink)"},g);
+        txt(g, 6, y+16, "Carrier "+n, {fill:"var(--paper)","font-size":10,"font-weight":600});
+      });
+      txt(svg, 12, 190, "CARRIERS · private, many owners, competing", {fill:"var(--private)","font-size":13,"font-weight":600});
+      txt(svg, 12, 212, "Each man puts his own wagon on the road.", {fill:"var(--muted)","font-size":12});
+      cap.innerHTML = "Before the railroad, the road stays public and open to all. Anyone can put a wagon on it, so carriers compete freely and that competition keeps charges reasonable. Two rules for two separate things.";
+    }
+  }
+  segGroup("#theory .seg","era",draw); draw("old");
+})();
+
+/* ===================== FOUR WAYS ===================== */
+(function(){
+  const box=$("#ways"), body=$("#wayBody"), mx=$("#matrix");
+  WAYS.forEach(w=>{ const b=document.createElement("button"); b.className="way"; b.setAttribute("aria-pressed","false"); b.dataset.k=w.key;
+    b.innerHTML=`<span class="eyebrow">Option ${w.key}</span><b>${w.short}</b><span class="chip ${w.tone}">${w.verdict}</span>`; box.appendChild(b);
+    b.addEventListener("click",()=>show(w.key)); });
+  function show(k){
+    const w = WAYS[k-1];
+    $$(".way",box).forEach(b=>b.setAttribute("aria-pressed", b.dataset.k==k?"true":"false"));
+    body.innerHTML = `<h3>${w.key}. ${w.title}</h3><p><b>The idea.</b> ${w.idea}</p><p><b>Who tried it.</b> ${w.who}</p><p><b>What happened.</b> ${w.outcome}</p><p class="quote">${w.q}</p>`;
+    mx.innerHTML = `<div class="h"></div><div class="h">Public carrier</div><div class="h">Private carrier</div>`+
+      ["pub","pri"].map(h=>`<div class="h">${h==="pub"?"Public road":"Private road"}</div>`+["pub","pri"].map(c=>{
+        const on = w.cell[0]===h && w.cell[1]===c;
+        const lbl = h==="pub"&&c==="pub"?"Opt 2":h==="pub"&&c==="pri"?"Opt 1":h==="pri"&&c==="pri"?"Opt 3 / 4":"(none)";
+        return `<div class="c ${on?"on":""}">${on && w.regulated ? "Opt 4<br><small>+ public rights</small>" : lbl}</div>`; }).join("")).join("");
+  }
+  show(4);
+})();
+
+/* ===================== FIG 2: TOLLS ===================== */
+(function(){
+  const V=$("#tV"),T=$("#tT"),R=$("#tR"),svg=$("#tollSvg"),ver=$("#tollVerdict");
+  $("#eqToll").innerHTML = highlightTS(
+`// Hadley p.32: railroad cost = fixed charges + transportation expenses
+const outsideCarrierFloor = (v: number, toll: number) => v + toll; // must pay the track owner
+const railroadFloor       = (v: number)               => v;        // "it can forego a part of its toll"
+
+// Any rate R above v adds (R - v) toward the railroad's fixed charges:
+const contributionToFixed = (R: number, v: number) => Math.max(0, R - v);`);
+  const goods = {coal:[2,1.5,2.8], lumber:[2,1.5,3.3], wheat:[2,1.5,3.6], silk:[2,1.5,6.5]};
+  $$("[data-goods]").forEach(b=>b.addEventListener("click",()=>{ const g=goods[b.dataset.goods]; V.value=g[0];T.value=g[1];R.value=g[2]; draw(); }));
+  function draw(){
+    const v=+V.value,t=+T.value,r=+R.value; $("#tv").textContent=money(v);$("#tt").textContent=money(t);$("#tr").textContent=money(r);
+    const x = d => 150 + d*(470/8);
+    svg.innerHTML="";
+    for(let d=0; d<=8; d++){ svgEl("line",{x1:x(d),y1:20,x2:x(d),y2:140,stroke:"var(--rule)"},svg); txt(svg,x(d)-8,160,"$"+d,{"font-size":11,fill:"var(--muted)"}); }
+    txt(svg,8,48,"Railroad",{"font-weight":600}); txt(svg,8,62,"floor = v",{"font-size":10,fill:"var(--muted)"});
+    svgEl("rect",{x:x(0),y:34,width:x(v)-x(0),height:28,fill:"var(--private)"},svg);
+    txt(svg,8,108,"Outside carrier",{"font-weight":600}); txt(svg,8,122,"floor = v + toll",{"font-size":10,fill:"var(--muted)"});
+    svgEl("rect",{x:x(0),y:94,width:x(v)-x(0),height:28,fill:"var(--private)",opacity:.55},svg);
+    svgEl("rect",{x:x(v),y:94,width:x(v+t)-x(v),height:28,fill:"var(--public)"},svg);
+    if(t>0.25) txt(svg,x(v)+4,112,"toll",{"font-size":10,fill:"var(--paper)"});
+    svgEl("line",{x1:x(r),y1:16,x2:x(r),y2:144,stroke:"var(--signal)","stroke-width":3},svg);
+    txt(svg,Math.min(x(r)+5,560),14,"R = "+money(r),{fill:"var(--signal)","font-weight":600});
+    const rr = r>=v, cc = r>=v+t;
+    if(!rr) { ver.className="verdict bad"; ver.innerHTML=`Nobody carries this freight. Even the railroad's running cost (${money(v)}) is more than the freight can bear.`; }
+    else if(!cc){ ver.className="verdict bad"; ver.innerHTML=`<b>Only the railroad company can carry it.</b> It earns ${money(r-v)}/ton toward fixed charges. The outside carrier needs ${money(v+t)}, so under a strict fixed toll this traffic would stop moving altogether.`; }
+    else { ver.className="verdict good"; ver.innerHTML=`Both could carry this high-value freight. The railroad can still undercut by up to ${money(t)}/ton, so outside carriers survive only at the company's mercy.`; }
+  }
+  [V,T,R].forEach(e=>e.addEventListener("input",draw)); draw();
+})();
+
+/* ===================== FIG 3: AVERAGE COST ===================== */
+(function(){
+  const F=$("#acF"),V=$("#acV"),Q=$("#acQ"),svg=$("#acSvg"),rd=$("#acRead");
+  function draw(){
+    const f=+F.value*1000, v=+V.value, q=+Q.value*1000;
+    $("#acFo").textContent="$"+(+F.value).toLocaleString()+"k"; $("#acVo").textContent=money(v); $("#acQo").textContent=(+Q.value).toLocaleString()+"k";
+    const X0=60,X1=620,Y0=260,Y1=20, qMax=1500000, yMax=10;
+    const x=qq=>X0+(qq/qMax)*(X1-X0), y=c=>Y0-(Math.min(c,yMax)/yMax)*(Y0-Y1);
+    svg.innerHTML="";
+    for(let c=0;c<=10;c+=2){ svgEl("line",{x1:X0,y1:y(c),x2:X1,y2:y(c),stroke:"var(--rule)"},svg); txt(svg,X0-34,y(c)+4,"$"+c,{"font-size":11,fill:"var(--muted)"}); }
+    for(let k=0;k<=1500;k+=300){ txt(svg,x(k*1000)-14,Y0+18,k+"k",{"font-size":11,fill:"var(--muted)"}); }
+    txt(svg,X1-120,Y0+34,"tons per year →",{"font-size":10,fill:"var(--muted)"});
+    let d="", area=`M${x(30000)},${y(v)}`;
+    for(let qq=30000; qq<=qMax; qq+=10000){ const c=f/qq+v; d+=(d?"L":"M")+x(qq).toFixed(1)+","+y(c).toFixed(1); area+=`L${x(qq).toFixed(1)},${y(c).toFixed(1)}`; }
+    area+=`L${x(qMax)},${y(v)}Z`;
+    svgEl("path",{d:area,fill:"var(--public-soft)"},svg);
+    svgEl("line",{x1:X0,y1:y(v),x2:X1,y2:y(v),stroke:"var(--private)","stroke-width":2,"stroke-dasharray":"6 4"},svg);
+    txt(svg,X1-170,y(v)-6,"v · transportation expense",{"font-size":11,fill:"var(--private)"});
+    svgEl("path",{d,fill:"none",stroke:"var(--public)","stroke-width":3},svg);
+    txt(svg,x(80000)+6,y(Math.min(f/80000+v,9.6))+4,"AC = F/q + v",{"font-size":12,fill:"var(--public)","font-weight":600});
+    const ac=f/q+v;
+    svgEl("line",{x1:x(q),y1:Y0,x2:x(q),y2:y(ac),stroke:"var(--ink)","stroke-dasharray":"3 3"},svg);
+    svgEl("circle",{cx:x(q),cy:y(ac),r:7,fill:"var(--signal)"},svg);
+    txt(svg,Math.min(x(q)+10,X1-80),y(ac)-10,money(ac),{"font-weight":600});
+    const ac2 = f/(q*2)+v;
+    rd.innerHTML=`<div><b>${money(ac)}</b><span>Average cost / ton</span></div><div><b>${money(f/q)}</b><span>Fixed charge share / ton</span></div><div><b>${money(ac2)}</b><span>AC if traffic doubled</span></div><div><b>${money(v)}</b><span>Rate floor in a war</span></div>`;
+  }
+  [F,V,Q].forEach(e=>e.addEventListener("input",draw)); draw();
+})();
+
+/* ===================== FIG 4: RATE WAR ===================== */
+const War = (function(){
+  const svg=$("#warSvg"), rd=$("#warRead"), pay=$("#payoff"), Fs=$("#wF"), Ss=$("#wS");
+  const v=1, Q=1000, P0=3.0, MONTHS=24;
+  let st, timer=null;
+  function reset(){ stop(); st={m:0,p:P0,hist:[{m:0,p:P0}],cum:0,cons:false}; draw(); }
+  function stop(){ if(timer){clearInterval(timer);timer=null;} $("#wPlay").textContent="Start the war"; }
+  function deficit(p){ const F=+Fs.value, s=+Ss.value; return Math.max(0, s*F - (p-v)*Q/2); }
+  function step(){
+    if(st.cons || st.m>=MONTHS){ stop(); return; }
+    st.m++; st.p=Math.max(v+0.02, st.p*0.92); st.cum+=deficit(st.p); st.hist.push({m:st.m,p:st.p}); draw();
+    if(st.m>=MONTHS) stop();
+  }
+  function consolidate(){ if(st.cons) return; stop(); st.cons=true; st.m++; st.p=P0; st.hist.push({m:st.m,p:P0,c:true}); draw(); }
+  function draw(){
+    const F=+Fs.value, s=+Ss.value; $("#wFo").textContent="$"+F; $("#wSo").textContent=Math.round(s*100)+"%";
+    const X0=50,X1=620,Y0=225,Y1=20, yMax=3.5;
+    const x=m=>X0+(m/(MONTHS+1))*(X1-X0), y=p=>Y0-(p/yMax)*(Y0-Y1);
+    svg.innerHTML="";
+    for(let p=0;p<=3.5;p+=0.5){ svgEl("line",{x1:X0,y1:y(p),x2:X1,y2:y(p),stroke:"var(--rule)"},svg); txt(svg,8,y(p)+4,"$"+p.toFixed(1),{"font-size":11,fill:"var(--muted)"}); }
+    for(let m=0;m<=24;m+=6) txt(svg,x(m)-4,Y0+18,String(m),{"font-size":11,fill:"var(--muted)"});
+    txt(svg,X1-70,Y0+32,"month →",{"font-size":10,fill:"var(--muted)"});
+    const be = v + s*F/(Q/2);
+    svgEl("rect",{x:X0,y:y(Math.min(be,yMax)),width:X1-X0,height:y(v)-y(Math.min(be,yMax)),fill:"var(--signal)",opacity:.08},svg);
+    svgEl("line",{x1:X0,y1:y(Math.min(be,yMax)),x2:X1,y2:y(Math.min(be,yMax)),stroke:"var(--ok)","stroke-width":2,"stroke-dasharray":"6 4"},svg);
+    txt(svg,X0+6,y(Math.min(be,yMax))-6,"rate that pays fixed charges "+money(be),{"font-size":11,fill:"var(--ok)"});
+    svgEl("line",{x1:X0,y1:y(v),x2:X1,y2:y(v),stroke:"var(--private)","stroke-width":2},svg);
+    txt(svg,X0+6,y(v)+16,"v = operating cost $1.00 (the war's floor)",{"font-size":11,fill:"var(--private)"});
+    if(s<1){ svgEl("line",{x1:X0,y1:y(P0),x2:X1,y2:y(P0),stroke:"var(--public)","stroke-dasharray":"2 4"},svg); txt(svg,X1-150,y(P0)-6,"local (uncompeted) rate",{"font-size":11,fill:"var(--public)"}); }
+    const d = st.hist.map((h,i)=>(i?"L":"M")+x(h.m).toFixed(1)+","+y(h.p).toFixed(1)).join("");
+    svgEl("path",{d,fill:"none",stroke:"var(--signal)","stroke-width":3,"stroke-linejoin":"round"},svg);
+    const last = st.hist[st.hist.length-1];
+    svgEl("circle",{cx:x(last.m),cy:y(last.p),r:6,fill:st.cons?"var(--ok)":"var(--signal)"},svg);
+    if(st.cons) txt(svg,Math.min(x(last.m)+8,X1-110),y(last.p)-10,"consolidated",{fill:"var(--ok)","font-weight":600});
+    const def = st.cons?0:deficit(st.p);
+    rd.innerHTML=`<div><b>${money(st.p)}</b><span>Through rate · month ${st.m}</span></div><div><b style="color:var(--signal)">$${Math.round(def).toLocaleString()}</b><span>Unpaid fixed charges this month</span></div><div><b>$${Math.round(st.cum).toLocaleString()}</b><span>Cumulative investor loss</span></div><div><b>${(P0/st.p).toFixed(1)}×</b><span>Local ÷ through rate</span></div>`;
+    const lc = Math.max(0, s*F-(st.p-v)*Q/2), ls = s*F;
+    pay.innerHTML=`<thead><tr><th>Road A's choice this month (B keeps cutting)</th><th>Road A's loss on competitive business</th></tr></thead><tbody>
+      <tr><td>Keep matching B's rate (${money(st.p)})</td><td>$${Math.round(lc).toLocaleString()} <span class="chip ${lc<ls?"ok":"mut"}">${lc<ls?"smaller loss":"equal"}</span></td></tr>
+      <tr><td>Stop and go back to ${money(P0)} (lose all through traffic)</td><td>$${Math.round(ls).toLocaleString()} <span class="chip sig">fixed charges run on</span></td></tr></tbody>`;
+  }
+  $("#wPlay").addEventListener("click",()=>{ if(timer){stop();return;} if(st.cons||st.m>=MONTHS) reset(); $("#wPlay").textContent="Pause"; timer=setInterval(step, reduced?150:450); });
+  $("#wStep").addEventListener("click",()=>{ stop(); step(); });
+  $("#wCons").addEventListener("click",consolidate);
+  $("#wReset").addEventListener("click",reset);
+  [Fs,Ss].forEach(e=>e.addEventListener("input",draw));
+  reset();
+  // advance a few months so the figure opens in a working state
+  for(let i=0;i<6;i++) step();
+})();
+
+/* ===================== CYCLE ===================== */
+(function(){
+  const svg=$("#cycSvg"), dots=$("#dots"), text=$("#cycText");
+  const stages=[
+    ["Cut-throat","competition","Rival producers fight for business. Prices are set \"without reference to fixed charges.\" The question is not what rate pays for your own business, but what rate will take business from a rival."],
+    ["Depression","below interest","\"A period of commercial depression, when prices are so low as not to pay interest on the investment.\""],
+    ["Consolidation","combination","\"Such competition ends in combination. It cannot exist indefinitely without ruin to the investor.\" If competition doesn't crush the small man, \"the combination swallows him up.\""],
+    ["Monopoly","rates","\"A period where they are fixed at monopoly rates\": prices are restored to a non-competitive figure."],
+    ["New capital","attracted","High monopoly rates \"tempt large investments of new capital, and lead to a new period of cut-throat competition.\""]
+  ];
+  const cx=210, cy=210, R=150;
+  const pos = i => { const a=-Math.PI/2 + i*2*Math.PI/5; return [cx+R*Math.cos(a), cy+R*Math.sin(a)]; };
+  svgEl("circle",{cx,cy,r:R,fill:"none",stroke:"var(--rule)","stroke-width":10},svg);
+  const arc = svgEl("circle",{cx,cy,r:R,fill:"none",stroke:"var(--private)","stroke-width":10,"stroke-dasharray":`0 ${2*Math.PI*R}`,transform:`rotate(-90 ${cx} ${cy})`,style:"transition:stroke-dasharray .7s"},svg);
+  const nodes = stages.map((s,i)=>{ const [x,y]=pos(i); const g=svgEl("g",{},svg);
+    const c=svgEl("circle",{cx:x,cy:y,r:40,fill:"var(--card)",stroke:"var(--ink)","stroke-width":2,style:"transition:fill .4s"},g);
+    txt(g,x,y-2,s[0],{"text-anchor":"middle","font-size":11,"font-weight":600}); txt(g,x,y+12,s[1],{"text-anchor":"middle","font-size":9,fill:"var(--muted)"}); return c; });
+  const ctr=txt(svg,cx,cy-6,"Cycle 0",{"text-anchor":"middle","font-size":20,"font-weight":600});
+  txt(svg,cx,cy+16,"\"part of the law of nature\"?",{"text-anchor":"middle","font-size":10,fill:"var(--muted)"});
+  let n=24, cycles=0, busy=false;
+  function renderDots(){ dots.innerHTML=""; const big=document.createElement("i"); big.className="big"; big.title="The combination"; big.style.width=big.style.height=(22+cycles*8)+"px"; dots.appendChild(big);
+    for(let i=0;i<24;i++){ const d=document.createElement("i"); if(i>=n) d.className="gone"; dots.appendChild(d); } $("#cycN").textContent=n; }
+  function hi(i){ nodes.forEach((c,j)=>c.setAttribute("fill", j===i?"var(--private-soft)":"var(--card)")); arc.setAttribute("stroke-dasharray",`${(i+1)/5*2*Math.PI*R} ${2*Math.PI*R}`); text.innerHTML="<b>"+stages[i][0]+" "+stages[i][1]+".</b> "+stages[i][2]; }
+  $("#cycGo").addEventListener("click",()=>{ if(busy) return; busy=true; let i=0; hi(0);
+    const t=setInterval(()=>{ i++; if(i<5){ hi(i); if(i===2){ n=Math.max(1,n-Math.max(2,Math.round(n*0.35))); renderDots(); } } else { clearInterval(t); cycles++; ctr.textContent="Cycle "+cycles; busy=false; renderDots();
+      text.innerHTML += ` <br><br><b>After ${cycles} cycle${cycles>1?"s":""}:</b> ${n} of 24 independents remain. "With each change, the chance for the small independent business man is less."`; } }, reduced?200:900); });
+  $("#cycReset").addEventListener("click",()=>{ n=24;cycles=0;ctr.textContent="Cycle 0";renderDots();hi(0); });
+  renderDots(); hi(0);
+})();
+
+/* ===================== FIG 5: SHIPPERS ===================== */
+(function(){
+  const svg=$("#shipSvg"), rd=$("#shipRead");
+  const W=[5.2,2.1,4.8,1.6,5.5,3.0,1.4,4.9,2.6,5.1,1.9,4.4], S=[3.8,3.8,3.9,3.9,3.8,3.9,3.9,3.8,3.9,3.8,3.9,3.8];
+  const M="JFMAMJJASOND".split("");
+  function draw(reg){
+    const r = reg==="reg"?S:W;
+    const avg = r.reduce((a,b)=>a+b,0)/12;
+    const low = [...r].map((v,i)=>[v,i]).sort((a,b)=>a[0]-b[0]).slice(0,3);
+    const lowIdx = new Set(low.map(x=>x[1])); const spec = low.reduce((a,b)=>a+b[0],0)/3;
+    const X0=50,X1=620,Y0=220,Y1=20,yMax=6, bw=(X1-X0)/12;
+    const y=p=>Y0-(p/yMax)*(Y0-Y1);
+    svg.innerHTML="";
+    for(let p=0;p<=6;p++){ svgEl("line",{x1:X0,y1:y(p),x2:X1,y2:y(p),stroke:"var(--rule)"},svg); txt(svg,12,y(p)+4,"$"+p,{"font-size":11,fill:"var(--muted)"}); }
+    r.forEach((v,i)=>{ const b=svgEl("rect",{x:X0+i*bw+6,y:y(v),width:bw-12,height:Y0-y(v),fill:lowIdx.has(i)?"var(--signal)":"var(--public)",rx:2},svg);
+      if(!reduced){ b.style.transition="y .6s, height .6s"; }
+      txt(svg,X0+i*bw+bw/2-4,Y0+18,M[i],{"font-size":11,fill:"var(--muted)"}); if(lowIdx.has(i)) txt(svg,X0+i*bw+bw/2-5,y(v)-6,"S",{"font-size":11,fill:"var(--signal)","font-weight":600}); });
+    svgEl("line",{x1:X0,y1:y(avg),x2:X1,y2:y(avg),stroke:"var(--private)","stroke-width":2.5,"stroke-dasharray":"7 4"},svg);
+    txt(svg,X1-170,y(avg)-6,"merchant's average "+money(avg),{"font-size":11,fill:"var(--private)","font-weight":600});
+    rd.innerHTML=`<div><b>${money(avg)}</b><span>Average rate (ordinary merchant)</span></div><div><b>${money(spec)}</b><span>Speculator's rate (S months)</span></div><div><b style="color:${avg-spec>0.5?"var(--signal)":"var(--ok)"}">${money(avg-spec)}</b><span>Merchant's handicap / ton</span></div><div><b>${money(Math.max(...r)-Math.min(...r))}</b><span>Spread, high − low</span></div>`;
+  }
+  segGroup("#shippers .seg","reg",draw); draw("war");
+})();
+
+/* ===================== FIG 6: GRANGER ===================== */
+(function(){
+  const s=$("#gR"), svg=$("#grSvg"), ver=$("#grVerdict"), FLOOR=4, MARKET=5;
+  function draw(){
+    const r=+s.value; $("#gRo").textContent=money(r);
+    const x=d=>30+d*(580/10); svg.innerHTML="";
+    svgEl("rect",{x:x(0),y:40,width:x(FLOOR)-x(0),height:40,fill:"var(--signal)",opacity:.25},svg);
+    svgEl("rect",{x:x(FLOOR),y:40,width:x(MARKET)-x(FLOOR),height:40,fill:"var(--ok)",opacity:.25},svg);
+    svgEl("rect",{x:x(MARKET),y:40,width:x(10)-x(MARKET),height:40,fill:"var(--muted)",opacity:.18},svg);
+    txt(svg,x(0.3),64,"checks development",{"font-size":11,fill:"var(--signal)","font-weight":600});
+    txt(svg,x(FLOOR)+4,64,"binds",{"font-size":11,fill:"var(--ok)","font-weight":600});
+    txt(svg,x(MARKET)+8,64,"inoperative: roads already charge less",{"font-size":11,fill:"var(--muted)","font-weight":600});
+    for(let d=0;d<=10;d++) txt(svg,x(d)-8,100,"$"+d,{"font-size":10,fill:"var(--muted)"});
+    txt(svg,x(FLOOR)-30,32,"capital floor",{"font-size":10,fill:"var(--muted)"}); txt(svg,x(MARKET)+2,32,"world-market rate",{"font-size":10,fill:"var(--muted)"});
+    svgEl("path",{d:`M${x(r)} 84 l-8 14 h16z`,fill:"var(--ink)"},svg);
+    svgEl("line",{x1:x(r),y1:36,x2:x(r),y2:84,stroke:"var(--ink)","stroke-width":3},svg);
+    txt(svg,x(r)-18,124,"cap "+money(r),{"font-size":11,"font-weight":600});
+    if(r>=MARKET){ ver.className="verdict"; ver.textContent="Too high: the law is inoperative. World-market competition already holds rates below the cap."; }
+    else if(r<FLOOR){ ver.className="verdict bad"; ver.textContent="Too low: the law checks railroad development and does \"unbounded harm.\" No new lines or extensions get built. This is why the legislators who passed Granger laws often had to repeal them."; }
+    else { ver.className="verdict good"; ver.textContent="A narrow workable band. The cap binds without driving away capital, but finding it requires knowledge no legislature has, and managers still need latitude, as Prussia's three-fifths shows."; }
+  }
+  s.addEventListener("input",draw); draw();
+})();
+
+/* ===================== FIG 8: DISCRIMINATION ===================== */
+(function(){
+  const A=$("#dA"),B=$("#dB"),S=$("#dSame"),R=$("#dRing"),v=$("#dVerdict");
+  function judge(){
+    const a=+A.value,b=+B.value, same=S.value, ring=R.value==="yes";
+    if(Math.abs(a-b)<0.005){ v.className="verdict good"; v.textContent="Equal treatment. Nothing to regulate on this point."; return; }
+    if(same==="like"){ v.className="verdict bad"; v.innerHTML=`<b>Personal discrimination.</b> A ${money(Math.abs(a-b))}/ton gap between shippers "under substantially like circumstances." Hadley says this should be prevented without question.${ring?" Because the favored party is an insider, publicity of management is the remedy as well.":""}`; return; }
+    v.className="verdict"; v.innerHTML=`<b>${same==="local"?"Local difference":"Difference in classification"}.</b> Hadley leaves this open: how far to equalize "can only be decided by long experience."${ring?" Still, favoring an inside ring is exactly the abuse that enforced publicity is meant to expose.":""}`;
+  }
+  [A,B,S,R].forEach(e=>e.addEventListener("input",judge)); judge();
+})();
+
+/* ===================== PHASES ===================== */
+(function(){
+  function show(ind){
+    $$("#phasesBox .phase").forEach(p=>p.classList.toggle("cur", ind==="rail" ? p.dataset.p==="3" : p.dataset.p==="2"));
+    $("#phaseNote").innerHTML = ind==="rail"
+      ? "<b>Railroads in 1886:</b> in Phase 3. Combination is tacitly accepted, and combinations are held to more publicity and responsibility than before."
+      : "<b>Factories in 1886:</b> \"We are past the illusions of the first stage, and labor organization has brought us face to face with the dangers of the second stage. We cannot stay where we are. It is not likely that we shall take a step backward. It may well be the case that the history of railroad regulation shows us the direction of our next step forward.\"";
+  }
+  segGroup("#phases .seg","ind",show); show("rail");
+})();
+
+/* ===================== TIMELINE ===================== */
+(function(){
+  const box=$("#tl");
+  function render(f){
+    box.innerHTML = TIMELINE.filter(e=>f==="all"||(f==="essay")===e.essay).map(e=>
+      `<div class="tl-item ${e.essay?"":"ctx"} pre"><div class="tl-year">${e.y}</div><div class="tl-dot"></div><div class="tl-body"><b>${e.t} ${e.essay?'<span class="chip pri">in essay</span>':'<span class="chip pub">context</span>'}</b><span>${e.d}</span></div></div>`).join("");
+    $$(".tl-item",box).forEach((el,i)=>setTimeout(()=>el.classList.remove("pre"), reduced?0:30*i));
+  }
+  segGroup("#timeline .seg","tl",render); render("all");
+})();
+
+/* ===================== SCENARIOS ===================== */
+$("#scn").innerHTML = SCENARIOS.map(s=>`<div class="scn"><div class="map">${s.tags.map(t=>`<span class="chip pri">${t}</span>`).join("")}</div><h3>${s.t}</h3><p>${s.body}</p>
+<details class="reveal"><summary>Hadley's lens</summary><div class="body"><p>${s.lens}</p></div></details></div>`).join("");
+</script>
+
+<script>
+/* ===================== CODE LAB ===================== */
+const LAB = [
+ {title:"averageCost: why big roads win", finding:"Finding 2 · p. 35",
+  src:`/** Hadley p.32: cost = fixed charges + transportation expenses */
+export interface RoadCosts {
+  fixedCharges: number;      // F: interest + maintenance per year
+  transportExpense: number;  // v: cost of moving one ton
+}
+
+export function averageCost(c: RoadCosts, tons: number): number {
+  return c.fixedCharges / tons + c.transportExpense;
+}
+
+// usage
+const road: RoadCosts = { fixedCharges: 900_000, transportExpense: 1 };
+averageCost(road, 300_000); // 4.00 $/ton
+averageCost(road, 900_000); // 2.00 $/ton  "better and better advantage"`,
+  inputs:[["fixedCharges",900000],["transportExpense",1],["tons",300000]],
+  run:({fixedCharges:F,transportExpense:v,tons:q})=>`averageCost(road, ${q}) → ${(F/q+v).toFixed(2)} $/ton\nfixed share → ${(F/q).toFixed(2)} · at 2× traffic → ${(F/(2*q)+v).toFixed(2)}`},
+
+ {title:"whoCanCarry: the toll trap", finding:"Finding 1 · pp. 32–33",
+  src:`type Party = "railroad" | "outsideCarrier";
+
+export function rateFloor(p: Party, v: number, toll: number): number {
+  return p === "railroad" ? v : v + toll; // the company can forego its own toll
+}
+
+export function whoCanCarry(bearable: number, v: number, toll: number): Party[] {
+  return (["railroad", "outsideCarrier"] as Party[])
+    .filter(p => bearable >= rateFloor(p, v, toll));
+}
+
+// usage: coal that will bear $3.00/ton
+whoCanCarry(3.0, 2.0, 1.5); // ["railroad"]`,
+  inputs:[["bearable",3],["v",2],["toll",1.5]],
+  run:({bearable:R,v,toll:T})=>{ const p=[]; if(R>=v)p.push('"railroad"'); if(R>=v+T)p.push('"outsideCarrier"'); return `whoCanCarry(${R}, ${v}, ${T}) → [${p.join(", ")}]\nrailroad floor ${v.toFixed(2)} · carrier floor ${(v+T).toFixed(2)}`; }},
+
+ {title:"priceWar: the rate path", finding:"Finding 2 · p. 35",
+  src:`interface War { F: number; v: number; Q: number; cut: number; start: number; months: number }
+
+export function priceWar(w: War) {
+  let p = w.start;
+  const log: { month: number; rate: number; unpaidFixed: number }[] = [];
+  for (let m = 1; m <= w.months; m++) {
+    p = Math.max(w.v + 0.01, p * (1 - w.cut));     // undercut, never below running cost
+    const margin = (p - w.v) * (w.Q / 2);           // each road's contribution
+    log.push({ month: m, rate: +p.toFixed(2), unpaidFixed: Math.max(0, w.F - margin) });
+  }
+  return log;
+}
+
+// usage
+priceWar({ F: 600, v: 1, Q: 1000, cut: 0.08, start: 3, months: 12 });`,
+  inputs:[["F",600],["v",1],["Q",1000],["cut",0.08],["start",3],["months",12]],
+  run:({F,v,Q,cut,start,months})=>{ let p=start, out="month  rate   unpaidFixed\n"; for(let m=1;m<=Math.min(months,60);m++){ p=Math.max(v+0.01,p*(1-cut)); const u=Math.max(0,F-(p-v)*Q/2); out+=`${String(m).padStart(5)}  ${p.toFixed(2).padStart(5)}  ${u.toFixed(0).padStart(10)}\n`; } return out.trimEnd(); }},
+
+ {title:"stopOrContinue: why neither road quits", finding:"Finding 2 · p. 35",
+  src:`export function stopOrContinue(p: number, v: number, F: number, Q: number) {
+  const lossIfContinue = F - (p - v) * (Q / 2); // share traffic at war rate
+  const lossIfStop     = F;                     // fixed charges run on, traffic gone
+  return {
+    lossIfContinue, lossIfStop,
+    choice: lossIfContinue < lossIfStop ? "keep cutting" : "indifferent",
+  };
+}
+
+// usage
+stopOrContinue(1.4, 1, 1000, 1000); // { lossIfContinue: 800, lossIfStop: 1000, choice: "keep cutting" }`,
+  inputs:[["p",1.4],["v",1],["F",1000],["Q",1000]],
+  run:({p,v,F,Q})=>{ const c=F-(p-v)*Q/2; return `{ lossIfContinue: ${c.toFixed(0)}, lossIfStop: ${F}, choice: "${c<F?"keep cutting":"indifferent"}" }`; }},
+
+ {title:"effectiveRates: steadiness beats low averages", finding:"Finding 4 · p. 36",
+  src:`export function effectiveRates(monthly: number[], speculatorMonths = 3) {
+  const avg = monthly.reduce((a, b) => a + b, 0) / monthly.length;
+  const cheapest = [...monthly].sort((a, b) => a - b).slice(0, speculatorMonths);
+  const spec = cheapest.reduce((a, b) => a + b, 0) / cheapest.length;
+  return { merchant: avg, speculator: spec, handicap: avg - spec };
+}
+
+// usage
+effectiveRates([5.2, 2.1, 4.8, 1.6, 5.5, 3.0, 1.4, 4.9, 2.6, 5.1, 1.9, 4.4]);`,
+  inputs:[["monthly","5.2, 2.1, 4.8, 1.6, 5.5, 3.0, 1.4, 4.9, 2.6, 5.1, 1.9, 4.4"],["speculatorMonths",3]],
+  run:({monthly,speculatorMonths:k})=>{ const a=String(monthly).split(/[ ,]+/).map(Number).filter(n=>!isNaN(n)); if(!a.length) return "Enter numbers separated by commas"; const avg=a.reduce((x,y)=>x+y,0)/a.length; const c=[...a].sort((x,y)=>x-y).slice(0,Math.max(1,k)); const s=c.reduce((x,y)=>x+y,0)/c.length; return `{ merchant: ${avg.toFixed(2)}, speculator: ${s.toFixed(2)}, handicap: ${(avg-s).toFixed(2)} }`; }},
+
+ {title:"judgeStateRate: the Granger dilemma", finding:"Finding 5 · p. 37",
+  src:`export function judgeStateRate(cap: number, marketRate: number, capitalFloor: number) {
+  if (cap >= marketRate)  return "inoperative: roads already charge less";
+  if (cap < capitalFloor) return "checks development: new capital refuses to come";
+  return "binding, but managers still need latitude";
+}
+
+// usage
+judgeStateRate(6.2, 5.0, 4.0); // "inoperative: ..."
+judgeStateRate(3.0, 5.0, 4.0); // "checks development: ..."`,
+  inputs:[["cap",3],["marketRate",5],["capitalFloor",4]],
+  run:({cap,marketRate:m,capitalFloor:f})=> '"'+(cap>=m?"inoperative: roads already charge less":cap<f?"checks development: new capital refuses to come":"binding, but managers still need latitude")+'"'},
+
+ {title:"checkDiscrimination: Hadley's minimum rule", finding:"Finding 6 · p. 38",
+  src:`type Circumstance = "like" | "differentLocality" | "differentClass";
+
+export function checkDiscrimination(rateA: number, rateB: number, c: Circumstance): string {
+  if (rateA === rateB) return "equal treatment";
+  if (c === "like")    return "PERSONAL discrimination: prohibit";
+  return "local / classification difference: decide by long experience";
+}
+
+// usage
+checkDiscrimination(2.0, 1.4, "like"); // "PERSONAL discrimination: prohibit"`,
+  inputs:[["rateA",2],["rateB",1.4],["c","like"]],
+  run:({rateA:a,rateB:b,c})=> '"'+(a===b?"equal treatment":c==="like"?"PERSONAL discrimination: prohibit":"local / classification difference: decide by long experience")+'"'},
+
+ {title:"whichWay: classify any policy", finding:"Framework · p. 31",
+  src:`type Owner = "public" | "private";
+interface Policy { highway: Owner; carrier: Owner; publicRights: boolean }
+
+export function whichWay(p: Policy): 1 | 2 | 3 | 4 {
+  if (p.highway === "public" && p.carrier === "private") return 1; // keep distinct
+  if (p.highway === "public" && p.carrier === "public")  return 2; // State monopoly
+  if (p.publicRights) return 4;                                    // regulated monopoly
+  return 3;                                                        // competing highways
+}
+
+// usage: Henry George → public land, private capital
+whichWay({ highway: "public", carrier: "private", publicRights: false }); // 1`,
+  inputs:[["highway","public"],["carrier","private"],["publicRights","false"]],
+  run:({highway:h,carrier:c,publicRights:r})=>{ const pr=String(r)==="true"; const w = h==="public"&&c==="private"?1:h==="public"&&c==="public"?2:pr?4:3; return `whichWay(...) → ${w}  // ${WAYS[w-1].title}`; }}
+];
+(function(){
+  const lab=$("#lab");
+  LAB.forEach((L,i)=>{
+    const d=document.createElement("div"); d.className="plate";
+    d.innerHTML=`<div class="plate-title"><span>${L.title}</span><span>${L.finding}</span></div><pre class="code">${highlightTS(L.src)}</pre>
+      <div class="row">${L.inputs.map(([k,v])=>`<label class="ctrl" style="min-width:120px">${k}<input type="${typeof v==="number"?"number":"text"}" step="any" id="lab${i}_${k}" value="${v}"></label>`).join("")}</div>
+      <div class="row"><button class="btn solid" data-run="${i}">Run</button></div><pre class="code" id="labOut${i}" aria-live="polite">// press Run</pre>`;
+    lab.appendChild(d);
+    const go=()=>{ const args={}; L.inputs.forEach(([k,v])=>{ const raw=$("#lab"+i+"_"+k).value; args[k]= typeof v==="number" ? +raw : raw.trim(); }); let out; try{ out=L.run(args); }catch(e){ out="Error: "+e.message; } $("#labOut"+i).textContent="> "+out; };
+    $("[data-run]",d).addEventListener("click",go); go();
+  });
+})();
+
+/* ===================== PRACTICE ===================== */
+const PROBS = [
+ {g:"Old theory · highway vs carrier", items:[
+  {type:"mc", q:"A canal company charges a toll to independent boatmen, who compete with each other to carry freight. In Hadley's terms, the canal is the…", o:["Carrier","Highway","Neither, since canals are exempt","Both"], a:1, s:"The canal is the fixed route, a natural monopoly charging a toll. The boatmen are the carriers. This is the traditional split."},
+  {type:"open", q:"Name the highway and the carrier in (a) a port with competing shipping lines, (b) a dominant app store that also sells its own apps, (c) a national postal service.", s:"(a) Port is the highway and the shipping lines are carriers, kept separate. (b) The store is the highway, and the developers plus the store's own apps are carriers. The owner does both, which is the railroad problem. (c) Both roles in one monopoly. Hadley's earliest example of organized service needing monopoly."}
+ ]},
+ {g:"Finding 1 · tolls and outside carriers", items:[
+  {type:"num", q:"Transportation expense v = $2.00/ton and toll T = $1.50/ton. What is the lowest rate an outside carrier can charge?", a:3.5, s:"Floor = v + T = 2.00 + 1.50 = $3.50."},
+  {type:"num", q:"Same road. Coal will bear only $3.00/ton. If the railroad company carries it, how much per ton goes toward fixed charges?", a:1.0, s:"R − v = 3.00 − 2.00 = $1.00. The outside carrier can't carry at all (it needs $3.50), so a strict fixed-toll regime loses this traffic."},
+  {type:"mc", q:"Why does Hadley reject periodic legislative revision of tolls?", o:["Legislatures meet too rarely","It would scare off investment and remove the gains from expansion","Tolls would rise too high","Courts would strike it down"], a:1, s:"\"No man would wish to invest money in railroad building, subject to such liabilities,\" and no road would expand if it \"would thus lose all fruit from its gains\" (p. 33)."}
+ ]},
+ {g:"Finding 2 · fixed charges and rate wars", items:[
+  {type:"num", q:"F = $900,000/year, v = $1.00/ton. What is the average cost per ton at 450,000 tons?", a:3.0, s:"AC = 900,000 / 450,000 + 1 = 2 + 1 = $3.00."},
+  {type:"num", q:"Same road. How many tons per year bring average cost down to $1.50?", a:1800000, tol:1, s:"F/q = 0.50, so q = 900,000 / 0.5 = 1,800,000 tons. Cost keeps falling as traffic grows, which is why there is no natural limit to the fight for traffic."},
+  {type:"num", q:"Two roads split Q = 1,000 tons/month of competitive freight. Each has F = $1,000/month of fixed charges and v = $1.00. At a war rate of $1.40, what is each road's monthly loss if it keeps competing?", a:800, s:"Contribution = (1.40 − 1.00) × 500 = $200, so loss = 1,000 − 200 = $800. Stopping loses the whole $1,000, so the road keeps cutting (p. 35)."},
+  {type:"num", q:"Same setup. What rate would let each road just cover its fixed charges?", a:3.0, s:"p = v + F/(Q/2) = 1 + 1000/500 = $3.00. Rivalry pushes rates down toward $1.00, far below this."},
+  {type:"mc", q:"Hadley compares disregarding fixed charges to…", o:["A merchant clearing old stock","Rent not entering the price of produce","Wages in a strike","Tariffs on imports"], a:1, s:"\"Fixed charges must be disregarded in railroad competition, for exactly the same reason that rent cannot be taken into account in fixing the price of produce\" (p. 35)."}
+ ]},
+ {g:"Finding 4 · shippers", items:[
+  {type:"num", q:"Monthly rates are $6, $2, $6, $2, $6, $2. A merchant ships equally every month, and a speculator ships only in the $2 months. How much more per ton does the merchant pay?", a:2.0, s:"Merchant average = $4.00. Speculator = $2.00. Handicap = $2.00 per ton, even though the merchant's rates were often \"lowest.\""},
+  {type:"mc", q:"Under steady rates of $4.50 every month, the merchant's handicap compared with the speculator is…", o:["$2.50","$0.50","$0.00","It cannot be determined"], a:2, s:"With steady rates everyone pays the same. The higher average buys equality, which is Hadley's point about \"equality and steadiness.\""}
+ ]},
+ {g:"Finding 5 · Granger cases", items:[
+  {type:"mc", q:"World-market competition holds rates at $5.00. Capital needs at least $4.00 to keep building. The legislature caps rates at $6.00. Result?", o:["Checks development","Inoperative","Ideal regulation","Forces State ownership"], a:1, s:"A cap above the market rate does nothing: \"If they are placed too high, they are inoperative.\""},
+  {type:"mc", q:"Same road, but the cap is $3.00. Result?", o:["Inoperative","Checks development","Restores competition","Ends discrimination"], a:1, s:"Below the capital floor, it \"check[s] railroad development so as to do unbounded harm,\" which is why Granger legislators repealed their own laws."},
+  {type:"num", q:"A Prussian State line carries 12,000 consignments. Using Hadley's proportion, how many move at the official tariff rate?", a:4800, tol:1, s:"Three-fifths are off-tariff, so two-fifths are at tariff: 12,000 × 2/5 = 4,800."}
+ ]},
+ {g:"Finding 6 · equality and publicity", items:[
+  {type:"mc", q:"Two grain dealers in the same town ship the same volume on the same route. One gets a secret rebate because he is a director's brother. What is it, and which tool addresses it?", o:["Local difference; leave to experience","Personal discrimination by an inside ring; equality plus publicity","Classification issue; rate caps","Legitimate volume discount"], a:1, s:"Like circumstances plus unequal rates is personal discrimination, which is always prohibited. The insider angle is what enforced publicity of management exposes."},
+  {type:"mc", q:"Why does Hadley prefer a strong combination over a bankrupt competitor?", o:["It charges lower rates","It can be held responsible and plans for the long run","It pays more taxes","Courts prefer it"], a:1, s:"\"The management of a bankrupt road has no permanent interests. It lives for the day only.\""}
+ ]},
+ {g:"Generalization · industry and phases", items:[
+  {type:"mc", q:"\"Nationalize land but leave capital private.\" Which of the four ways?", o:["1","2","3","4"], a:0, s:"Henry George's plan maps to Option 1: public highway, private carriers."},
+  {type:"mc", q:"Order the three phases of U.S. railroad legislation.", o:["Regulated combination → competition → shippers dictate","Competition → shippers dictate → regulated combination","Shippers dictate → competition → State ownership","State ownership → competition → regulation"], a:1, s:"Phase 1 failed, Phase 2 failed worse, and Phase 3 is regulated combination with publicity (p. 44)."},
+  {type:"open", q:"A mill town has a single large employer. Workers suspect huge hidden profits and threaten a strike. Apply Hadley's last two pages.", s:"The firm is a virtual monopoly over its workers (factory : employees = railroad : shippers), which opens the Granger door to regulation. Secrecy feeds the belief in a vast profit fund. Hadley's advice is voluntary or enforced publicity of accounts, because a firm that resists informed opinion risks \"an outbreak of unenlightened public sentiment\" and far harsher regulation."}
+ ]}
+];
+(function(){
+  const box=$("#probs"); let solved=new Set(), n=0;
+  const upd=()=>$("#pScore").textContent=`${solved.size} of ${PROBS.reduce((a,g)=>a+g.items.filter(i=>i.type!=="open").length,0)} checkable problems solved`;
+  PROBS.forEach(G=>{
+    const wrap=document.createElement("div"); wrap.style.cssText="display:grid;gap:12px";
+    wrap.innerHTML=`<h3>${G.g}</h3><div class="grid2"></div>`; const grid=$(".grid2",wrap);
+    G.items.forEach(P=>{ const id="p"+(n++); const el=document.createElement("div"); el.className="prob";
+      let ui="";
+      if(P.type==="num") ui=`<div class="ans"><input type="number" step="any" id="${id}" aria-label="Your answer"><button class="btn solid">Check</button><span class="fb" aria-live="polite"></span></div>`;
+      if(P.type==="mc") ui=`<div class="opts">${P.o.map((o,k)=>`<button class="opt" data-k="${k}">${o}</button>`).join("")}</div><span class="fb" aria-live="polite"></span>`;
+      el.innerHTML=`<div class="tag">${P.type==="num"?"Calculate":P.type==="mc"?"Choose":"Explain"}</div><p>${P.q}</p>${ui}<details class="reveal"><summary>Worked solution</summary><div class="body"><p>${P.s}</p></div></details>`;
+      if(P.type==="num"){ const inp=$("input",el), fb=$(".fb",el); const chk=()=>{ const v=parseFloat(inp.value); if(isNaN(v)){fb.className="fb no";fb.textContent="Enter a number.";return;} if(Math.abs(v-P.a)<=(P.tol||0.005)){fb.className="fb ok";fb.textContent="Correct";solved.add(id);upd();} else {fb.className="fb no";fb.textContent="Not quite. Try again or open the solution.";} };
+        $("button",el).addEventListener("click",chk); inp.addEventListener("keydown",e=>{if(e.key==="Enter")chk();}); }
+      if(P.type==="mc"){ const fb=$(".fb",el); $$(".opt",el).forEach(b=>b.addEventListener("click",()=>{ const k=+b.dataset.k; $$(".opt",el).forEach(x=>{x.disabled=true; if(+x.dataset.k===P.a) x.classList.add("right");}); if(k===P.a){fb.className="fb ok";fb.textContent="Correct";solved.add(id);upd();} else {b.classList.add("wrong");fb.className="fb no";fb.textContent="Not this one. See the solution below.";} $("details",el).open=true; })); }
+      grid.appendChild(el); });
+    box.appendChild(wrap); });
+  upd();
+})();
+
+/* ===================== FLASHCARDS ===================== */
+(function(){
+  const KEY="hadley-fc-v1"; let boxes=store(KEY)||{}; let order=CARDS.map((_,i)=>i); let cur=0; let inView=false;
+  const fc=$("#fc");
+  const boxOf=i=>boxes[i]||1;
+  function pick(){ const min=Math.min(...order.map(boxOf)); const cands=order.filter(i=>boxOf(i)===min && i!==cur); cur = cands.length? cands[0] : order.find(i=>i!==cur); show(); }
+  function show(){ fc.classList.remove("flip"); const c=CARDS[cur];
+    $("#fcTag").textContent=c[0]; $("#fcQ").innerHTML=c[1]; $("#fcA").innerHTML=c[2];
+    const counts=[1,2,3,4,5].map(b=>CARDS.filter((_,i)=>boxOf(i)===b).length);
+    $("#fcBoxes").innerHTML=counts.map((n,b)=>`<span title="Box ${b+1}">B${b+1}: ${n}</span>`).join("");
+    $("#fcPos").textContent=`Card ${cur+1} of ${CARDS.length} · box ${boxOf(cur)}`; }
+  function grade(d){ boxes[cur] = d===0 ? 1 : Math.min(5, boxOf(cur)+d); store(KEY,boxes); order.push(order.splice(order.indexOf(cur),1)[0]); pick(); }
+  const flip=()=>fc.classList.toggle("flip");
+  fc.addEventListener("click",flip);
+  fc.addEventListener("keydown",e=>{ if(e.key===" "||e.key==="Enter"){e.preventDefault();flip();} });
+  $("#fcAgain").addEventListener("click",()=>grade(0)); $("#fcGood").addEventListener("click",()=>grade(1)); $("#fcEasy").addEventListener("click",()=>grade(2));
+  $("#fcShuffle").addEventListener("click",()=>{ for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];} cur=-1; pick(); });
+  $("#fcResetBtn").addEventListener("click",()=>{ boxes={}; store(KEY,boxes); cur=-1; order=CARDS.map((_,i)=>i); pick(); });
+  new IntersectionObserver(es=>es.forEach(e=>inView=e.isIntersecting)).observe($("#cards"));
+  document.addEventListener("keydown",e=>{ if(!inView||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+    if(e.key==="1")grade(0); else if(e.key==="2")grade(1); else if(e.key==="3")grade(2); else if(e.key===" "&&document.activeElement===document.body){e.preventDefault();flip();} });
+  // export
+  const strip=s=>s.replace(/\t/g," ");
+  $("#ankiTxt").value=CARDS.map(c=>`${strip(c[1])}\t${strip(c[2])}\thadley1886::${c[0].toLowerCase().replace(/\s+/g,"-")}`).join("\n");
+  $("#ankiCopy").addEventListener("click",()=>{ const ta=$("#ankiTxt"), fb=$("#ankiFb");
+    navigator.clipboard.writeText(ta.value).then(()=>{fb.className="fb ok";fb.textContent=`Copied ${CARDS.length} cards`;}).catch(()=>{ ta.focus(); ta.select(); fb.className="fb";fb.textContent="Text selected. Press Ctrl/Cmd + C to copy."; }); });
+  cur=-1; pick();
+})();
+
+/* ===================== QUIZ ===================== */
+(function(){
+  const box=$("#qz"); let score=0, answered=0;
+  function render(){ score=0; answered=0; $("#qzScore").textContent=`0 / ${QUIZ.length}`;
+    box.innerHTML=QUIZ.map((Q,i)=>`<div class="prob" data-q="${i}"><div class="tag">Question ${i+1}</div><div class="qz-q">${Q.q}</div><div class="opts">${Q.o.map((o,k)=>`<button class="opt" data-k="${k}">${String.fromCharCode(65+k)}. ${o}</button>`).join("")}</div><p class="fb" hidden></p></div>`).join("");
+    $$(".prob",box).forEach(el=>{ const Q=QUIZ[+el.dataset.q]; $$(".opt",el).forEach(b=>b.addEventListener("click",()=>{
+      const k=+b.dataset.k; $$(".opt",el).forEach(x=>{x.disabled=true; if(+x.dataset.k===Q.a)x.classList.add("right");}); if(k!==Q.a) b.classList.add("wrong"); else score++;
+      answered++; const fb=$(".fb",el); fb.hidden=false; fb.className="fb "+(k===Q.a?"ok":"no"); fb.textContent=(k===Q.a?"Correct. ":"Incorrect. ")+Q.e;
+      $("#qzScore").textContent=`${score} / ${QUIZ.length}`+(answered===QUIZ.length?` · ${score>=13?"Excellent":score>=10?"Solid":"Review the sections above and try again"}`:""); })); });
+  }
+  $("#qzReset").addEventListener("click",render); render();
+})();
+</script>
+</body></html>

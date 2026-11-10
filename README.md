@@ -57,7 +57,7 @@ Every click saves to the browser at once, then to GitHub about two seconds later
 
 ## Learning guides
 
-Every paper has a **Learn** button. A paper with an interactive guide shows it filled in colour, and clicking it opens the guide. So far only Dupuit (1844) has one: *Dupuit's Bridge*, `learn/mp0001.html`. On a paper with no guide yet, the button shows a ready-made prompt to paste into an AI assistant to make one.
+Every paper has a **Learn** button. A paper with an interactive guide shows it filled in colour, and clicking it opens the guide. So far: *Dupuit's Bridge* (`learn/mp0001.html`), *Dupuit's Tolls* (`learn/mp0002.html`) and *Hadley's Railroad Lesson* (`learn/mp0004.html`), Hadley (1886). On a paper with no guide yet, the button shows a ready-made prompt to paste into an AI assistant to make one.
 
 To add a guide:
 
