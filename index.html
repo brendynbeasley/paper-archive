@@ -167,6 +167,20 @@
   </form>
 </dialog>
 
+<!-- Summary of a paper -->
+<dialog id="sumDlg" aria-labelledby="sumTitle">
+  <form method="dialog">
+    <div><h2 id="sumTitle"></h2><p class="hint" id="sumMeta"></p></div>
+    <div class="sumread" id="sumRead"></div>
+    <p class="sumtext" id="sumText"></p>
+    <ul class="sumterms" id="sumTerms"></ul>
+    <div class="sumwrite"><div class="sumlbl">Write down</div><ol id="sumWrite"></ol></div>
+    <p class="hint" id="sumFoot"></p>
+    <p class="formerr" id="sumMsg" hidden></p>
+    <div class="dlgfoot"><span class="grow"></span><button class="pill" value="close">Close</button><button class="pill primary" type="button" id="sumCopy">Copy the 4 lines</button></div>
+  </form>
+</dialog>
+
 <datalist id="fieldList"></datalist>
 <datalist id="areaList"></datalist>
 <datalist id="topicList"></datalist>

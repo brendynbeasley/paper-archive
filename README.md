@@ -70,6 +70,12 @@ To add a guide:
 
 3. Commit and push. That paper's Learn button lights up.
 
+## Summaries
+
+A paper with a summary shows a **Summary** button. It opens the PDF pages to read, a 150–220 word summary, key terms and four lines to copy by hand. Summaries live in `data/summaries.json` and are written from the PDF's own text: scripts in `tools/pipeline/` extract and trim each paper, parallel workers summarise it (`tools/pipeline/WORKER.md`), and every claim is checked against an exact quote from the page it cites before it is published. The full routine is in `WORKFLOW.md`. PDFs and extracted text are never committed.
+
+Each topic can have a **Download checklist** (button under the topic's title): every paper in order, 70 a day, with links and a "Copy DOIs for Zotero" button per day. Build one with `python3 tools/pipeline/make_download_list.py "<topic>"`.
+
 ## Links
 
 Preloaded papers link to their DOI where one was found. `tools/find_links.py` looked each paper up in Crossref, the public registry of journal DOIs, and kept a link only when the title matched closely and the year (and, for a few years' gap, the first author) agreed. Papers without a confident match show **Search Scholar ↗**, which opens a Google Scholar search instead. To retry lookups and rebuild:

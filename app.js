@@ -39,6 +39,8 @@ const S = {
   messages: [],                         // commit message fragments
   cfg: Object.assign({ owner: '', repo: '', branch: 'main', token: '' }, store.get(CFG_KEY) || {}),
   guides: {},
+  summaries: {},
+  downloads: {},
   plan: null,
   view: Object.assign({ mode: 'next', path: 'plan', field: null, area: null, topic: null, status: 'any', stars: '0', sort: 'order' }, store.get(VIEW_KEY) || {}),
   shown: PAGE,
@@ -370,6 +372,37 @@ function learnBtn(p) {
   if (g) return `<a class="learn has" href="${esc(g.file)}" target="_blank" rel="noopener" title="Open the interactive guide: ${esc(g.title)}">${LEARN_ICON}<span>Learn</span></a>`;
   return `<button type="button" class="learn" data-learn="1" title="No interactive guide yet">${LEARN_ICON}<span>Learn</span></button>`;
 }
+const SUM_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8M8 18h5"/></svg>';
+function sumBtn(p) {
+  if (!S.summaries[p.id]) return '';
+  return `<button type="button" class="learn sum has" data-sum="1" title="Summary, pages to read and what to write down">${SUM_ICON}<span>Summary</span></button>`;
+}
+function pagesStr(read) {
+  const parts = read.map(([a, b]) => (a === b ? `${a}` : `${a}–${b}`));
+  const n = read.reduce((t, [a, b]) => t + b - a + 1, 0);
+  return `PDF ${n === 1 ? 'p.' : 'pp.'} ${parts.join(', ')} (${n} page${n === 1 ? '' : 's'})`;
+}
+function openSummary(id) {
+  const p = S.byId.get(id), s = S.summaries[id]; if (!p || !s) return;
+  $('sumTitle').textContent = p.t;
+  $('sumMeta').textContent = [p.a, p.y].filter(Boolean).join(' · ');
+  $('sumRead').innerHTML = `<b>Read ${pagesStr(s.read)}.</b> ${esc(s.why)}`;
+  $('sumText').textContent = s.sum;
+  $('sumTerms').innerHTML = (s.terms || []).map(([a, b]) => `<li><b>${esc(a)}</b>: ${esc(b)}</li>`).join('');
+  $('sumTerms').hidden = !(s.terms || []).length;
+  $('sumWrite').innerHTML = s.write.map((w) => `<li>${esc(w)}</li>`).join('');
+  const notes = [s.conf && s.conf !== 'high' ? `Confidence: ${s.conf}` : '', (s.flags || []).length ? `Flags: ${s.flags.join(', ')}` : ''].filter(Boolean);
+  $('sumFoot').textContent = [...notes, `Written ${s.added || ''} from the PDF's text${s.model ? ' by ' + s.model[0].toUpperCase() + s.model.slice(1) : ''}`].join(' · ');
+  $('sumMsg').hidden = true;
+  $('sumDlg').dataset.id = id;
+  $('sumDlg').showModal();
+}
+function copySummaryLines() {
+  const s = S.summaries[$('sumDlg').dataset.id]; if (!s) return;
+  const m = $('sumMsg');
+  const ok = () => { m.hidden = false; m.className = 'formerr ok'; m.textContent = 'Copied the four lines.'; };
+  try { navigator.clipboard.writeText(s.write.join('\n')).then(ok, () => {}); } catch { /* clipboard unavailable */ }
+}
 function learnPrompt(p) {
   const cite = `${p.a || ''} (${p.y || 'n.d.'}). "${p.t}." ${(p.v || '').replace(/\*/g, '')}`.trim();
   return `Make an interactive learning page for this paper, in the same style as Dupuit's Bridge (learn/mp0001.html in the brendynbeasley/paper-archive repo):
@@ -403,7 +436,7 @@ function paperRow(p, showWhere) {
     <div class="pmain"><a class="ptitle" href="${esc(link)}" target="_blank" rel="noopener" title="${p.link ? 'Open paper' : 'Search Google Scholar'}">${esc(p.t)}</a>
     <div class="pmeta">${meta}${p.s ? `<span class="s" title="${p.s === 2 ? 'Must-read' : 'Influential'}">${'★'.repeat(p.s)}</span>` : ''}${showWhere ? ` · <span class="where">${esc(p.tp)}</span>` : ''}
       <a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? linkLabel(p.link) : 'Search Scholar'} ↗</a></div></div>
-    <div class="btns">${btns}${learnBtn(p)}</div>
+    <div class="btns">${btns}${sumBtn(p)}${learnBtn(p)}</div>
     <button type="button" class="more-btn" data-edit="1" aria-label="Details and edit" title="Details and edit">${MORE_ICON}</button></article>`;
 }
 
@@ -419,7 +452,8 @@ function renderMain() {
   if (!searching && V.field && (V.area || V.topic)) crumbs.push(`<button type="button" data-cf="${esc(V.field)}">${esc(V.field)}</button>`);
   if (!searching && V.area && V.topic) crumbs.push(`<button type="button" data-cf="${esc(V.field)}" data-ca="${esc(V.area)}">${esc(V.area)}</button>`);
   $('crumb').innerHTML = searching ? 'Search results across every field' : crumbs.length ? crumbs.join(' <span aria-hidden="true">›</span> ') : V.field ? 'Field' : 'Your whole archive';
-  $('progress').innerHTML = progressHtml(scope);
+  const dl = !searching && V.topic && S.downloads[V.topic];
+  $('progress').innerHTML = progressHtml(scope) + (dl ? `<a class="dllink" href="${esc(dl)}" target="_blank" rel="noopener">Download checklist ↗</a>` : '');
   document.querySelectorAll('[data-filter]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === S.view.status)));
   $('mustRead').setAttribute('aria-pressed', String(S.view.stars === '2'));
   $('influential').setAttribute('aria-pressed', String(S.view.stars === '1'));
@@ -539,7 +573,7 @@ function renderNext() {
       <div class="now-top"><span class="nowtag">#${i + 1}${depth ? ' · ' + esc(depth.split(' · ')[0]) : ''}</span>${p.s ? `<span class="s">${'★'.repeat(p.s)}</span>` : ''}</div>
       <a class="nowtitle" href="${esc(link)}" target="_blank" rel="noopener">${esc(p.t)}</a>
       <div class="nowmeta">${esc(p.a || '')}${p.y ? ' · ' + esc(p.y) : ''}${p.v ? ' · ' + md(p.v) : ''}</div>
-      <div class="nowlinks"><a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? 'Open paper' : 'Search Scholar'} ↗</a>${learnBtn(p)}</div>
+      <div class="nowlinks"><a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? 'Open paper' : 'Search Scholar'} ↗</a>${sumBtn(p)}${learnBtn(p)}</div>
       <ol class="steps">${steps}</ol>
       ${doIt}
       ${phaseEnd && phase ? `<div class="phasetask"><b>End of phase ${cur.ph}.</b> Before moving on: ${esc(phase.task)}</div>` : ''}
@@ -551,6 +585,7 @@ function nextClick(e) {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.path) { S.view.path = b.dataset.path; saveView(); render(); return; }
   if (b.dataset.learn) return openLearn(b.closest('.now').dataset.id);
+  if (b.dataset.sum) return openSummary(b.closest('.now').dataset.id);
   const card = b.closest('.now'); if (!card) return;
   const id = card.dataset.id;
   if (b.dataset.step) {
@@ -829,6 +864,7 @@ function bind() {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.addhere) return openPaper(null);
     if (b.dataset.learn) return openLearn(b.closest('.paper').dataset.id);
+    if (b.dataset.sum) return openSummary(b.closest('.paper').dataset.id);
     const row = b.closest('.paper'); if (!row) return;
     if (b.dataset.st) toggle(row.dataset.id, b.dataset.st);
     else if (b.dataset.edit) openPaper(row.dataset.id);
@@ -862,6 +898,7 @@ function bind() {
   applyTheme(document.documentElement.getAttribute('data-theme'));
   $('themeBtn').addEventListener('click', cycleTheme);
   $('learnCopy').addEventListener('click', copyLearn);
+  $('sumCopy').addEventListener('click', copySummaryLines);
   $('setForm').addEventListener('submit', (e) => { if (e.submitter && e.submitter.value === 'save') applySettings(); });
   $('sTest').addEventListener('click', testSettings);
   $('sExport').addEventListener('click', exportBackup);
@@ -889,6 +926,8 @@ async function start() {
   S.catalog = cat.papers || [];
   S.guides = (await fetchStatic('data/learn.json', { guides: {} })).guides || {};
   S.plan = await fetchStatic('data/plan.json', null);
+  S.summaries = (await fetchStatic('data/summaries.json', { s: {} })).s || {};
+  S.downloads = (await fetchStatic('data/downloads.json', { lists: {} })).lists || {};
   rebuild();
   // Views saved before areas existed: work out the area from the topic.
   if (S.view.topic && S.view.area == null) {
