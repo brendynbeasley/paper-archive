@@ -4,63 +4,48 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Paper Archive</title>
-<meta name="description" content="A personal archive of papers: printed, read, noted, researched.">
+<meta name="description" content="A personal archive of economics papers: printed, read, noted, researched.">
+<meta name="theme-color" content="#f6f3ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16150f" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231d1b16'/%3E%3Crect x='7' y='7' width='8' height='8' rx='2' fill='%238b5cf6'/%3E%3Crect x='17' y='7' width='8' height='8' rx='2' fill='%232563eb'/%3E%3Crect x='7' y='17' width='8' height='8' rx='2' fill='%23f59e0b'/%3E%3Crect x='17' y='17' width='8' height='8' rx='2' fill='%2310b981'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<link rel="stylesheet" href="styles.css?v=2">
 <script>/* apply the saved theme before first paint */try{var t=localStorage.getItem('pa-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
 <body>
+<a class="skip" href="#main">Skip to papers</a>
 <header class="top">
-  <button class="navbtn" id="navToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Show fields and topics">
+  <button class="iconbtn navbtn" id="navToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Show fields and topics">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
-  <a class="brand" href="./"><span class="logo" aria-hidden="true"></span>Paper Archive</a>
-  <input type="search" id="search" placeholder="Search papers" aria-label="Search all papers" autocomplete="off">
-  <span id="syncDot" class="dot" role="status" aria-label="Loading" title="Loading"></span>
-  <button class="add" id="addBtn" type="button"><span aria-hidden="true">+</span> Add</button>
-  <button class="theme" id="themeBtn" type="button" aria-label="Theme: auto" title="Theme: auto"></button>
-  <button class="gear" id="settingsBtn" type="button" aria-label="Settings" title="Settings">
+  <a class="brand" href="#/" id="brand" aria-label="Paper Archive: overview"><span class="logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="brandname">Paper Archive</span></a>
+  <label class="searchwrap">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input type="search" id="search" placeholder="Search every paper: title, author, journal" aria-label="Search all papers" autocomplete="off" spellcheck="false">
+    <kbd aria-hidden="true">/</kbd>
+  </label>
+  <span class="sync" id="sync" role="status"><span id="syncDot" class="dot" aria-hidden="true"></span><span id="syncText" class="synctext">Loading</span></span>
+  <button class="add" id="addBtn" type="button" aria-label="Add papers"><span aria-hidden="true">+</span><span class="addlbl"> Add</span></button>
+  <button class="iconbtn" id="themeBtn" type="button" aria-label="Theme: auto" title="Theme: auto"></button>
+  <button class="iconbtn" id="settingsBtn" type="button" aria-label="Settings" title="Settings">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
   </button>
 </header>
 
 <div class="layout">
-  <nav id="sidebar" class="sidebar" aria-label="Fields and topics"></nav>
+  <nav id="sidebar" class="sidebar" aria-label="Fields and topics">
+    <div class="navfind"><input type="search" id="navFind" placeholder="Find an area or topic" aria-label="Find an area or topic" autocomplete="off"></div>
+    <div id="navTree"></div>
+  </nav>
   <div class="scrim" id="scrim" hidden></div>
-  <main class="main" id="main">
+  <main class="main" id="main" tabindex="-1">
     <div class="savebanner" id="saveBanner" hidden>
       <span id="saveBannerText">Your changes are only saved in this browser.</span>
-      <button type="button" class="pill" id="saveBannerBtn">Connect GitHub</button>
+      <button type="button" class="pill dark" id="saveBannerBtn">Connect GitHub</button>
     </div>
-    <div id="nextView" hidden></div>
-    <div id="listView">
-    <section class="hero" id="hero">
-      <div class="crumb" id="crumb"></div>
-      <h1 id="scopeTitle">All papers</h1>
-      <div class="progress" id="progress"></div>
-    </section>
-    <div class="chips" role="group" aria-label="Filter papers">
-      <button type="button" class="chip" data-filter="any">All</button>
-      <button type="button" class="chip" data-filter="untouched">Not started</button>
-      <button type="button" class="chip" data-filter="progress">In progress</button>
-      <button type="button" class="chip" data-filter="complete">Done</button>
-      <span class="chipsep" aria-hidden="true"></span>
-      <button type="button" class="chip star" id="mustRead" aria-pressed="false">★★ Must-reads</button>
-      <button type="button" class="chip star" id="influential" aria-pressed="false">★ Influential</button>
-      <select id="fSort" aria-label="Sort papers">
-        <option value="order">List order</option>
-        <option value="new">Newest</option>
-        <option value="old">Oldest</option>
-        <option value="author">Author</option>
-        <option value="recent">Recently ticked</option>
-      </select>
-    </div>
-    <div class="legend" aria-hidden="true" id="legend"></div>
-    <div id="list" class="list"></div>
-    <div class="more"><button class="pill" id="moreBtn" type="button" hidden>Show more</button></div>
-    </div>
+    <div id="view"><p class="loading">Opening the archive…</p></div>
   </main>
 </div>
 
@@ -112,7 +97,7 @@
   </form>
 </dialog>
 
-<!-- New field / topic -->
+<!-- New field / area / topic -->
 <dialog id="groupDlg" aria-labelledby="groupDlgTitle">
   <form method="dialog" id="groupForm">
     <h2 id="groupDlgTitle">New field</h2>
@@ -186,6 +171,6 @@
 <datalist id="topicList"></datalist>
 <datalist id="subList"></datalist>
 <div id="toast" class="toast" role="status" hidden></div>
-<script src="app.js"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>

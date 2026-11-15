@@ -1,12 +1,13 @@
 /* Paper Archive — a static GitHub Pages app.
  *
- * Data lives in three files in this repo:
- *   data/catalog.json   the seeded bibliography (read-only from the app)
- *   data/library.json   papers you add, edits to any paper, extra fields/topics
- *   data/progress.json  printed / read / notes / researched dates per paper
- * The app reads library + progress through the GitHub API (so changes show up
- * on every device straight away) and writes them back as commits using a token
- * stored only in this browser.
+ * Papers come from two read-only catalogs in this repo:
+ *   data/catalog.json    the monopoly and market power bibliography (6,185 papers)
+ *   data/economics.json  the rest of economics and econophysics, built by tools/economics/
+ * Your own data lives in two more files, which the app reads through the GitHub API (so changes
+ * show up on every device straight away) and writes back as commits, using a token stored only
+ * in this browser:
+ *   data/library.json    papers you add, edits to any paper, extra fields/areas/topics
+ *   data/progress.json   printed / read / notes / researched dates per paper
  */
 (() => {
 'use strict';
@@ -16,12 +17,16 @@ const FILES = { progress: 'data/progress.json', library: 'data/library.json' };
 const CFG_KEY = 'pa-config-v1';
 const CACHE_KEY = 'pa-cache-v1';
 const VIEW_KEY = 'pa-view-v1';
-const PAGE = 150;
+const SEEN_KEY = 'pa-seen-v2';
+const PAGE = 120;
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const md = (s) => esc(s).replace(/\*([^*]+)\*/g, '<i>$1</i>');
-const today = () => new Date().toISOString().slice(0, 10);
+const localDate = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+const today = () => localDate(new Date());   // your calendar date, not the UTC one
+const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+const fold = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i').toLowerCase();
 const store = {
   get(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage full or blocked */ } },
@@ -31,7 +36,9 @@ const store = {
 const emptyLibrary = () => ({ v: 1, fields: [], areas: [], topics: [], added: [], edits: {}, removed: [] });
 const emptyProgress = () => ({ v: 1, p: {} });
 const S = {
-  catalog: [],
+  catalog: [],                           // every catalog paper, in list order
+  xrefs: [],                             // extra listings of a paper in a second topic: { id, f, ar, tp, o }
+  meta: { groups: [], areas: [] },       // how areas are grouped and described (from data/economics.json)
   library: emptyLibrary(),
   progress: emptyProgress(),
   sha: { progress: null, library: null },
@@ -42,9 +49,10 @@ const S = {
   summaries: {},
   downloads: {},
   plan: null,
-  view: Object.assign({ mode: 'next', path: 'plan', field: null, area: null, topic: null, status: 'any', stars: '0', sort: 'order' }, store.get(VIEW_KEY) || {}),
+  view: Object.assign({ mode: 'next', path: 'plan', field: null, area: null, topic: null, status: 'any', stars: '0', sort: 'order', pdf: false, nscope: '' }, store.get(VIEW_KEY) || {}),
   shown: PAGE,
-  papers: [], byId: new Map(),
+  papers: [], rows: [], byId: new Map(), hay: new Map(),
+  ready: false, added: 0,
 };
 
 // Work out owner/repo automatically when hosted at <owner>.github.io/<repo>/
@@ -157,12 +165,31 @@ async function pull() {
     S.sha[kind] = sha;
   }
 }
+// The second catalog stores each topic once and its papers as short rows; unpack it into the
+// same shape as catalog.json. A bare id in a topic is an extra listing of an existing paper.
+function unpackCatalog(extra, start) {
+  const papers = [], xrefs = [];
+  let o = start;
+  for (const t of extra.topics || []) {
+    for (const e of t.p) {
+      o++;
+      if (typeof e === 'string') { xrefs.push({ id: e, f: t.f, ar: t.ar || '', tp: t.tp, o }); continue; }
+      const [id, title, a, y, v, link, c, s, pdf] = e;
+      const p = { id, t: title, a, y, v, n: '', s: s || 0, vf: false, f: t.f, ar: t.ar || '', tp: t.tp, st: '', c: c || 0, o };
+      if (link) p.link = /^https?:/i.test(link) ? link : `https://doi.org/${link}`;
+      if (pdf) p.pdf = pdf;
+      papers.push(p);
+    }
+  }
+  return { papers, xrefs };
+}
 
 /* ---------- saving ---------- */
 let syncTimer = null, syncing = false, again = false;
 function changed(kind, message) {
   S.dirty[kind]++;
   if (message) S.messages.push(message);
+  if (kind === 'library') S.hay.clear();
   saveCache();
   rebuild(); render();
   setSync(canWrite() ? 'Unsaved changes…' : hasRepo() ? 'Saved on this device. Add a token in Settings to sync.' : 'Saved on this device');
@@ -194,7 +221,7 @@ async function sync() {
         const remote = await ghGet(FILES[kind]);
         S[kind] = (kind === 'library' ? mergeLibrary : mergeProgress)(remote.data, S[kind]);
         S.sha[kind] = await ghPut(FILES[kind], S[kind], remote.sha, message);
-        rebuild(); render();
+        S.hay.clear(); rebuild(); render();
       }
       S.dirty[kind] = Math.max(0, S.dirty[kind] - ver);
     }
@@ -212,104 +239,349 @@ async function sync() {
 }
 function setSync(text, warn) {
   if ($('saveBanner')) renderBanner();
-  const el = $('syncDot');
   const kind = warn ? 'warn' : /^(Saving|Unsaved)/.test(text) ? 'busy' : /GitHub/.test(text) ? 'ok' : 'local';
-  el.className = 'dot ' + kind; el.title = text; el.setAttribute('aria-label', text);
+  $('syncDot').className = 'dot ' + kind;
+  $('syncText').textContent = text.replace(/\. Add a token in Settings to (sync|edit)\.$/, '').replace(/^Saved on this device$/, 'Saved on this device only');
+  $('sync').title = text;
 }
 
 /* ---------- derived paper list ---------- */
+// S.papers: every paper once, with your edits applied. S.rows: every place a paper is listed
+// (its own topic, plus any extra listing), which is what the topic and area views show.
 function rebuild() {
   const lib = S.library, out = [];
   const gone = new Set(lib.removed);
-  S.catalog.forEach((p, i) => {
+  for (const p of S.catalog) {
     const e = lib.edits[p.id];
-    if (e && e.hidden) return;
-    out.push(Object.assign({ o: i }, p, e || {}));
-  });
+    if (e && e.hidden) continue;
+    out.push(e ? Object.assign({}, p, e) : p);
+  }
   lib.added.forEach((p, i) => { if (!gone.has(p.id)) out.push(Object.assign({ o: 1e6 + i, added: true }, p, lib.edits[p.id] || {})); });
   S.papers = out;
   S.byId = new Map(out.map((p) => [p.id, p]));
+  const rows = out.map((p) => ({ p, f: p.f, ar: p.ar || '', tp: p.tp, st: p.st || '', o: p.o, main: true }));
+  for (const x of S.xrefs) { const p = S.byId.get(x.id); if (p) rows.push({ p, f: x.f, ar: x.ar, tp: x.tp, st: '', o: x.o, main: false }); }
+  S.rows = rows;
+  S.tree = null;
 }
 const prog = (id) => S.progress.p[id] || {};
-// Field -> area -> topic. Area is optional ('' = topic sits directly under the field).
+const isDone = (id) => { const g = S.progress.p[id]; return !!g && !!(g.pr && g.rd && g.nt && g.rs); };
+const metaArea = (f, ar) => S.meta.areas.find((a) => a.f === f && a.name === ar);
+
+// Field -> area -> topic, with counts. Area '' holds topics that sit directly under the field.
 function fieldTree() {
+  if (S.tree) return S.tree;
   const tree = new Map();
+  const field = (f) => { if (!tree.has(f)) tree.set(f, { areas: new Map(), n: 0, rd: 0, dn: 0 }); return tree.get(f); };
   const add = (f, ar, t) => {
     if (!f) return null;
-    if (!tree.has(f)) tree.set(f, new Map());
-    const areas = tree.get(f);
+    const F = field(f);
     ar = ar || '';
-    if (ar || t) { if (!areas.has(ar)) areas.set(ar, new Map()); }
+    if (ar || t) { if (!F.areas.has(ar)) F.areas.set(ar, { topics: new Map(), n: 0, rd: 0, dn: 0, s2: 0, dec: new Array(13).fill(0) }); }
     if (!t) return null;
-    const topics = areas.get(ar);
-    if (!topics.has(t)) topics.set(t, { n: 0, rd: 0 });
-    return topics.get(t);
+    const A = F.areas.get(ar);
+    if (!A.topics.has(t)) A.topics.set(t, { n: 0, rd: 0, dn: 0, s2: 0 });
+    return [F, A, A.topics.get(t)];
   };
   S.library.fields.forEach((f) => add(f));
+  S.meta.areas.forEach((a) => add(a.f, a.name));
   (S.library.areas || []).forEach((x) => { const [f, ar] = x.split('::'); add(f, ar); });
   S.library.topics.forEach((x) => { const parts = x.split('::'); if (parts.length === 3) add(parts[0], parts[1], parts[2]); else add(parts[0], '', parts[1]); });
-  for (const p of S.papers) { const c = add(p.f, p.ar, p.tp); c.n++; if (prog(p.id).rd) c.rd++; }
+  for (const r of S.rows) {
+    const hit = add(r.f, r.ar, r.tp); if (!hit) continue;
+    const g = S.progress.p[r.p.id], rd = g && g.rd ? 1 : 0, dn = isDone(r.p.id) ? 1 : 0;
+    const [F, A, Tp] = hit;
+    Tp.n++; Tp.rd += rd; Tp.dn += dn; A.n++; A.rd += rd; A.dn += dn;
+    if (r.p.s === 2) { Tp.s2++; A.s2++; }
+    const y = parseInt(r.p.y, 10); if (y) A.dec[Math.max(0, Math.min(12, Math.floor((y - 1900) / 10)))]++;
+    if (r.main || r.p.f !== r.f) { F.n++; F.rd += rd; F.dn += dn; }   // a paper counts once per field
+  }
+  S.tree = tree;
   return tree;
 }
-const sumCounts = (topics) => { let n = 0, rd = 0; topics.forEach((x) => { n += x.n; rd += x.rd; }); return { n, rd }; };
+const fieldOrder = (tree) => [...tree.keys()].sort((a, b) => (a === 'Economics' ? -1 : b === 'Economics' ? 1 : a.localeCompare(b)));
+
+/* ---------- colours ---------- */
+const FIELD_COLORS = { Economics: '#4a47a8', Econophysics: '#d9582a', Statistics: '#0e9a86', Mathematics: '#cf3a6b' };
+const GROUP_COLORS = {
+  'Theory & methods': '#5a55c8', 'Macroeconomics & international': '#0f8a80', Finance: '#2b77c9',
+  'Firms, markets & innovation': '#9a4bb0', 'Labor, people & public policy': '#c9621e',
+  'Development, space & environment': '#3f8f3a', 'Institutions, history & ideas': '#b24a52',
+};
+const SPARE = ['#2b7de9', '#b07a00', '#8a3ffc', '#1f9d55', '#d6457a', '#0891b2'];
+function fieldColor(f) {
+  if (!f) return '#4a47a8';
+  if (FIELD_COLORS[f]) return FIELD_COLORS[f];
+  let h = 0; for (const c of f) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return SPARE[h % SPARE.length];
+}
+function areaColor(f, ar) {
+  const m = ar ? metaArea(f, ar) : null;
+  return (m && GROUP_COLORS[m.group]) || fieldColor(f);
+}
+
+/* ---------- where you are: view state and the address bar ---------- */
+const enc = encodeURIComponent;
+const query = () => $('search').value.trim();
+function viewHash(v) {
+  if (v.mode === 'home') return '#/';
+  if (v.mode === 'next') return '#/next';
+  if (!v.field) return '#/all';
+  let h = `#/f/${enc(v.field)}`;
+  if (v.area) h += `/a/${enc(v.area)}`;
+  if (v.topic) h += `/t/${enc(v.topic)}`;
+  return h;
+}
+function readHash() {
+  const parts = location.hash.replace(/^#\/?/, '').split('/').map((x) => { try { return decodeURIComponent(x); } catch { return x; } });
+  if (location.hash.length < 2) return null;
+  if (parts[0] === '') return { mode: 'home' };
+  if (parts[0] === 'next') return { mode: 'next' };
+  if (parts[0] === 'all') return { mode: 'list', field: null, area: null, topic: null };
+  if (parts[0] === 'q') return { q: parts.slice(1).join('/') };
+  if (parts[0] === 'f' && parts[1]) {
+    const v = { mode: 'list', field: parts[1], area: null, topic: null };
+    for (let i = 2; i < parts.length - 1; i += 2) { if (parts[i] === 'a') v.area = parts[i + 1]; if (parts[i] === 't') v.topic = parts[i + 1]; }
+    if (v.topic && v.area == null) v.area = '';
+    return v;
+  }
+  return null;
+}
+function saveView() {
+  const v = S.view;
+  store.set(VIEW_KEY, { mode: v.mode, path: v.path, field: v.field, area: v.area, topic: v.topic, status: v.status, stars: v.stars, sort: v.sort, pdf: v.pdf, nscope: v.nscope });
+}
+// Go somewhere: update the view, the address bar (so Back works) and the page.
+function go(patch, replace) {
+  if ($('search').value) $('search').value = '';
+  Object.assign(S.view, patch);
+  S.shown = PAGE;
+  saveView();
+  const h = viewHash(S.view);
+  if (location.hash !== h) history[replace ? 'replaceState' : 'pushState'](null, '', h);
+  render();
+  window.scrollTo({ top: 0 });
+}
+function onHash() {
+  const v = readHash();
+  if (!v) return;
+  if ('q' in v) { $('search').value = v.q; S.shown = PAGE; render(); return; }
+  $('search').value = '';
+  Object.assign(S.view, v); S.shown = PAGE; saveView(); render();
+}
 
 /* ---------- filtering ---------- */
-function inScope(p) {
-  const q = $('search').value.trim().toLowerCase();
-  if (q) {
-    const hay = `${p.t} ${p.a} ${p.y} ${p.v} ${p.n} ${p.notes || ''}`.toLowerCase();
-    if (!q.split(/\s+/).every((w) => hay.includes(w))) return false;
-  } else {
-    if (S.view.field && p.f !== S.view.field) return false;
-    if (S.view.area != null && (p.ar || '') !== S.view.area) return false;
-    if (S.view.topic && p.tp !== S.view.topic) return false;
-  }
-  return true;
+function hay(p) {
+  let h = S.hay.get(p.id);
+  if (h === undefined) { h = fold(`${p.t} ${p.a} ${p.y} ${p.v} ${p.n || ''} ${p.notes || ''} ${p.tp} ${p.ar || ''}`); S.hay.set(p.id, h); }
+  return h;
 }
-function passFilters(p) {
-  const st = S.view.status, g = prog(p.id);
+// The rows in the current scope, before the status and star filters.
+function scopeRows() {
+  const q = query(), V = S.view;
+  if (q) {
+    const words = fold(q).split(/\s+/).filter(Boolean);
+    return S.rows.filter((r) => r.main && words.every((w) => hay(r.p).includes(w)));
+  }
+  if (V.topic) return S.rows.filter((r) => r.f === V.field && r.ar === (V.area || '') && r.tp === V.topic);
+  if (V.area) return S.rows.filter((r) => r.f === V.field && r.ar === V.area);
+  if (V.field) return S.rows.filter((r) => r.f === V.field && (r.main || r.p.f !== V.field));   // once per paper
+  return S.rows.filter((r) => r.main);
+}
+function passFilters(r) {
+  const st = S.view.status, g = prog(r.p.id);
   const n = STATUSES.reduce((k, [s]) => k + (g[s] ? 1 : 0), 0);
   if (st === 'untouched' && n) return false;
   if (st === 'progress' && (n === 0 || n === 4)) return false;
   if (st === 'complete' && n !== 4) return false;
   if (st[0] === '-' && g[st.slice(1)]) return false;
   if (st[0] === '+' && !g[st.slice(1)]) return false;
-  if (S.view.stars !== '0' && (p.s || 0) !== +S.view.stars) return false;  // exact star level
+  if (S.view.stars !== '0' && (r.p.s || 0) !== +S.view.stars) return false;  // exact star level
+  if (S.view.pdf && !r.p.pdf) return false;
   return true;
 }
 function sorted(list) {
   const by = S.view.sort;
-  const yr = (p) => parseInt(p.y, 10) || 0;
+  const yr = (r) => parseInt(r.p.y, 10) || 0;
+  const q = query();
+  if (q && by === 'order') {
+    // Best match: every word in the title or the author list, then starred, then most cited.
+    const words = fold(q).split(/\s+/).filter(Boolean);
+    const rank = (r) => { const h = fold(`${r.p.t} ${r.p.a}`); return words.every((w) => h.includes(w)) ? 0 : 1; };
+    const key = new Map(list.map((r) => [r, rank(r)]));
+    return list.sort((a, b) => key.get(a) - key.get(b) || (b.p.s || 0) - (a.p.s || 0) || (b.p.c || 0) - (a.p.c || 0) || a.o - b.o);
+  }
+  if (by === 'cited') return list.sort((a, b) => (b.p.c || 0) - (a.p.c || 0) || a.o - b.o);
   if (by === 'new') return list.sort((a, b) => yr(b) - yr(a) || a.o - b.o);
-  if (by === 'old') return list.sort((a, b) => yr(a) - yr(b) || a.o - b.o);
-  if (by === 'author') return list.sort((a, b) => (a.a || '').localeCompare(b.a || '') || a.o - b.o);
-  if (by === 'recent') return list.sort((a, b) => (prog(b.id).u || 0) - (prog(a.id).u || 0) || a.o - b.o);
+  if (by === 'old') return list.sort((a, b) => (yr(a) || 9999) - (yr(b) || 9999) || a.o - b.o);
+  if (by === 'author') return list.sort((a, b) => fold(a.p.a || '￿').localeCompare(fold(b.p.a || '￿')) || a.o - b.o);
+  if (by === 'recent') return list.sort((a, b) => (prog(b.p.id).u || 0) - (prog(a.p.id).u || 0) || a.o - b.o);
   return list.sort((a, b) => a.o - b.o);
 }
 
-/* ---------- rendering ---------- */
-const FIELD_COLORS = { Economics: '#5b4cf0', Econophysics: '#f0592b', Statistics: '#0e9f8b', Mathematics: '#d6336c' };
-const SPARE = ['#2b7de9', '#d98a00', '#8a3ffc', '#1f9d55', '#e0437a', '#0891b2'];
-function fieldColor(f) {
-  if (!f) return '#4a4470';
-  if (FIELD_COLORS[f]) return FIELD_COLORS[f];
-  let h = 0; for (const c of f) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return SPARE[h % SPARE.length];
-}
+/* ---------- small pieces shared by the views ---------- */
 const ICONS = {
   pr: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>',
   rd: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg>',
   nt: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
   rs: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+  home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>',
+  next: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4l10 8-10 8z"/><path d="M19 5v14"/></svg>',
+  all: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
 };
-const MORE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg>';
+const MORE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>';
+const LEARN_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 9 12 4 2 9l10 5 10-5z"/><path d="M6 11v5c3 2.5 9 2.5 12 0v-5"/><path d="M22 9v6"/></svg>';
+const SUM_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8M8 18h5"/></svg>';
 
+const scholar = (p) => `https://scholar.google.com/scholar?q=${enc(`${p.t} ${(p.a || '').split(',')[0]}`)}`;
+function linkLabel(u) {
+  try { const h = new URL(u).hostname.replace(/^www\./, ''); return h === 'doi.org' ? 'Open paper' : h; } catch { return 'Open paper'; }
+}
+function shortAuthors(a) {
+  if (!a) return '';
+  const first = a.split(/,|&/)[0].trim();
+  const n = a.split(/\.,|&/).filter((x) => x.trim()).length;
+  return first + (/et al/.test(a) || n > 2 ? ' et al.' : n === 2 ? ' & ' + a.split('&').pop().split(',')[0].trim() : '');
+}
+const journal = (v) => { const m = /\*([^*]+)\*/.exec(v || ''); return m ? m[1] : ''; };
+function learnBtn(p, bare) {
+  const g = S.guides[p.id];
+  if (g) return `<a class="learn has" href="${esc(g.file)}" target="_blank" rel="noopener" title="Open the interactive guide: ${esc(g.title)}">${LEARN_ICON}<span>Learn</span></a>`;
+  return `<button type="button" class="learn${bare ? ' bare' : ''}" data-learn="1" title="No interactive guide yet: get a prompt to make one" aria-label="Learn">${LEARN_ICON}<span>Learn</span></button>`;
+}
+function sumBtn(p) {
+  if (!S.summaries[p.id]) return '';
+  return `<button type="button" class="learn sum has" data-sum="1" title="Summary, pages to read and what to write down">${SUM_ICON}<span>Summary</span></button>`;
+}
+function mark(text, words) {
+  let h = esc(text);
+  if (!words || !words.length) return h;
+  const re = new RegExp('(' + words.filter((w) => w.length > 1).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'gi');
+  return words.some((w) => w.length > 1) ? h.replace(re, '<mark>$1</mark>') : h;
+}
+// Segmented progress bar: how many papers have reached each step.
+function segHtml(counts, total) {
+  const n = total || 1;
+  const [pr, rd, nt, rs] = counts;
+  const parts = [[rs, 'rs'], [nt - rs, 'nt'], [rd - nt, 'rd'], [pr - rd, 'pr']];
+  return `<div class="seg" role="img" aria-label="${rs} of ${total} fully done">${parts.map(([k, c]) => (k > 0 ? `<i style="width:${(100 * k) / n}%;background:var(--${c})"></i>` : '')).join('')}</div>`;
+}
+function stepCounts(rows) {
+  const c = [0, 0, 0, 0];
+  for (const r of rows) { const g = S.progress.p[r.p.id]; if (g) STATUSES.forEach(([s], i) => { if (g[s]) c[i]++; }); }
+  return c;
+}
+function statline(rows) {
+  const c = stepCounts(rows), total = rows.length;
+  const stats = STATUSES.map(([s, label], i) => `<span><i class="k" style="background:var(--${s})"></i><b>${fmt(c[i])}</b> ${label.toLowerCase()}</span>`).join('');
+  return `${segHtml(c, total)}<div class="statline"><span><b>${fmt(c[3])}</b> of ${fmt(total)} done</span>${stats}</div>`;
+}
+
+function paperRow(r, opt) {
+  const p = r.p, g = prog(p.id);
+  const link = p.link || scholar(p);
+  const { next } = stepState(p.id);
+  const btns = STATUSES.map(([s, label], idx) => {
+    const on = g[s];
+    const locked = !on && idx !== next;
+    const tip = on ? `${label} on ${on}` : locked ? `${STATUSES[next][1]} comes first` : `Mark as ${label.toLowerCase()}`;
+    return `<button type="button" class="st ${s}${locked ? ' locked' : ''}" data-st="${s}" aria-pressed="${on ? 'true' : 'false'}" aria-label="${label}" title="${tip}">${ICONS[s]}</button>`;
+  }).join('');
+  const j = journal(p.v);
+  const meta = [
+    p.a ? `<span class="au">${mark(shortAuthors(p.a), opt.words)}</span>` : '',
+    p.y ? `<span>${esc(p.y)}</span>` : '',
+    j ? `<span><i>${mark(j, opt.words)}</i></span>` : '',
+    p.s ? `<span class="s" title="${p.s === 2 ? 'Must-read' : 'Influential'}">${'★'.repeat(p.s)}</span>` : '',
+  ].filter(Boolean).join('<span class="sep" aria-hidden="true">·</span>');
+  const where = opt.where ? `<button type="button" class="where" data-gof="${esc(r.f)}" data-goa="${esc(r.ar)}" data-got="${esc(r.tp)}">${esc(r.ar ? `${r.ar} › ${r.tp}` : r.tp)}</button>` : '';
+  const links = `<a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? linkLabel(p.link) : 'Search Scholar'} ↗</a>`
+    + (p.pdf ? `<a class="plink pdf" href="${esc(p.pdf)}" target="_blank" rel="noopener" title="A free-to-read copy found by OpenAlex: an author’s page, a repository or an open-access journal">Free copy ↗</a>` : '')
+    + (p.research ? `<a class="plink res" href="${esc(p.research)}" target="_blank" rel="noopener" title="Your research on this paper">Research ↗</a>` : '')
+    + (p.c ? `<span class="cites" title="Citations counted by OpenAlex">cited ${fmt(p.c)}×</span>` : '');
+  const notes = (p.n ? `<div class="pnote" title="${esc(p.n.replace(/\*/g, ''))}">${md(p.n)}</div>` : '')
+    + (p.notes ? `<div class="pnote mine" title="${esc(p.notes)}"><b>Your notes:</b> ${esc(p.notes)}</div>` : '');
+  return `<article class="paper${isDone(p.id) ? ' done' : ''}" data-id="${esc(p.id)}">
+    <div class="pmain"><a class="ptitle" href="${esc(link)}" target="_blank" rel="noopener" title="${p.link ? 'Open paper' : 'Search Google Scholar'}">${mark(p.t, opt.words)}</a>
+    <div class="pmeta">${meta}</div>${notes}<div class="pmeta">${where}${links}</div></div>
+    <div class="btns">${btns}${sumBtn(p)}${learnBtn(p, true)}</div>
+    <button type="button" class="more-btn" data-edit="1" aria-label="Details and edit" title="Details and edit">${MORE_ICON}</button></article>`;
+}
+
+/* ---------- sidebar ---------- */
+function renderNav() {
+  const tree = fieldTree();
+  const searching = !!query();
+  const V = S.view;
+  const find = fold($('navFind').value.trim());
+  const cur = (f, ar, t) => (!searching && V.mode === 'list' && V.field === f && (V.area || null) === (ar || null) && (V.topic || null) === (t || null) ? ' aria-current="true"' : '');
+  const data = (f, ar, t) => `data-f="${esc(f || '')}" data-a="${esc(ar || '')}" data-t="${esc(t || '')}"`;
+  const count = (c) => `${c.rd ? fmt(c.rd) + '/' : ''}${fmt(c.n)}`;
+  const nx = nextInfo();
+  let h = '';
+  if (find) {
+    const hits = [];
+    for (const f of fieldOrder(tree)) for (const [ar, A] of tree.get(f).areas) {
+      if (ar && fold(ar).includes(find)) hits.push([f, ar, null, A]);
+      for (const [t, c] of A.topics) if (fold(t).includes(find)) hits.push([f, ar, t, c]);
+    }
+    h = hits.slice(0, 60).map(([f, ar, t, c]) => `<button class="tnav" style="--c:${areaColor(f, ar)}" ${data(f, ar, t)}><span class="nm">${t ? `${esc(ar || f)} › <b>${esc(t)}</b>` : `<b>${esc(ar)}</b> · ${esc(f)}`}</span><span class="ct">${fmt(c.n)}</span></button>`).join('')
+      || '<div class="navempty">No area or topic with that name.</div>';
+    $('navTree').innerHTML = h;
+    return;
+  }
+  h += `<button class="nav" style="--c:var(--ink)" data-home="1"${V.mode === 'home' && !searching ? ' aria-current="true"' : ''}><span class="ic">${ICONS.home}</span><span class="nm">Overview</span><span class="ct"></span></button>`;
+  h += `<button class="nav" style="--c:var(--rs)" data-next="1"${V.mode === 'next' && !searching ? ' aria-current="true"' : ''}><span class="ic">${ICONS.next}</span><span class="nm">Next up</span><span class="ct">${nx.total ? `${fmt(nx.doneCount)}/${fmt(nx.total)}` : ''}</span></button>`;
+  h += `<button class="nav" style="--c:var(--ink)" ${data(null, null, null)}${cur(null, null, null)}><span class="ic">${ICONS.all}</span><span class="nm">All papers</span><span class="ct">${fmt(S.papers.length)}</span></button>`;
+  h += '<div class="navlabel">Fields</div>';
+  const topicBtns = (f, ar, A) => [...A.topics].map(([t, c]) =>
+    `<button class="tnav" ${data(f, ar, t)}${cur(f, ar, t)}><span class="nm">${esc(t)}</span><span class="ct">${count(c)}</span></button>`).join('');
+  for (const f of fieldOrder(tree)) {
+    const F = tree.get(f), fc = fieldColor(f);
+    h += `<button class="nav" style="--c:${fc}" ${data(f, null, null)}${cur(f, null, null)} aria-expanded="${V.field === f}"><span class="sw"></span><span class="nm">${esc(f)}</span><span class="ct">${F.n ? count(F) : 'empty'}</span></button>`;
+    if (V.field !== f || V.mode !== 'list' || searching) continue;
+    h += '<div class="fieldtree">';
+    let lastGroup = null;
+    const areaBtn = (ar, A) => {
+      const c = areaColor(f, ar), open = V.area === ar;
+      let s = `<button class="anav" style="--c:${c}" ${data(f, ar, null)}${cur(f, ar, null)} aria-expanded="${open}"><span class="nm">${esc(ar)}</span><span class="ct">${count(A)}</span></button>`;
+      if (open) s += `<div class="topics" style="--c:${c}">${topicBtns(f, ar, A)}<button class="navadd" data-newtopic="${esc(f)}" data-newtopicarea="${esc(ar)}">+ New topic</button></div>`;
+      return s;
+    };
+    const grouped = [], loose = [];
+    for (const [ar, A] of F.areas) { if (!ar) continue; (metaArea(f, ar) ? grouped : loose).push([ar, A]); }
+    for (const [ar, A] of grouped) {
+      const grp = metaArea(f, ar).group;
+      if (grp !== lastGroup) { h += `<div class="gl" style="--c:${GROUP_COLORS[grp] || fc}">${esc(grp)}</div>`; lastGroup = grp; }
+      h += areaBtn(ar, A);
+    }
+    if (loose.length && grouped.length) h += `<div class="gl" style="--c:${fc}">Your areas</div>`;
+    for (const [ar, A] of loose) h += areaBtn(ar, A);
+    if (F.areas.has('') && F.areas.get('').topics.size) h += `<div class="topics" style="--c:${fc}">${topicBtns(f, '', F.areas.get(''))}</div>`;
+    h += `<div class="addrow"><button class="navadd" data-newarea="${esc(f)}">+ New area</button><button class="navadd" data-newtopic="${esc(f)}" data-newtopicarea="">+ New topic</button></div></div>`;
+  }
+  h += '<button class="navadd" data-newfield="1">+ New field</button>';
+  $('navTree').innerHTML = h;
+}
+
+/* ---------- rendering ---------- */
 function render() {
+  if (!S.ready) return;
+  S.nx = null;
+  const a = document.activeElement;
+  let refocus = null;
+  if (a && $('view').contains(a)) {
+    const row = a.closest('[data-id]');
+    if (a.dataset.st && row) refocus = `[data-id="${CSS.escape(row.dataset.id)}"] [data-st="${a.dataset.st}"]`;
+    else if (a.dataset.filter) refocus = `[data-filter="${a.dataset.filter}"]`;
+    else if (a.id) refocus = '#' + CSS.escape(a.id);
+  }
   renderNav();
-  const next = S.view.mode === 'next' && !$('search').value.trim();
-  $('nextView').hidden = !next; $('listView').hidden = next;
-  if (next) renderNext(); else renderMain();
+  const q = query();
+  if (q) renderList(); else if (S.view.mode === 'home') renderHome(); else if (S.view.mode === 'next') renderNext(); else renderList();
   renderLists(); renderBanner();
+  document.title = q ? `“${q}” · Paper Archive` : S.view.mode === 'list' ? `${S.view.topic || S.view.area || S.view.field || 'All papers'} · Paper Archive` : S.view.mode === 'next' ? 'Next up · Paper Archive' : 'Paper Archive';
+  if (refocus) { const el = $('view').querySelector(refocus); if (el) el.focus({ preventScroll: true }); }
 }
 function renderBanner() {
   const pending = (S.dirty.progress || 0) + (S.dirty.library || 0);
@@ -319,182 +591,167 @@ function renderBanner() {
     ? `${pending} change${pending === 1 ? ' is' : 's are'} saved only in this browser. Add your GitHub token so everything saves to your repo and shows on every device.`
     : 'Changes are saved only in this browser until you add your GitHub token. Then everything saves to your repo automatically.';
 }
-const isDone = (id) => STATUSES.every(([s]) => prog(id)[s]);
+const setAccent = (c) => document.documentElement.style.setProperty('--fc', c);
 
-function renderNav() {
-  const tree = fieldTree();
-  const searching = !!$('search').value.trim();
-  const V = S.view;
-  const cur = (f, ar, t) => (!searching && V.mode === 'list' && V.field === f && (V.area ?? null) === ar && V.topic === t ? ' aria-current="true"' : '');
-  const data = (f, ar, t) => `data-f="${esc(f || '')}" data-a="${ar == null ? '' : esc(ar)}" data-hasa="${ar == null ? 0 : 1}" data-t="${esc(t || '')}"`;
-  const count = (c) => `${c.rd}/${c.n.toLocaleString()}`;
-  const all = { n: S.papers.length, rd: S.papers.filter((p) => prog(p.id).rd).length };
-  const nx = nextInfo();
-  let h = `<button class="nav nextnav" style="--c:#0e9f6e" data-next="1"${S.view.mode === 'next' && !searching ? ' aria-current="true"' : ''}><span class="sw"></span><span class="nm">Next up</span><span class="ct">${nx.total ? `${nx.doneCount}/${nx.total}` : ''}</span></button>`;
-  h += `<button class="nav" style="--c:#4a4470" ${data(null, null, null)}${S.view.mode === 'list' ? cur(null, null, null) : ''}><span class="sw"></span><span class="nm">All papers</span><span class="ct">${count(all)}</span></button>`;
-  h += '<div class="navlabel">Fields</div>';
-  const fields = [...tree.keys()].sort((a, b) => (a === 'Economics' ? -1 : b === 'Economics' ? 1 : a.localeCompare(b)));
-  const topicBtns = (f, ar, topics) => [...topics].map(([t, c]) =>
-    `<button class="tnav" ${data(f, ar, t)}${cur(f, ar, t)}><span class="nm">${esc(t)}</span><span class="ct">${count(c)}</span></button>`).join('');
-  for (const f of fields) {
-    const areas = tree.get(f), c = fieldColor(f);
-    const fc = { n: 0, rd: 0 }; areas.forEach((tp) => { const x = sumCounts(tp); fc.n += x.n; fc.rd += x.rd; });
-    h += `<button class="nav" style="--c:${c}" ${data(f, null, null)}${cur(f, null, null)}><span class="sw"></span><span class="nm">${esc(f)}</span><span class="ct">${fc.n ? count(fc) : 'empty'}</span></button>`;
-    if (V.field !== f || searching) continue;
-    h += `<div class="tree" style="--c:${c}">`;
-    for (const [ar, topics] of areas) {
-      if (!ar) continue;
-      const open = V.area === ar;
-      h += `<button class="anav" ${data(f, ar, null)}${cur(f, ar, null)} aria-expanded="${open}"><span class="car" aria-hidden="true"></span><span class="nm">${esc(ar)}</span><span class="ct">${count(sumCounts(topics))}</span></button>`;
-      if (open) h += `<div class="topics">${topicBtns(f, ar, topics)}<button class="navadd" data-newtopic="${esc(f)}" data-newtopicarea="${esc(ar)}">+ New topic</button></div>`;
-    }
-    if (areas.has('')) h += `<div class="topics loose">${topicBtns(f, '', areas.get(''))}</div>`;
-    h += `<div class="addrow"><button class="navadd" data-newarea="${esc(f)}">+ New area</button><button class="navadd" data-newtopic="${esc(f)}" data-newtopicarea="">+ New topic</button></div></div>`;
+function spark(dec) {
+  const max = Math.max(1, ...dec);
+  return `<div class="spark" title="Papers by decade, 1900s to 2020s" aria-hidden="true">${dec.map((n) => `<i style="height:${Math.round((24 * n) / max) + 2}px"></i>`).join('')}</div>`;
+}
+function areaCard(f, ar, A) {
+  const m = metaArea(f, ar);
+  return `<button type="button" class="card" style="--c:${areaColor(f, ar)}" data-f="${esc(f)}" data-a="${esc(ar)}" data-t="" aria-label="${esc(ar)}: ${fmt(A.n)} papers in ${A.topics.size} topics">
+    <h3>${esc(ar)}</h3>${m && m.blurb ? `<p>${esc(m.blurb)}</p>` : ''}
+    <div class="cardfoot"><div class="cardnum"><b>${fmt(A.n)}</b><span>paper${A.n === 1 ? '' : 's'} · ${A.topics.size} topic${A.topics.size === 1 ? '' : 's'}${A.rd ? ` · ${fmt(A.rd)} read` : ''}</span></div>${A.n ? spark(A.dec) : ''}</div>
+    <div class="cardbar"><i style="width:${A.n ? (100 * A.rd) / A.n : 0}%"></i></div></button>`;
+}
+function topicCard(f, ar, t, c) {
+  return `<button type="button" class="tcard" data-f="${esc(f)}" data-a="${esc(ar)}" data-t="${esc(t)}" aria-label="${esc(t)}: ${fmt(c.n)} papers">
+    <b>${esc(t)}</b><span class="tn">${c.rd ? fmt(c.rd) + ' / ' : ''}${fmt(c.n)}${c.s2 ? ` · ${c.s2} ★★` : ''}</span>
+    <div class="cardbar"><i style="width:${c.n ? (100 * c.rd) / c.n : 0}%"></i></div></button>`;
+}
+// A field's areas as cards, under their group headings.
+function fieldSections(f) {
+  const F = fieldTree().get(f); if (!F) return '';
+  const groups = new Map(), loose = [];
+  for (const [ar, A] of F.areas) {
+    if (!ar) continue;
+    const m = metaArea(f, ar);
+    if (m && m.group) { if (!groups.has(m.group)) groups.set(m.group, []); groups.get(m.group).push([ar, A]); } else loose.push([ar, A]);
   }
-  h += '<button class="navadd" data-newfield="1">+ New field</button>';
-  $('sidebar').innerHTML = h;
+  let h = '';
+  for (const [g, list] of groups) {
+    const gm = S.meta.groups.find((x) => x.name === g);
+    h += `<section class="sec" style="--c:${GROUP_COLORS[g] || fieldColor(f)}"><div class="sechead"><h2>${esc(g)}</h2><p>${esc(gm ? gm.blurb : '')}</p></div>
+      <div class="cards">${list.map(([ar, A]) => areaCard(f, ar, A)).join('')}</div></section>`;
+  }
+  if (loose.length) h += `<section class="sec" style="--c:${fieldColor(f)}">${groups.size ? '<div class="sechead"><h2>Your areas</h2></div>' : ''}<div class="cards">${loose.map(([ar, A]) => areaCard(f, ar, A)).join('')}</div></section>`;
+  const top = F.areas.get('');
+  if (top && top.topics.size) h += `<section class="sec"><div class="tgrid" style="--fc:${fieldColor(f)}">${[...top.topics].map(([t, c]) => topicCard(f, '', t, c)).join('')}</div></section>`;
+  return h;
 }
 
-function progressHtml(list) {
-  const n = list.length || 1;
-  const done = list.filter((p) => isDone(p.id)).length;
-  const stats = STATUSES.map(([s, label]) => `<span><i class="k" style="background:var(--${s})"></i><b>${list.filter((p) => prog(p.id)[s]).length}</b> ${label.toLowerCase()}</span>`).join('');
-  return `<div class="pbar" title="${done} of ${list.length} fully done"><i style="width:${(100 * done) / n}%"></i></div>
-    <div class="pstats"><span><b>${done}</b>&nbsp;of ${list.length.toLocaleString()} done</span>${stats}</div>`;
+/* ---------- overview ---------- */
+function activity() {
+  const days = new Map();
+  for (const g of Object.values(S.progress.p)) for (const [s] of STATUSES) if (g[s]) days.set(g[s], (days.get(g[s]) || 0) + 1);
+  return days;
+}
+function heatmap(days) {
+  const now = new Date(), cells = [];
+  const start = new Date(now); start.setDate(now.getDate() - now.getDay() - 25 * 7);
+  let max = 1;
+  for (let d = new Date(start); d <= now; d.setDate(d.getDate() + 1)) {
+    const key = localDate(d);
+    const n = days.get(key) || 0; max = Math.max(max, n); cells.push([key, n]);
+  }
+  const week = cells.slice(-7).reduce((t, [, n]) => t + n, 0), todayN = cells[cells.length - 1][1];
+  let streak = 0; for (let i = cells.length - 1; i >= 0 && (cells[i][1] || i === cells.length - 1); i--) if (cells[i][1]) streak++;
+  return `<div class="heat" role="img" aria-label="Steps ticked per day over the last 26 weeks">${cells.map(([k, n]) => `<i data-l="${n ? Math.max(1, Math.ceil((4 * n) / max)) : 0}" title="${k}: ${n} step${n === 1 ? '' : 's'}"></i>`).join('')}</div>
+    <div class="heatnote"><b>${fmt(todayN)}</b> step${todayN === 1 ? '' : 's'} today · <b>${fmt(week)}</b> in the last 7 days${streak > 1 ? ` · <b>${streak}</b>-day streak` : ''}</div>`;
+}
+function renderHome() {
+  setAccent('#4a47a8');
+  const tree = fieldTree(), all = S.rows.filter((r) => r.main);
+  let areas = 0, topics = 0;
+  for (const F of tree.values()) for (const [ar, A] of F.areas) { if (ar && A.n) areas++; topics += [...A.topics.values()].filter((c) => c.n).length; }
+  const c = stepCounts(all), days = activity();
+  const { order, i, total, doneCount } = nextInfo();
+  const news = store.get(SEEN_KEY) ? '' : `<div class="news"><span><b>New:</b> the archive now covers all of economics. ${fmt(S.added)} papers were added in ${Math.max(0, S.meta.areas.length - 1)} new areas, and your earlier papers and ticks are untouched.</span><button type="button" class="pill dark" data-seen="1">Got it</button></div>`;
+  let cont = '<p class="blurb">Every paper on this path has all four steps ticked.</p>';
+  if (i >= 0) {
+    const p = S.byId.get(order[i].id), { next } = stepState(p.id), nk = STATUSES[next];
+    cont = `<div class="cont" data-id="${esc(p.id)}"><h3><a href="${esc(p.link || scholar(p))}" target="_blank" rel="noopener">${esc(p.t)}</a></h3>
+      <div class="meta">${esc(shortAuthors(p.a))}${p.y ? ' · ' + esc(p.y) : ''} · paper ${fmt(i + 1)} of ${fmt(total)}, ${fmt(doneCount)} finished</div>
+      <div class="row">${nk ? `<button type="button" class="pill go ${nk[0]}" data-step="${nk[0]}">${ICONS[nk[0]]} Mark as ${nk[1].toLowerCase()}</button>` : ''}<button type="button" class="linkbtn" data-next="1">Open Next up</button></div></div>`;
+  }
+  const how = `<ul class="howto">${STATUSES.map(([s, label], n) => `<li><span class="st ${s}" aria-pressed="true">${ICONS[s]}</span><span><b>${label}.</b> ${['Print the paper.', 'Read it, as deeply as it deserves.', 'Write your notes by hand.', 'Research it and link your write-up.'][n]}</span></li>`).join('')}</ul>`;
+  let h = `${news}<section class="welcome"><div class="eyebrow">Your reading archive</div>
+    <h1>${fmt(S.papers.length)} papers across <em>${areas} areas</em> and ${fmt(topics)} topics</h1>
+    ${segHtml(c, all.length)}
+    <div class="statgrid">${STATUSES.map(([s, label], n) => `<div class="stat"><b>${fmt(c[n])}</b><span><i class="k" style="background:var(--${s})"></i>${label}</span></div>`).join('')}<div class="stat"><b>${fmt(c[3])}</b><span>Finished, of ${fmt(all.length)}</span></div></div></section>
+    <div class="duo"><div class="panel"><div class="eyebrow">Next up</div>${cont}</div>
+    <div class="panel"><div class="eyebrow">${days.size ? 'Your last 26 weeks' : 'Four steps per paper, in order'}</div>${days.size ? heatmap(days) : how}</div></div>`;
+  for (const f of fieldOrder(tree)) {
+    const F = tree.get(f);
+    h += `<section class="sec" style="--c:${fieldColor(f)}"><div class="sechead plain"><h2 style="font-size:30px">${esc(f)}</h2><p>${F.n ? `${fmt(F.n)} paper${F.n === 1 ? '' : 's'}` : 'Nothing here yet'}</p><span class="grow"></span><button type="button" class="pill" data-f="${esc(f)}" data-a="" data-t="">${F.n ? 'Browse all' : 'Open'}</button></div></section>`;
+    h += F.n ? fieldSections(f) : `<button type="button" class="card empty-card" style="--c:${fieldColor(f)}" data-f="${esc(f)}" data-a="" data-t=""><h3>Start this shelf</h3><p>Add a paper, or paste a list, and it will appear here.</p></button>`;
+  }
+  $('view').innerHTML = h;
 }
 
-function linkLabel(u) {
-  try { const h = new URL(u).hostname.replace(/^www\./, ''); return h === 'doi.org' ? 'Open paper' : h; } catch { return 'Open paper'; }
-}
-const LEARN_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 9 12 4 2 9l10 5 10-5z"/><path d="M6 11v5c3 2.5 9 2.5 12 0v-5"/><path d="M22 9v6"/></svg>';
-function learnBtn(p) {
-  const g = S.guides[p.id];
-  if (g) return `<a class="learn has" href="${esc(g.file)}" target="_blank" rel="noopener" title="Open the interactive guide: ${esc(g.title)}">${LEARN_ICON}<span>Learn</span></a>`;
-  return `<button type="button" class="learn" data-learn="1" title="No interactive guide yet">${LEARN_ICON}<span>Learn</span></button>`;
-}
-const SUM_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8M8 18h5"/></svg>';
-function sumBtn(p) {
-  if (!S.summaries[p.id]) return '';
-  return `<button type="button" class="learn sum has" data-sum="1" title="Summary, pages to read and what to write down">${SUM_ICON}<span>Summary</span></button>`;
-}
-function pagesStr(read) {
-  const parts = read.map(([a, b]) => (a === b ? `${a}` : `${a}–${b}`));
-  const n = read.reduce((t, [a, b]) => t + b - a + 1, 0);
-  return `PDF ${n === 1 ? 'p.' : 'pp.'} ${parts.join(', ')} (${n} page${n === 1 ? '' : 's'})`;
-}
-function openSummary(id) {
-  const p = S.byId.get(id), s = S.summaries[id]; if (!p || !s) return;
-  $('sumTitle').textContent = p.t;
-  $('sumMeta').textContent = [p.a, p.y].filter(Boolean).join(' · ');
-  $('sumRead').innerHTML = `<b>Read ${pagesStr(s.read)}.</b> ${esc(s.why)}`;
-  $('sumText').textContent = s.sum;
-  $('sumTerms').innerHTML = (s.terms || []).map(([a, b]) => `<li><b>${esc(a)}</b>: ${esc(b)}</li>`).join('');
-  $('sumTerms').hidden = !(s.terms || []).length;
-  $('sumWrite').innerHTML = s.write.map((w) => `<li>${esc(w)}</li>`).join('');
-  const notes = [s.conf && s.conf !== 'high' ? `Confidence: ${s.conf}` : '', (s.flags || []).length ? `Flags: ${s.flags.join(', ')}` : ''].filter(Boolean);
-  $('sumFoot').textContent = [...notes, `Written ${s.added || ''} from the PDF's text${s.model ? ' by ' + s.model[0].toUpperCase() + s.model.slice(1) : ''}`].join(' · ');
-  $('sumMsg').hidden = true;
-  $('sumDlg').dataset.id = id;
-  $('sumDlg').showModal();
-}
-function copySummaryLines() {
-  const s = S.summaries[$('sumDlg').dataset.id]; if (!s) return;
-  const m = $('sumMsg');
-  const ok = () => { m.hidden = false; m.className = 'formerr ok'; m.textContent = 'Copied the four lines.'; };
-  try { navigator.clipboard.writeText(s.write.join('\n')).then(ok, () => {}); } catch { /* clipboard unavailable */ }
-}
-function learnPrompt(p) {
-  const cite = `${p.a || ''} (${p.y || 'n.d.'}). "${p.t}." ${(p.v || '').replace(/\*/g, '')}`.trim();
-  return `Make an interactive learning page for this paper, in the same style as Dupuit's Bridge (learn/mp0001.html in the brendynbeasley/paper-archive repo):
-
-${cite}${p.link ? `\nLink: ${p.link}` : ''}
-
-Build it as a single self-contained HTML file with:
-- the question the paper asks and why it mattered at the time
-- its argument broken into short parts, each with an interactive simulator or diagram
-- the key equations, with every term explained
-- flashcards, a quiz and a timeline of what came after
-- page references to the original wherever possible; mark anything you're unsure of
-
-Save it as learn/${p.id}.html, add it to data/learn.json under "${p.id}", then commit and push.`;
-}
-function paperRow(p, showWhere) {
-  const g = prog(p.id);
-  const link = p.link || `https://scholar.google.com/scholar?q=${encodeURIComponent(`${p.t} ${(p.a || '').split(',')[0]}`)}`;
-  const firstAuthor = (p.a || '').split(/,|&/)[0].trim();
-  const others = (p.a || '').includes('&') ? ' et al.' : '';
-  const meta = [firstAuthor ? firstAuthor + others : '', p.y].filter(Boolean).map(esc).join(' · ');
-  const btns = STATUSES.map(([s, label]) => {
-    const on = g[s];
-    const { next } = stepState(p.id);
-    const idx = STATUSES.findIndex(([k]) => k === s);
-    const locked = !on && idx !== next;
-    const tip = on ? `${label} on ${on}` : locked ? `${STATUSES[next][1]} comes first` : `Mark as ${label.toLowerCase()}`;
-    return `<button type="button" class="st ${s}${locked ? ' locked' : ''}" data-st="${s}" aria-pressed="${on ? 'true' : 'false'}" aria-label="${label}" title="${tip}">${ICONS[s]}</button>`;
-  }).join('');
-  return `<article class="paper${isDone(p.id) ? ' done' : ''}" data-id="${esc(p.id)}">
-    <div class="pmain"><a class="ptitle" href="${esc(link)}" target="_blank" rel="noopener" title="${p.link ? 'Open paper' : 'Search Google Scholar'}">${esc(p.t)}</a>
-    <div class="pmeta">${meta}${p.s ? `<span class="s" title="${p.s === 2 ? 'Must-read' : 'Influential'}">${'★'.repeat(p.s)}</span>` : ''}${showWhere ? ` · <span class="where">${esc(p.tp)}</span>` : ''}
-      <a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? linkLabel(p.link) : 'Search Scholar'} ↗</a></div></div>
-    <div class="btns">${btns}${sumBtn(p)}${learnBtn(p)}</div>
-    <button type="button" class="more-btn" data-edit="1" aria-label="Details and edit" title="Details and edit">${MORE_ICON}</button></article>`;
-}
-
-function renderMain() {
-  const searching = $('search').value.trim();
-  const scope = S.papers.filter(inScope);
+/* ---------- lists: all papers, a field, an area, a topic, or search results ---------- */
+function renderList() {
+  const q = query(), V = S.view, tree = fieldTree();
+  const scope = scopeRows();
   const list = sorted(scope.filter(passFilters));
-  const color = searching ? '#4a4470' : fieldColor(S.view.field);
-  document.documentElement.style.setProperty('--fc', color);
-  const V = S.view;
-  $('scopeTitle').textContent = searching ? `“${searching}”` : V.topic || V.area || V.field || 'All papers';
-  const crumbs = [];
-  if (!searching && V.field && (V.area || V.topic)) crumbs.push(`<button type="button" data-cf="${esc(V.field)}">${esc(V.field)}</button>`);
-  if (!searching && V.area && V.topic) crumbs.push(`<button type="button" data-cf="${esc(V.field)}" data-ca="${esc(V.area)}">${esc(V.area)}</button>`);
-  $('crumb').innerHTML = searching ? 'Search results across every field' : crumbs.length ? crumbs.join(' <span aria-hidden="true">›</span> ') : V.field ? 'Field' : 'Your whole archive';
-  const dl = !searching && V.topic && S.downloads[V.topic];
-  $('progress').innerHTML = progressHtml(scope) + (dl ? `<a class="dllink" href="${esc(dl)}" target="_blank" rel="noopener">Download checklist ↗</a>` : '');
-  document.querySelectorAll('[data-filter]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === S.view.status)));
-  $('mustRead').setAttribute('aria-pressed', String(S.view.stars === '2'));
-  $('influential').setAttribute('aria-pressed', String(S.view.stars === '1'));
-  $('legend').innerHTML = `<span class="key"><b class="s">★★</b> must-read</span><span class="key"><b class="s">★</b> influential</span><span class="gap"></span>`
-    + STATUSES.map(([s, l]) => `<span><i style="background:var(--${s})"></i>${l}</span>`).join('') + `<span>${list.length.toLocaleString()} papers</span>`;
+  const f = q ? null : V.field, ar = q ? null : V.area, tp = q ? null : V.topic;
+  setAccent(q || !f ? '#4a47a8' : ar ? areaColor(f, ar) : fieldColor(f));
+  const F = f ? tree.get(f) : null, A = F && ar ? F.areas.get(ar) : null;
+  const m = ar ? metaArea(f, ar) : null;
+  let crumb, title, blurb = '';
+  if (q) { crumb = 'Search across every field'; title = `“${esc(q)}”`; }
+  else if (!f) { crumb = 'Your whole archive'; title = 'All papers'; }
+  else if (tp) { crumb = `<button type="button" data-f="${esc(f)}" data-a="" data-t="">${esc(f)}</button>${ar ? `<span aria-hidden="true">›</span><button type="button" data-f="${esc(f)}" data-a="${esc(ar)}" data-t="">${esc(ar)}</button>` : ''}`; title = esc(tp); }
+  else if (ar) { crumb = `<button type="button" data-f="${esc(f)}" data-a="" data-t="">${esc(f)}</button>${m && m.group ? `<span aria-hidden="true">›</span><span class="tag">${esc(m.group)}</span>` : ''}`; title = esc(ar); blurb = m ? m.blurb : ''; }
+  else { crumb = 'Field'; title = esc(f); }
+  const dl = tp && S.downloads[tp];
+  let h = `<section class="head"><div class="crumb">${crumb}</div><h1>${title}</h1>${blurb ? `<p class="blurb">${esc(blurb)}</p>` : ''}
+    ${statline(scope)}${dl ? `<div class="headtools"><a class="dllink" href="${esc(dl)}" target="_blank" rel="noopener">Download checklist ↗</a></div>` : ''}</section>`;
+  if (!q && f && !ar && !tp) h += fieldSections(f) + (scope.length ? `<div class="sechead plain sec"><h2>All papers in ${esc(f)}</h2></div>` : '');
+  if (!q && A && !tp && A.topics.size) h += `<div class="tgrid">${[...A.topics].map(([t, c]) => topicCard(f, ar, t, c)).join('')}</div><div class="sechead plain sec"><h2>Papers</h2></div>`;
+  const chip = (val, label) => `<button type="button" class="chip" data-filter="${val}" aria-pressed="${V.status === val}">${label}</button>`;
+  const hasPdf = scope.some((r) => r.p.pdf);
+  const opt = (val, label) => `<option value="${val}"${V.sort === val ? ' selected' : ''}>${label}</option>`;
+  if (scope.length) h += `<div class="chips" role="group" aria-label="Filter papers">
+      ${chip('any', 'All')}${chip('untouched', 'Not started')}${chip('progress', 'In progress')}${chip('complete', 'Done')}
+      <span class="chipsep" aria-hidden="true"></span>
+      <button type="button" class="chip star" data-stars="2" aria-pressed="${V.stars === '2'}">★★ Must-reads</button>
+      <button type="button" class="chip star" data-stars="1" aria-pressed="${V.stars === '1'}">★ Influential</button>
+      ${hasPdf ? `<button type="button" class="chip" data-pdfchip="1" aria-pressed="${!!V.pdf}">Free copy</button>` : ''}
+      <label class="sortwrap">Sort <select id="fSort" aria-label="Sort papers">${opt('order', q ? 'Best match' : 'List order')}${opt('cited', 'Most cited')}${opt('new', 'Newest')}${opt('old', 'Oldest')}${opt('author', 'Author')}${opt('recent', 'Recently ticked')}</select></label>
+    </div>
+    <div class="legend" aria-hidden="true"><span><b class="s">★★</b> must-read</span><span><b class="s">★</b> influential</span><span class="gap"></span>${STATUSES.map(([s, l]) => `<span><i style="background:var(--${s})"></i>${l}</span>`).join('')}<span><b>${fmt(list.length)}</b>&nbsp;paper${list.length === 1 ? '' : 's'}</span></div>`;
   if (!list.length) {
-    const empty = !scope.length && !searching && S.view.field;
-    $('list').innerHTML = `<div class="empty">${empty ? `<p>Nothing here yet.</p><button class="pill primary" type="button" data-addhere="1">Add papers</button>` : '<p>No papers match.</p>'}</div>`;
-    $('moreBtn').hidden = true;
+    const empty = !scope.length && !q && f;
+    h += `<div class="empty">${empty ? '<p>Nothing here yet.</p><button class="pill primary" type="button" data-addhere="1">Add papers</button>' : q ? '<p>No paper matches that search. Try an author’s surname or a word from the title.</p>' : '<p>No papers match these filters.</p>'}</div>`;
+    $('view').innerHTML = h;
     return;
   }
   const page = list.slice(0, S.shown);
-  const group = S.view.sort === 'order' && !searching;
+  const grouping = V.sort === 'order' && !q;
+  const gkey = (r) => (tp ? r.st : ar ? r.tp : f ? (r.ar ? `${r.ar} › ${r.tp}` : r.tp) : `${r.f} › ${r.ar ? r.ar + ' › ' : ''}${r.tp}`);
   const counts = new Map();
-  const gkey = (p) => (V.topic ? p.st || '' : V.area != null || !p.ar ? p.tp : `${p.ar} › ${p.tp}`);
-  if (group) for (const p of list) { const k = gkey(p); counts.set(k, (counts.get(k) || 0) + 1); }
-  let h = '', last = null;
-  for (const p of page) {
-    if (group) {
-      const k = gkey(p);
-      if (k !== last) { if (k) h += `<div class="group">${esc(k)}<small>${counts.get(k)}</small></div>`; last = k; }
+  if (grouping) for (const r of list) { const k = gkey(r); counts.set(k, (counts.get(k) || 0) + 1); }
+  const words = q ? fold(q).split(/\s+/).filter(Boolean) : null;
+  const rowOpt = { words, where: !!q || (!tp && !grouping) };
+  let rowsHtml = '', last = null;
+  for (const r of page) {
+    if (grouping) {
+      const k = gkey(r);
+      if (k !== last) {
+        if (k) rowsHtml += `<div class="group">${tp ? esc(k) : `<button type="button" data-f="${esc(r.f)}" data-a="${esc(r.ar)}" data-t="${esc(r.tp)}">${esc(k)}</button>`}<small>${fmt(counts.get(k))}</small></div>`;
+        last = k;
+      }
     }
-    h += paperRow(p, !!searching);
+    rowsHtml += paperRow(r, rowOpt);
   }
-  $('list').innerHTML = h;
   const left = list.length - S.shown;
-  $('moreBtn').hidden = left <= 0;
-  $('moreBtn').textContent = `Show more (${left.toLocaleString()} left)`;
+  h += `<div class="list">${rowsHtml}</div>${left > 0 ? `<div class="more"><button class="pill" type="button" data-more="1">Show more (${fmt(left)} left)</button></div>` : ''}`;
+  $('view').innerHTML = h;
 }
 
 function renderLists() {
+  if (!$('paperDlg').open && !$('groupDlg').open) return;
   const tree = fieldTree();
-  const f = $('pField').value || S.view.field;
+  const f = $('pField').value || $('gField').value || S.view.field;
   const ar = $('pArea').value;
   const opts = (xs) => [...xs].filter(Boolean).map((x) => `<option value="${esc(x)}">`).join('');
   $('fieldList').innerHTML = opts(tree.keys());
-  const areas = f && tree.has(f) ? tree.get(f) : new Map();
+  const areas = f && tree.has(f) ? tree.get(f).areas : new Map();
   $('areaList').innerHTML = opts(areas.keys());
-  $('topicList').innerHTML = opts(areas.has(ar) ? areas.get(ar).keys() : []);
+  $('topicList').innerHTML = opts(areas.has(ar) ? areas.get(ar).topics.keys() : []);
   const t = $('pTopic').value;
-  $('subList').innerHTML = opts(new Set(S.papers.filter((p) => p.f === f && (p.ar || '') === ar && p.tp === t).map((p) => p.st)));
+  $('subList').innerHTML = t ? opts(new Set(S.rows.filter((r) => r.f === f && r.ar === ar && r.tp === t && r.st).map((r) => r.st))) : '';
 }
 
 /* ---------- Next up: one paper at a time, in order ---------- */
@@ -504,27 +761,61 @@ const STEP_HELP = {
   nt: 'Write your notes: the question, the method, the main finding, why it mattered, and which paper it links to.',
   rs: 'Research it with an AI assistant (the Learn button has a ready-made prompt), push the work to a repo, and paste the link below.',
 };
+function scopeParts() {
+  const [f, ar, tp] = (S.view.nscope || '').split('::');
+  return { f: f || '', ar: ar || '', tp: tp || '' };
+}
+function defaultScope() {
+  const V = S.view, tree = fieldTree();
+  if (V.field && (V.area || V.topic)) return `${V.field}::${V.area || ''}::${V.topic || ''}`;
+  for (const f of fieldOrder(tree)) for (const [ar, A] of tree.get(f).areas) if (A.n) return `${f}::${ar}::`;
+  return '';
+}
+// Three paths: the market-power reading plan, any area or topic (must-reads first), or everything by year.
 function pathOrder() {
   if (S.view.path === 'plan' && S.plan) return S.plan.order.filter((o) => S.byId.has(o.id));
+  if (S.view.path === 'scope') {
+    const { f, ar, tp } = scopeParts();
+    return S.rows.filter((r) => r.f === f && r.ar === ar && (!tp || r.tp === tp))
+      .sort((a, b) => (b.p.s || 0) - (a.p.s || 0) || a.o - b.o).map((r) => ({ id: r.p.id, ph: null, d: null }));
+  }
   const yr = (p) => parseInt(p.y, 10) || 9999;
   return [...S.papers].sort((a, b) => yr(a) - yr(b) || a.o - b.o).map((p) => ({ id: p.id, ph: null, d: null }));
 }
 function nextInfo() {
+  if (S.nx) return S.nx;
   const order = S.byId.size ? pathOrder() : [];
-  const i = order.findIndex((o) => !isDone(o.id));
-  return { order, i, total: order.length, doneCount: order.filter((o) => isDone(o.id)).length };
+  let doneCount = 0, i = -1;
+  order.forEach((o, k) => { if (isDone(o.id)) doneCount++; else if (i < 0) i = k; });
+  S.nx = { order, i, total: order.length, doneCount };
+  return S.nx;
 }
 function renderNext() {
   const { order, i, total, doneCount } = nextInfo();
-  const planOn = S.view.path === 'plan' && S.plan;
+  const V = S.view, planOn = V.path === 'plan' && S.plan, scopeOn = V.path === 'scope';
+  const sc = scopeParts(), tree = fieldTree();
+  setAccent(scopeOn && sc.f ? areaColor(sc.f, sc.ar) : '#0b8f63');
+  let pickers = '';
+  if (scopeOn) {
+    let areaOpts = '';
+    for (const f of fieldOrder(tree)) {
+      const opts = [...tree.get(f).areas].filter(([, A]) => A.n).map(([ar]) => `<option value="${esc(`${f}::${ar}`)}"${sc.f === f && sc.ar === ar ? ' selected' : ''}>${esc(ar || `${f}: topics`)}</option>`).join('');
+      if (opts) areaOpts += `<optgroup label="${esc(f)}">${opts}</optgroup>`;
+    }
+    const A = tree.get(sc.f) && tree.get(sc.f).areas.get(sc.ar);
+    const topicOpts = A ? [...A.topics].filter(([, c]) => c.n).map(([t]) => `<option value="${esc(t)}"${sc.tp === t ? ' selected' : ''}>${esc(t)}</option>`).join('') : '';
+    pickers = `<select id="nxArea" aria-label="Area to follow">${areaOpts}</select><select id="nxTopic" aria-label="Topic to follow"><option value="">Every topic in it</option>${topicOpts}</select>`;
+  }
   const pathBar = `<div class="pathbar" role="group" aria-label="Which order to follow">
-      <span>Order</span>
-      <button type="button" class="chip" data-path="plan" aria-pressed="${S.view.path === 'plan'}">Reading plan · ${S.plan ? S.plan.order.length : 0} must-reads</button>
-      <button type="button" class="chip" data-path="year" aria-pressed="${S.view.path === 'year'}">Oldest first · all ${S.papers.length.toLocaleString()}</button>
+      <span>Follow</span>
+      <button type="button" class="chip" data-path="plan" aria-pressed="${V.path === 'plan'}">Market power reading plan · ${S.plan ? S.plan.order.length : 0}</button>
+      <button type="button" class="chip" data-path="scope" aria-pressed="${scopeOn}">An area or topic, must-reads first</button>
+      <button type="button" class="chip" data-path="year" aria-pressed="${V.path === 'year'}">Everything, oldest first · ${fmt(S.papers.length)}</button>
+      ${pickers}
     </div>`;
-  document.documentElement.style.setProperty('--fc', '#0e9f6e');
+  const pathName = planOn ? 'Reading plan' : scopeOn ? esc(sc.tp || sc.ar || sc.f) : 'Oldest first';
   if (i < 0) {
-    $('nextView').innerHTML = `<section class="hero"><div class="crumb">Next up</div><h1>All done</h1><div class="progress"><div class="pstats"><span>Every paper on this path has all four steps ticked.</span></div></div></section>${pathBar}`;
+    $('view').innerHTML = `<section class="head"><div class="crumb">Next up · ${pathName}</div><h1>${total ? 'All done' : 'Nothing on this path'}</h1><p class="blurb">${total ? 'Every paper on this path has all four steps ticked.' : 'Pick another path below.'}</p></section>${pathBar}`;
     return;
   }
   const cur = order[i], p = S.byId.get(cur.id);
@@ -532,7 +823,7 @@ function renderNext() {
   const { g, next } = stepState(p.id);
   const depth = planOn && cur.d ? S.plan.depth[cur.d] : null;
   const help = Object.assign({}, STEP_HELP, { rd: depth ? `Read it. ${depth}.` : 'Read it.' });
-  const link = p.link || `https://scholar.google.com/scholar?q=${encodeURIComponent(`${p.t} ${(p.a || '').split(',')[0]}`)}`;
+  const link = p.link || scholar(p);
   const phaseEnd = planOn && (i === order.length - 1 || order[i + 1].ph !== cur.ph);
   const steps = STATUSES.map(([k, label], n) => {
     const on = g[k], isNext = n === next;
@@ -548,60 +839,38 @@ function renderNext() {
         <button type="button" class="pill go ${nk[0]}" data-step="${nk[0]}">${ICONS[nk[0]]} Mark as ${nk[1].toLowerCase()}</button>
         ${next > 0 ? `<button type="button" class="linkbtn" data-undo="1">Undo ${STATUSES[next - 1][1].toLowerCase()}</button>` : ''}
       </div></div>` : '';
+  const who = (q) => `${esc(((q.a || '').split(/,|&/)[0] || '').trim())}${q.y ? ' · ' + esc(q.y) : ''}`;
   const upcoming = order.slice(i + 1, i + 9).map((o, n) => {
     const q = S.byId.get(o.id);
     const newPhase = planOn && o.ph !== (n === 0 ? cur.ph : order[i + n].ph);
     return `${newPhase ? `<li class="phasemark">Phase ${o.ph}: ${esc(S.plan.phases[o.ph].title)}</li>` : ''}
-      <li class="up"><span class="upn">${i + n + 2}</span><span class="upt"><b>${esc(q.t)}</b><small>${esc(((q.a || '').split(/,|&/)[0] || '').trim())}${q.y ? ' · ' + esc(q.y) : ''}${o.d ? ' · ' + { deep: 'Deep', std: 'Standard', skim: 'Skim' }[o.d] : ''}</small></span>
+      <li class="up"><span class="upn">${i + n + 2}</span><span class="upt"><b>${esc(q.t)}</b><small>${who(q)}${o.d ? ' · ' + { deep: 'Deep', std: 'Standard', skim: 'Skim' }[o.d] : ''}${q.s ? ' · ' + '★'.repeat(q.s) : ''}</small></span>
       <span class="upd">${STATUSES.map(([k]) => `<i class="${prog(q.id)[k] ? 'on ' + k : ''}"></i>`).join('')}</span></li>`;
   }).join('');
   const recent = order.slice(0, i).filter((o) => isDone(o.id)).slice(-3).reverse().map((o) => {
     const q = S.byId.get(o.id);
-    return `<li class="up donep"><span class="upn">✓</span><span class="upt"><b>${esc(q.t)}</b><small>${esc(((q.a || '').split(/,|&/)[0] || '').trim())}${q.y ? ' · ' + esc(q.y) : ''}</small></span></li>`;
+    return `<li class="up donep"><span class="upn">✓</span><span class="upt"><b>${esc(q.t)}</b><small>${who(q)}</small></span></li>`;
   }).join('');
-  $('nextView').innerHTML = `
-    <section class="hero">
-      <div class="crumb">Next up · ${planOn ? 'Reading plan' : 'Oldest first'}</div>
-      <h1>${phase ? `Phase ${cur.ph}: ${esc(phase.title)}` : 'Oldest papers first'}</h1>
-      <div class="progress">
-        <div class="pbar"><i style="width:${(100 * doneCount) / (total || 1)}%"></i></div>
-        <div class="pstats"><span>Paper <b>${i + 1}</b>&nbsp;of ${total.toLocaleString()}</span><span><b>${doneCount}</b>&nbsp;finished</span>${phase ? `<span>${esc(phase.about)}</span>` : ''}</div>
-      </div>
+  $('view').innerHTML = `
+    <section class="head">
+      <div class="crumb">Next up · ${pathName}</div>
+      <h1>${phase ? `Phase ${cur.ph}: ${esc(phase.title)}` : scopeOn ? esc(sc.tp || sc.ar || sc.f) : 'Oldest papers first'}</h1>
+      ${phase ? `<p class="blurb">${esc(phase.about)}</p>` : ''}
+      <div class="seg"><i style="width:${(100 * doneCount) / (total || 1)}%;background:var(--rs)"></i></div>
+      <div class="statline"><span>Paper <b>${fmt(i + 1)}</b> of ${fmt(total)}</span><span><b>${fmt(doneCount)}</b> finished</span></div>
     </section>
     ${pathBar}
     <article class="now" data-id="${esc(p.id)}">
-      <div class="now-top"><span class="nowtag">#${i + 1}${depth ? ' · ' + esc(depth.split(' · ')[0]) : ''}</span>${p.s ? `<span class="s">${'★'.repeat(p.s)}</span>` : ''}</div>
+      <div class="now-top"><span class="nowtag">#${i + 1}${depth ? ' · ' + esc(depth.split(' · ')[0]) : ''}${scopeOn || !planOn ? ` · ${esc(p.tp)}` : ''}</span>${p.s ? `<span class="s">${'★'.repeat(p.s)}</span>` : ''}</div>
       <a class="nowtitle" href="${esc(link)}" target="_blank" rel="noopener">${esc(p.t)}</a>
       <div class="nowmeta">${esc(p.a || '')}${p.y ? ' · ' + esc(p.y) : ''}${p.v ? ' · ' + md(p.v) : ''}</div>
-      <div class="nowlinks"><a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? 'Open paper' : 'Search Scholar'} ↗</a>${sumBtn(p)}${learnBtn(p)}</div>
+      <div class="nowlinks"><a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? 'Open paper' : 'Search Scholar'} ↗</a>${p.pdf ? `<a class="plink pdf" href="${esc(p.pdf)}" target="_blank" rel="noopener">Free copy ↗</a>` : ''}${sumBtn(p)}${learnBtn(p)}</div>
       <ol class="steps">${steps}</ol>
       ${doIt}
       ${phaseEnd && phase ? `<div class="phasetask"><b>End of phase ${cur.ph}.</b> Before moving on: ${esc(phase.task)}</div>` : ''}
     </article>
     ${upcoming ? `<h2 class="nexth">Coming up</h2><ol class="uplist">${upcoming}</ol>` : ''}
     ${recent ? `<h2 class="nexth">Recently finished</h2><ol class="uplist">${recent}</ol>` : ''}`;
-}
-function nextClick(e) {
-  const b = e.target.closest('button'); if (!b) return;
-  if (b.dataset.path) { S.view.path = b.dataset.path; saveView(); render(); return; }
-  if (b.dataset.learn) return openLearn(b.closest('.now').dataset.id);
-  if (b.dataset.sum) return openSummary(b.closest('.now').dataset.id);
-  const card = b.closest('.now'); if (!card) return;
-  const id = card.dataset.id;
-  if (b.dataset.step) {
-    if (b.dataset.step === 'rs') {
-      const url = cleanUrl(($('rsLink') || {}).value || '');
-      const pp = S.byId.get(id);
-      if (url && url !== (pp.research || '')) setResearch(pp, url);
-    }
-    const wasLast = b.dataset.step === 'rs';
-    toggle(id, b.dataset.step);
-    if (wasLast) toast('Paper finished. On to the next one.');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  } else if (b.dataset.undo) {
-    const { last } = stepState(id);
-    if (last >= 0) toggle(id, STATUSES[last][0]);
-  }
 }
 function setResearch(p, url) {
   const lib = S.library;
@@ -647,13 +916,14 @@ function openPaper(id) {
   $('pField').value = p ? p.f : S.view.field || ''; $('pArea').value = p ? p.ar || '' : S.view.area || ''; $('pTopic').value = p ? p.tp : S.view.topic || '';
   $('pSub').value = p ? p.st || '' : ''; $('pResearch').value = p ? p.research || '' : ''; $('pNotes').value = p ? p.notes || '' : '';
   $('pBulk').value = '';
-  $('pAbout').innerHTML = p ? [p.n ? `<i>${md(p.n)}</i>` : '', p.vf ? 'The bibliography marks this citation as uncertain. Check it before relying on it.' : '', p.link ? '' : 'No link yet. The title opens a Google Scholar search.'].filter(Boolean).join('<br>') : '';
+  const also = p ? S.rows.filter((r) => r.p.id === p.id && !r.main).map((r) => `${r.ar} › ${r.tp}`) : [];
+  $('pAbout').innerHTML = p ? [p.n ? `<i>${md(p.n)}</i>` : '', also.length ? `Also listed under ${esc(also.join('; '))}.` : '', p.c ? `Cited ${fmt(p.c)} times, as counted by OpenAlex.` : '', p.vf ? 'The bibliography marks this citation as uncertain. Check it before relying on it.' : '', p.link ? '' : 'No link yet. The title opens a Google Scholar search.'].filter(Boolean).join('<br>') : '';
   document.querySelectorAll('#paperDlg details').forEach((d) => { d.open = false; });
   $('pDelete').hidden = !p;
   $('pDelete').textContent = p && p.added ? 'Delete paper' : 'Remove from archive';
   $('paperErr').hidden = true;
-  renderLists();
   $('paperDlg').showModal();
+  renderLists();
 }
 function setTab(tab) {
   if (!editing) addTab = tab;
@@ -702,9 +972,10 @@ function savePaper() {
   }
   const now = Date.now();
   rows.forEach((r, i) => lib.added.push(Object.assign(r, { id: newId() + i, f, ar, tp, st, s: 0, u: now })));
+  Object.assign(S.view, { mode: 'list', field: f, area: ar, topic: tp }); saveView();
+  history.pushState(null, '', viewHash(S.view));
   changed('library', rows.length === 1 ? `Add: ${rows[0].t.slice(0, 80)}` : `Add ${rows.length} papers to ${f} › ${tp}`);
   toast(rows.length === 1 ? 'Paper added' : `${rows.length} papers added`);
-  S.view.field = f; S.view.area = ar; S.view.topic = tp; saveView(); render();
   return true;
 }
 function err(msg) { const e = $('paperErr'); e.textContent = msg; e.hidden = false; return false; }
@@ -725,11 +996,13 @@ function openGroup(mode, field, area) {
   $('gFieldWrap').hidden = mode !== 'field';
   $('gAreaWrap').hidden = mode === 'topic';
   $('gField').value = field || ''; $('gArea').value = ''; $('gTopic').value = '';
+  $('gField').required = mode === 'field';
   $('gArea').required = mode === 'area';
   $('gTopic').required = mode === 'topic';
   $('gTopic').placeholder = mode === 'topic' ? '' : 'optional';
   $('gArea').placeholder = mode === 'area' ? 'e.g. Monopoly & market power' : 'optional';
   $('groupDlg').showModal();
+  renderLists();
   (mode === 'field' ? $('gField') : mode === 'area' ? $('gArea') : $('gTopic')).focus();
 }
 function saveGroup() {
@@ -743,7 +1016,8 @@ function saveGroup() {
   if (ar && !lib.areas.includes(`${f}::${ar}`)) lib.areas.push(`${f}::${ar}`);
   const key = ar ? `${f}::${ar}::${t}` : `${f}::${t}`;
   if (t && !lib.topics.includes(key)) lib.topics.push(key);
-  S.view.field = f; S.view.area = ar || (t ? '' : null); S.view.topic = t || null; saveView();
+  Object.assign(S.view, { mode: 'list', field: f, area: ar || (t ? '' : null), topic: t || null }); saveView();
+  history.pushState(null, '', viewHash(S.view));
   changed('library', t ? `New topic: ${[f, ar, t].filter(Boolean).join(' › ')}` : ar ? `New area: ${f} › ${ar}` : `New field: ${f}`);
 }
 
@@ -791,6 +1065,48 @@ function exportBackup() {
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 
+/* ---------- summaries and learning guides ---------- */
+function pagesStr(read) {
+  const parts = read.map(([a, b]) => (a === b ? `${a}` : `${a}–${b}`));
+  const n = read.reduce((t, [a, b]) => t + b - a + 1, 0);
+  return `PDF ${n === 1 ? 'p.' : 'pp.'} ${parts.join(', ')} (${n} page${n === 1 ? '' : 's'})`;
+}
+function openSummary(id) {
+  const p = S.byId.get(id), s = S.summaries[id]; if (!p || !s) return;
+  $('sumTitle').textContent = p.t;
+  $('sumMeta').textContent = [p.a, p.y].filter(Boolean).join(' · ');
+  $('sumRead').innerHTML = `<b>Read ${pagesStr(s.read)}.</b> ${esc(s.why)}`;
+  $('sumText').textContent = s.sum;
+  $('sumTerms').innerHTML = (s.terms || []).map(([a, b]) => `<li><b>${esc(a)}</b>: ${esc(b)}</li>`).join('');
+  $('sumTerms').hidden = !(s.terms || []).length;
+  $('sumWrite').innerHTML = s.write.map((w) => `<li>${esc(w)}</li>`).join('');
+  const notes = [s.conf && s.conf !== 'high' ? `Confidence: ${s.conf}` : '', (s.flags || []).length ? `Flags: ${s.flags.join(', ')}` : ''].filter(Boolean);
+  $('sumFoot').textContent = [...notes, `Written ${s.added || ''} from the PDF's text${s.model ? ' by ' + s.model[0].toUpperCase() + s.model.slice(1) : ''}`].join(' · ');
+  $('sumMsg').hidden = true;
+  $('sumDlg').dataset.id = id;
+  $('sumDlg').showModal();
+}
+function copySummaryLines() {
+  const s = S.summaries[$('sumDlg').dataset.id]; if (!s) return;
+  const m = $('sumMsg');
+  const ok = () => { m.hidden = false; m.className = 'formerr ok'; m.textContent = 'Copied the four lines.'; };
+  try { navigator.clipboard.writeText(s.write.join('\n')).then(ok, () => {}); } catch { /* clipboard unavailable */ }
+}
+function learnPrompt(p) {
+  const cite = `${p.a || ''} (${p.y || 'n.d.'}). "${p.t}." ${(p.v || '').replace(/\*/g, '')}`.trim();
+  return `Make an interactive learning page for this paper, in the same style as Dupuit's Bridge (learn/mp0001.html in the brendynbeasley/paper-archive repo):
+
+${cite}${p.link ? `\nLink: ${p.link}` : ''}
+
+Build it as a single self-contained HTML file with:
+- the question the paper asks and why it mattered at the time
+- its argument broken into short parts, each with an interactive simulator or diagram
+- the key equations, with every term explained
+- flashcards, a quiz and a timeline of what came after
+- page references to the original wherever possible; mark anything you're unsure of
+
+Save it as learn/${p.id}.html, add it to data/learn.json under "${p.id}", then commit and push.`;
+}
 function openLearn(id) {
   const p = S.byId.get(id); if (!p) return;
   $('learnPaper').textContent = p.t;
@@ -804,6 +1120,7 @@ function copyLearn() {
   const fail = () => { t.focus(); t.select(); m.hidden = false; m.className = 'formerr'; m.textContent = 'Select the text above and copy it.'; };
   try { navigator.clipboard.writeText(t.value).then(done, fail); } catch { fail(); }
 }
+
 /* ---------- theme: auto (follow device) -> light -> dark ---------- */
 const THEME_ICONS = {
   auto: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg>',
@@ -828,7 +1145,6 @@ function cycleTheme() {
 
 let toastTimer;
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2200); }
-function saveView() { store.set(VIEW_KEY, { mode: S.view.mode, path: S.view.path, field: S.view.field, area: S.view.area, topic: S.view.topic, status: S.view.status, stars: S.view.stars, sort: S.view.sort }); }
 
 let lastPull = 0;
 async function refresh(force) {
@@ -836,7 +1152,7 @@ async function refresh(force) {
   lastPull = Date.now();
   try {
     await pull();
-    saveCache(); rebuild(); render();
+    saveCache(); S.hay.clear(); rebuild(); render();
     if (S.dirty.progress || S.dirty.library) { if (canWrite()) sync(); else setSync('Saved on this device. Add a token in Settings to sync.'); }
     else setSync(hasRepo() ? (canWrite() ? 'Synced with GitHub' : 'Read-only. Add a token in Settings to edit.') : 'Local mode');
   } catch (e) {
@@ -845,44 +1161,92 @@ async function refresh(force) {
 }
 
 /* ---------- events ---------- */
+function closeNav() { $('sidebar').classList.remove('open'); $('navToggle').setAttribute('aria-expanded', 'false'); $('scrim').hidden = true; }
+const scopeOf = (d) => ({ mode: 'list', field: d.f || null, area: d.a || (d.t ? '' : null), topic: d.t || null });
+function refilter() { S.shown = PAGE; saveView(); render(); }
+function viewClick(e) {
+  const el = e.target.closest('button');
+  if (!el || !$('view').contains(el)) return;
+  const d = el.dataset, row = el.closest('[data-id]');
+  if (d.seen) { store.set(SEEN_KEY, 1); render(); return; }
+  if (d.home) return go({ mode: 'home' });
+  if (d.next) return go({ mode: 'next' });
+  if (d.more) { S.shown += PAGE; render(); return; }
+  if (d.addhere) return openPaper(null);
+  if (d.filter) { S.view.status = d.filter; return refilter(); }
+  if (d.stars) { S.view.stars = S.view.stars === d.stars ? '0' : d.stars; return refilter(); }
+  if (d.pdfchip) { S.view.pdf = !S.view.pdf; return refilter(); }
+  if (d.path) {
+    S.view.path = d.path;
+    if (d.path === 'scope' && !scopeParts().f) S.view.nscope = defaultScope();
+    saveView(); render(); return;
+  }
+  if (d.gof !== undefined) return go(scopeOf({ f: d.gof, a: d.goa, t: d.got }));
+  if (row) {
+    const id = row.dataset.id;
+    if (d.learn) return openLearn(id);
+    if (d.sum) return openSummary(id);
+    if (d.st) return toggle(id, d.st);
+    if (d.edit) return openPaper(id);
+    if (d.step) {
+      if (d.step === 'rs') {
+        const url = cleanUrl(($('rsLink') || {}).value || '');
+        const pp = S.byId.get(id);
+        if (url && url !== (pp.research || '')) setResearch(pp, url);
+      }
+      toggle(id, d.step);
+      if (d.step === 'rs') toast('Paper finished. On to the next one.');
+      if (S.view.mode === 'next') window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    if (d.undo) { const { last } = stepState(id); if (last >= 0) toggle(id, STATUSES[last][0]); return; }
+  }
+  if (d.f !== undefined) return go(scopeOf(d));
+}
 function bind() {
-  $('sidebar').addEventListener('click', (e) => {
+  $('navTree').addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.newfield) return openGroup('field');
-    if (b.dataset.newarea) return openGroup('area', b.dataset.newarea);
-    if (b.dataset.newtopic) return openGroup('topic', b.dataset.newtopic, b.dataset.newtopicarea);
-    $('search').value = '';
-    if (b.dataset.next) { S.view.mode = 'next'; saveView(); render(); window.scrollTo({ top: 0 }); closeNav(); return; }
-    S.view.mode = 'list';
-    S.view.field = b.dataset.f || null;
-    S.view.area = b.dataset.hasa === '1' ? b.dataset.a : null;
-    S.view.topic = b.dataset.t || null; S.shown = PAGE;
-    saveView(); render(); window.scrollTo({ top: 0 });
-    if (S.view.topic || !b.dataset.f) closeNav();
+    const d = b.dataset;
+    if (d.newfield) return openGroup('field');
+    if (d.newarea) return openGroup('area', d.newarea);
+    if (d.newtopic) return openGroup('topic', d.newtopic, d.newtopicarea);
+    $('navFind').value = '';
+    if (d.home || d.next) { go({ mode: d.home ? 'home' : 'next' }); closeNav(); return; }
+    const v = scopeOf(d);
+    go(v);
+    if (v.topic || !v.field) closeNav();
   });
-  $('list').addEventListener('click', (e) => {
-    const b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.addhere) return openPaper(null);
-    if (b.dataset.learn) return openLearn(b.closest('.paper').dataset.id);
-    if (b.dataset.sum) return openSummary(b.closest('.paper').dataset.id);
-    const row = b.closest('.paper'); if (!row) return;
-    if (b.dataset.st) toggle(row.dataset.id, b.dataset.st);
-    else if (b.dataset.edit) openPaper(row.dataset.id);
+  $('navFind').addEventListener('input', renderNav);
+  $('view').addEventListener('click', viewClick);
+  $('view').addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.id === 'fSort') { S.view.sort = t.value; refilter(); }
+    else if (t.id === 'nxArea') { S.view.nscope = `${t.value}::`; saveView(); render(); }
+    else if (t.id === 'nxTopic') { const sc = scopeParts(); S.view.nscope = `${sc.f}::${sc.ar}::${t.value}`; saveView(); render(); }
   });
   let st;
-  $('search').addEventListener('input', () => { clearTimeout(st); st = setTimeout(() => { S.shown = PAGE; render(); }, 180); });
-  document.querySelectorAll('[data-filter]').forEach((b) => b.addEventListener('click', () => { S.view.status = b.dataset.filter; S.shown = PAGE; saveView(); renderMain(); }));
-  const starChip = (id, lvl) => $(id).addEventListener('click', () => { S.view.stars = S.view.stars === lvl ? '0' : lvl; S.shown = PAGE; saveView(); renderMain(); });
-  starChip('mustRead', '2'); starChip('influential', '1');
-  $('fSort').value = S.view.sort;
-  $('fSort').addEventListener('change', () => { S.view.sort = $('fSort').value; S.shown = PAGE; saveView(); renderMain(); });
-  $('crumb').addEventListener('click', (e) => {
-    const b = e.target.closest('[data-cf]'); if (!b) return;
-    S.view.mode = 'list';
-    S.view.field = b.dataset.cf; S.view.area = b.dataset.ca ?? null; S.view.topic = null; S.shown = PAGE; saveView(); render();
+  $('search').addEventListener('input', () => {
+    clearTimeout(st);
+    st = setTimeout(() => {
+      const q = query();
+      S.shown = PAGE;
+      history.replaceState(null, '', q ? `#/q/${enc(q)}` : viewHash(S.view));
+      render();
+      if (q) window.scrollTo({ top: 0 });
+    }, 160);
   });
+  document.addEventListener('keydown', (e) => {
+    const a = document.activeElement;
+    if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey && !/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && !document.querySelector('dialog[open]')) {
+      e.preventDefault(); $('search').focus(); $('search').select();
+    } else if (e.key === 'Escape' && a === $('search') && $('search').value) {
+      $('search').value = ''; $('search').dispatchEvent(new Event('input'));
+    }
+  });
+  window.addEventListener('hashchange', onHash);
+  window.addEventListener('popstate', onHash);
+  $('brand').addEventListener('click', (e) => { e.preventDefault(); go({ mode: 'home' }); });
   $('scrim').addEventListener('click', closeNav);
-  $('moreBtn').addEventListener('click', () => { S.shown += PAGE; renderMain(); });
   $('addBtn').addEventListener('click', () => openPaper(null));
   $('addTabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (b) setTab(b.dataset.tab); });
   $('pField').addEventListener('input', renderLists);
@@ -912,28 +1276,58 @@ function bind() {
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refresh(false); else flush(); });
   window.addEventListener('pagehide', flush);
   window.addEventListener('beforeunload', (e) => { if (syncing || (canWrite() && (S.dirty.progress || S.dirty.library))) { flush(); e.preventDefault(); e.returnValue = ''; } });
-  $('nextView').addEventListener('click', nextClick);
   $('saveBannerBtn').addEventListener('click', openSettings);
   window.addEventListener('online', () => refresh(true));
 }
-function closeNav() { $('sidebar').classList.remove('open'); $('navToggle').setAttribute('aria-expanded', 'false'); $('scrim').hidden = true; }
 
 /* ---------- start ---------- */
+const DATA_V = '2';      // bump when data/economics.json is rebuilt, so browsers fetch the new copy
 async function start() {
+  if (!$('view') || !$('navTree')) {
+    // This script arrived before the page that goes with it (an old copy of index.html is cached).
+    let tried = false;
+    try { tried = !!sessionStorage.getItem('pa-reloaded'); sessionStorage.setItem('pa-reloaded', '1'); } catch { /* ignore */ }
+    if (!tried) location.reload();
+    return;
+  }
   bind();
   loadCache();
-  const cat = await fetchStatic('data/catalog.json', { papers: [] }, false);
-  S.catalog = cat.papers || [];
-  S.guides = (await fetchStatic('data/learn.json', { guides: {} })).guides || {};
-  S.plan = await fetchStatic('data/plan.json', null);
-  S.summaries = (await fetchStatic('data/summaries.json', { s: {} })).s || {};
-  S.downloads = (await fetchStatic('data/downloads.json', { lists: {} })).lists || {};
+  const [cat, eco, learn, plan, sums, dls, cites] = await Promise.all([
+    fetchStatic('data/catalog.json', { papers: [] }, false),
+    fetchStatic(`data/economics.json?v=${DATA_V}`, { topics: [] }, false),
+    fetchStatic('data/learn.json', { guides: {} }),
+    fetchStatic('data/plan.json', null),
+    fetchStatic('data/summaries.json', { s: {} }),
+    fetchStatic('data/downloads.json', { lists: {} }),
+    fetchStatic('data/citations.json', { c: {} }, false),
+  ]);
+  const base = cat.papers || [];
+  const counts = cites.c || {};
+  base.forEach((p, i) => { p.o = i; if (counts[p.id]) p.c = counts[p.id]; });
+  const known = new Set(base.map((p) => p.id));
+  const extra = unpackCatalog(eco, 1e5);
+  S.catalog = base.concat(extra.papers.filter((p) => !known.has(p.id)));
+  S.added = S.catalog.length - base.length;
+  S.xrefs = extra.xrefs;
+  S.meta = { groups: eco.groups || [], areas: eco.areas || [] };
+  S.guides = learn.guides || {};
+  S.plan = plan;
+  S.summaries = sums.s || {};
+  S.downloads = dls.lists || {};
   rebuild();
+  const V = S.view, fromHash = readHash();
+  if (fromHash && 'q' in fromHash) $('search').value = fromHash.q;
+  else if (fromHash) Object.assign(V, fromHash);
+  else if (!store.get(SEEN_KEY)) V.mode = 'home';          // show the overview once after the expansion
+  if (!['home', 'next', 'list'].includes(V.mode)) V.mode = 'home';
+  if (V.field && !fieldTree().has(V.field)) Object.assign(V, { field: null, area: null, topic: null });
   // Views saved before areas existed: work out the area from the topic.
-  if (S.view.topic && S.view.area == null) {
-    const hit = S.papers.find((p) => p.f === S.view.field && p.tp === S.view.topic);
-    S.view.area = hit ? hit.ar || '' : null;
+  if (V.topic && V.area == null) {
+    const hit = S.rows.find((r) => r.f === V.field && r.tp === V.topic);
+    V.area = hit ? hit.ar : null;
   }
+  S.ready = true;
+  if (!query()) history.replaceState(null, '', viewHash(V));
   render();
   await refresh(true);
 }
