@@ -18,6 +18,7 @@ const CFG_KEY = 'pa-config-v1';
 const CACHE_KEY = 'pa-cache-v1';
 const VIEW_KEY = 'pa-view-v1';
 const SEEN_KEY = 'pa-seen-v2';
+const SEEN_LM_KEY = 'pa-seen-v3';   // the note about the hand-picked landmarks
 const PAGE = 120;
 
 const $ = (id) => document.getElementById(id);
@@ -49,7 +50,7 @@ const S = {
   summaries: {},
   downloads: {},
   plan: null,
-  view: Object.assign({ mode: 'next', path: 'plan', field: null, area: null, topic: null, status: 'any', stars: '0', sort: 'order', pdf: false, nscope: '' }, store.get(VIEW_KEY) || {}),
+  view: Object.assign({ mode: 'next', path: 'plan', field: null, area: null, topic: null, status: 'any', stars: '0', sort: 'order', pdf: false, book: false, nscope: '' }, store.get(VIEW_KEY) || {}),
   shown: PAGE,
   papers: [], rows: [], byId: new Map(), hay: new Map(),
   ready: false, added: 0,
@@ -167,6 +168,7 @@ async function pull() {
 }
 // The second catalog stores each topic once and its papers as short rows; unpack it into the
 // same shape as catalog.json. A bare id in a topic is an extra listing of an existing paper.
+// A row may end with a one-line note and a kind ("book", "report" or "talk"): the hand-picked landmarks.
 function unpackCatalog(extra, start) {
   const papers = [], xrefs = [];
   let o = start;
@@ -174,10 +176,11 @@ function unpackCatalog(extra, start) {
     for (const e of t.p) {
       o++;
       if (typeof e === 'string') { xrefs.push({ id: e, f: t.f, ar: t.ar || '', tp: t.tp, o }); continue; }
-      const [id, title, a, y, v, link, c, s, pdf] = e;
-      const p = { id, t: title, a, y, v, n: '', s: s || 0, vf: false, f: t.f, ar: t.ar || '', tp: t.tp, st: '', c: c || 0, o };
+      const [id, title, a, y, v, link, c, s, pdf, n, k] = e;
+      const p = { id, t: title, a, y, v, n: n || '', s: s || 0, vf: false, f: t.f, ar: t.ar || '', tp: t.tp, st: '', c: c || 0, o };
       if (link) p.link = /^https?:/i.test(link) ? link : `https://doi.org/${link}`;
       if (pdf) p.pdf = pdf;
+      if (k) p.k = k;
       papers.push(p);
     }
   }
@@ -349,7 +352,7 @@ function readHash() {
 }
 function saveView() {
   const v = S.view;
-  store.set(VIEW_KEY, { mode: v.mode, path: v.path, field: v.field, area: v.area, topic: v.topic, status: v.status, stars: v.stars, sort: v.sort, pdf: v.pdf, nscope: v.nscope });
+  store.set(VIEW_KEY, { mode: v.mode, path: v.path, field: v.field, area: v.area, topic: v.topic, status: v.status, stars: v.stars, sort: v.sort, pdf: v.pdf, book: v.book, nscope: v.nscope });
 }
 // Go somewhere: update the view, the address bar (so Back works) and the page.
 function go(patch, replace) {
@@ -398,6 +401,7 @@ function passFilters(r) {
   if (st[0] === '+' && !g[st.slice(1)]) return false;
   if (S.view.stars !== '0' && (r.p.s || 0) !== +S.view.stars) return false;  // exact star level
   if (S.view.pdf && !r.p.pdf) return false;
+  if (S.view.book && r.p.k !== 'book') return false;
   return true;
 }
 function sorted(list) {
@@ -434,8 +438,10 @@ const LEARN_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 9 1
 const SUM_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8M8 18h5"/></svg>';
 
 const scholar = (p) => `https://scholar.google.com/scholar?q=${enc(`${p.t} ${(p.a || '').split(',')[0]}`)}`;
-function linkLabel(u) {
-  try { const h = new URL(u).hostname.replace(/^www\./, ''); return h === 'doi.org' ? 'Open paper' : h; } catch { return 'Open paper'; }
+// "Open paper", or for a book the publisher's page for it.
+const openWord = (p) => (p.k === 'book' ? 'Publisher’s page' : p.k ? 'Open' : 'Open paper');
+function linkLabel(u, p) {
+  try { const h = new URL(u).hostname.replace(/^www\./, ''); return h === 'doi.org' ? openWord(p || {}) : h; } catch { return openWord(p || {}); }
 }
 function shortAuthors(a) {
   if (!a) return '';
@@ -443,6 +449,7 @@ function shortAuthors(a) {
   const n = a.split(/\.,|&/).filter((x) => x.trim()).length;
   return first + (/et al/.test(a) || n > 2 ? ' et al.' : n === 2 ? ' & ' + a.split('&').pop().split(',')[0].trim() : '');
 }
+const KINDS = { book: 'Book', report: 'Report', talk: 'Speech' };
 const journal = (v) => { const m = /\*([^*]+)\*/.exec(v || ''); return m ? m[1] : ''; };
 function learnBtn(p, bare) {
   const g = S.guides[p.id];
@@ -491,18 +498,18 @@ function paperRow(r, opt) {
   const meta = [
     p.a ? `<span class="au">${mark(shortAuthors(p.a), opt.words)}</span>` : '',
     p.y ? `<span>${esc(p.y)}</span>` : '',
-    j ? `<span><i>${mark(j, opt.words)}</i></span>` : '',
+    j ? `<span><i>${mark(j, opt.words)}</i></span>` : p.k ? `<span class="kind">${KINDS[p.k] || 'Report'}</span>` : '',
     p.s ? `<span class="s" title="${p.s === 2 ? 'Must-read' : 'Influential'}">${'★'.repeat(p.s)}</span>` : '',
   ].filter(Boolean).join('<span class="sep" aria-hidden="true">·</span>');
   const where = opt.where ? `<button type="button" class="where" data-gof="${esc(r.f)}" data-goa="${esc(r.ar)}" data-got="${esc(r.tp)}">${esc(r.ar ? `${r.ar} › ${r.tp}` : r.tp)}</button>` : '';
-  const links = `<a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? linkLabel(p.link) : 'Search Scholar'} ↗</a>`
+  const links = `<a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? linkLabel(p.link, p) : 'Search Scholar'} ↗</a>`
     + (p.pdf ? `<a class="plink pdf" href="${esc(p.pdf)}" target="_blank" rel="noopener" title="A free-to-read copy found by OpenAlex: an author’s page, a repository or an open-access journal">Free copy ↗</a>` : '')
     + (p.research ? `<a class="plink res" href="${esc(p.research)}" target="_blank" rel="noopener" title="Your research on this paper">Research ↗</a>` : '')
     + (p.c ? `<span class="cites" title="Citations counted by OpenAlex">cited ${fmt(p.c)}×</span>` : '');
   const notes = (p.n ? `<div class="pnote" title="${esc(p.n.replace(/\*/g, ''))}">${md(p.n)}</div>` : '')
     + (p.notes ? `<div class="pnote mine" title="${esc(p.notes)}"><b>Your notes:</b> ${esc(p.notes)}</div>` : '');
   return `<article class="paper${isDone(p.id) ? ' done' : ''}" data-id="${esc(p.id)}">
-    <div class="pmain"><a class="ptitle" href="${esc(link)}" target="_blank" rel="noopener" title="${p.link ? 'Open paper' : 'Search Google Scholar'}">${mark(p.t, opt.words)}</a>
+    <div class="pmain"><a class="ptitle" href="${esc(link)}" target="_blank" rel="noopener" title="${p.link ? openWord(p) : 'Search Google Scholar'}">${mark(p.t, opt.words)}</a>
     <div class="pmeta">${meta}</div>${notes}<div class="pmeta">${where}${links}</div></div>
     <div class="btns">${btns}${sumBtn(p)}${learnBtn(p, true)}</div>
     <button type="button" class="more-btn" data-edit="1" aria-label="Details and edit" title="Details and edit">${MORE_ICON}</button></article>`;
@@ -656,7 +663,11 @@ function renderHome() {
   for (const F of tree.values()) for (const [ar, A] of F.areas) { if (ar && A.n) areas++; topics += [...A.topics.values()].filter((c) => c.n).length; }
   const c = stepCounts(all), days = activity();
   const { order, i, total, doneCount } = nextInfo();
-  const news = store.get(SEEN_KEY) ? '' : `<div class="news"><span><b>New:</b> the archive now covers all of economics. ${fmt(S.added)} papers were added in ${Math.max(0, S.meta.areas.length - 1)} new areas, and your earlier papers and ticks are untouched.</span><button type="button" class="pill dark" data-seen="1">Got it</button></div>`;
+  const news = !store.get(SEEN_KEY)
+    ? `<div class="news"><span><b>New:</b> the archive now covers all of economics. ${fmt(S.added)} papers and books were added in ${Math.max(0, S.meta.areas.length - 1)} new areas, and your earlier papers and ticks are untouched.</span><button type="button" class="pill dark" data-seen="1">Got it</button></div>`
+    : !store.get(SEEN_LM_KEY) && S.landmarks
+      ? `<div class="news"><span><b>New:</b> ${fmt(S.landmarks)} landmark books and classic papers were added by hand, each with a line on what it contributed. In any list, the <b>Books</b> filter shows just the books.</span><button type="button" class="pill dark" data-seen="1">Got it</button></div>`
+      : '';
   let cont = '<p class="blurb">Every paper on this path has all four steps ticked.</p>';
   if (i >= 0) {
     const p = S.byId.get(order[i].id), { next } = stepState(p.id), nk = STATUSES[next];
@@ -700,14 +711,15 @@ function renderList() {
   if (!q && f && !ar && !tp) h += fieldSections(f) + (scope.length ? `<div class="sechead plain sec"><h2>All papers in ${esc(f)}</h2></div>` : '');
   if (!q && A && !tp && A.topics.size) h += `<div class="tgrid">${[...A.topics].map(([t, c]) => topicCard(f, ar, t, c)).join('')}</div><div class="sechead plain sec"><h2>Papers</h2></div>`;
   const chip = (val, label) => `<button type="button" class="chip" data-filter="${val}" aria-pressed="${V.status === val}">${label}</button>`;
-  const hasPdf = scope.some((r) => r.p.pdf);
+  const hasPdf = scope.some((r) => r.p.pdf), hasBook = scope.some((r) => r.p.k === 'book');
   const opt = (val, label) => `<option value="${val}"${V.sort === val ? ' selected' : ''}>${label}</option>`;
   if (scope.length) h += `<div class="chips" role="group" aria-label="Filter papers">
       ${chip('any', 'All')}${chip('untouched', 'Not started')}${chip('progress', 'In progress')}${chip('complete', 'Done')}
       <span class="chipsep" aria-hidden="true"></span>
       <button type="button" class="chip star" data-stars="2" aria-pressed="${V.stars === '2'}">★★ Must-reads</button>
       <button type="button" class="chip star" data-stars="1" aria-pressed="${V.stars === '1'}">★ Influential</button>
-      ${hasPdf ? `<button type="button" class="chip" data-pdfchip="1" aria-pressed="${!!V.pdf}">Free copy</button>` : ''}
+      ${hasBook || V.book ? `<button type="button" class="chip" data-bookchip="1" aria-pressed="${!!V.book}">Books</button>` : ''}
+      ${hasPdf || V.pdf ? `<button type="button" class="chip" data-pdfchip="1" aria-pressed="${!!V.pdf}">Free copy</button>` : ''}
       <label class="sortwrap">Sort <select id="fSort" aria-label="Sort papers">${opt('order', q ? 'Best match' : 'List order')}${opt('cited', 'Most cited')}${opt('new', 'Newest')}${opt('old', 'Oldest')}${opt('author', 'Author')}${opt('recent', 'Recently ticked')}</select></label>
     </div>
     <div class="legend" aria-hidden="true"><span><b class="s">★★</b> must-read</span><span><b class="s">★</b> influential</span><span class="gap"></span>${STATUSES.map(([s, l]) => `<span><i style="background:var(--${s})"></i>${l}</span>`).join('')}<span><b>${fmt(list.length)}</b>&nbsp;paper${list.length === 1 ? '' : 's'}</span></div>`;
@@ -864,7 +876,7 @@ function renderNext() {
       <div class="now-top"><span class="nowtag">#${i + 1}${depth ? ' · ' + esc(depth.split(' · ')[0]) : ''}${scopeOn || !planOn ? ` · ${esc(p.tp)}` : ''}</span>${p.s ? `<span class="s">${'★'.repeat(p.s)}</span>` : ''}</div>
       <a class="nowtitle" href="${esc(link)}" target="_blank" rel="noopener">${esc(p.t)}</a>
       <div class="nowmeta">${esc(p.a || '')}${p.y ? ' · ' + esc(p.y) : ''}${p.v ? ' · ' + md(p.v) : ''}</div>
-      <div class="nowlinks"><a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? 'Open paper' : 'Search Scholar'} ↗</a>${p.pdf ? `<a class="plink pdf" href="${esc(p.pdf)}" target="_blank" rel="noopener">Free copy ↗</a>` : ''}${sumBtn(p)}${learnBtn(p)}</div>
+      <div class="nowlinks"><a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? openWord(p) : 'Search Scholar'} ↗</a>${p.pdf ? `<a class="plink pdf" href="${esc(p.pdf)}" target="_blank" rel="noopener">Free copy ↗</a>` : ''}${sumBtn(p)}${learnBtn(p)}</div>
       <ol class="steps">${steps}</ol>
       ${doIt}
       ${phaseEnd && phase ? `<div class="phasetask"><b>End of phase ${cur.ph}.</b> Before moving on: ${esc(phase.task)}</div>` : ''}
@@ -1168,7 +1180,7 @@ function viewClick(e) {
   const el = e.target.closest('button');
   if (!el || !$('view').contains(el)) return;
   const d = el.dataset, row = el.closest('[data-id]');
-  if (d.seen) { store.set(SEEN_KEY, 1); render(); return; }
+  if (d.seen) { store.set(SEEN_KEY, 1); store.set(SEEN_LM_KEY, 1); render(); return; }
   if (d.home) return go({ mode: 'home' });
   if (d.next) return go({ mode: 'next' });
   if (d.more) { S.shown += PAGE; render(); return; }
@@ -1176,6 +1188,7 @@ function viewClick(e) {
   if (d.filter) { S.view.status = d.filter; return refilter(); }
   if (d.stars) { S.view.stars = S.view.stars === d.stars ? '0' : d.stars; return refilter(); }
   if (d.pdfchip) { S.view.pdf = !S.view.pdf; return refilter(); }
+  if (d.bookchip) { S.view.book = !S.view.book; return refilter(); }
   if (d.path) {
     S.view.path = d.path;
     if (d.path === 'scope' && !scopeParts().f) S.view.nscope = defaultScope();
@@ -1281,7 +1294,7 @@ function bind() {
 }
 
 /* ---------- start ---------- */
-const DATA_V = '2';      // bump when data/economics.json is rebuilt, so browsers fetch the new copy
+const DATA_V = '3';      // bump when data/economics.json is rebuilt, so browsers fetch the new copy
 async function start() {
   if (!$('view') || !$('navTree')) {
     // This script arrived before the page that goes with it (an old copy of index.html is cached).
@@ -1303,11 +1316,13 @@ async function start() {
   ]);
   const base = cat.papers || [];
   const counts = cites.c || {};
-  base.forEach((p, i) => { p.o = i; if (counts[p.id]) p.c = counts[p.id]; });
+  const landmarkNotes = eco.notes || {};   // one-line notes for landmarks that live in catalog.json
+  base.forEach((p, i) => { p.o = i; if (counts[p.id]) p.c = counts[p.id]; if (!p.n && landmarkNotes[p.id]) p.n = landmarkNotes[p.id]; });
   const known = new Set(base.map((p) => p.id));
   const extra = unpackCatalog(eco, 1e5);
   S.catalog = base.concat(extra.papers.filter((p) => !known.has(p.id)));
   S.added = S.catalog.length - base.length;
+  S.landmarks = extra.papers.filter((p) => p.n).length + Object.keys(landmarkNotes).length;
   S.xrefs = extra.xrefs;
   S.meta = { groups: eco.groups || [], areas: eco.areas || [] };
   S.guides = learn.guides || {};
