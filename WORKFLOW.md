@@ -55,3 +55,5 @@ python3 validate.py                 # every quote must be on the page it cites
 
 `python3 tools/pipeline/make_download_list.py "<topic>"` builds a download checklist page for any topic,
 and every pipeline script takes the topic name as its first argument.
+This covers every topic on the site: the 22 monopoly topics in `data/catalog.json` and the 204 topics in
+`data/economics.json` (the rest of economics, and econophysics). Topic names are unique across the archive.
