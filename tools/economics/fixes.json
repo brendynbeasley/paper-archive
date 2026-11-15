@@ -2,6 +2,10 @@
  "W135250288": {
   "tp": "Population, family & gender > Aging, retirement & family transfers"
  },
+ "W1484159650": {
+  "t": "Stock Returns, Real Activity, Inflation, and Money",
+  "tp": "Asset pricing & financial markets > Market efficiency, anomalies & return predictability"
+ },
  "W1492662576": {
   "y": "1994"
  },
@@ -9,6 +13,15 @@
   "a": "Greenwood, M. J.",
   "tp": "Labor economics > Immigration & migration",
   "y": "1975"
+ },
+ "W1500482563": {
+  "tp": "History of economic thought & methodology > Methodology & philosophy of economics"
+ },
+ "W1501851725": {
+  "t": "From Mises to Shackle: An Essay on Austrian Economics and the Kaleidic Society"
+ },
+ "W1509528532": {
+  "tp": "Game theory & market design > Contests, tournaments & conflict"
  },
  "W1514296636": {
   "tp": "Economic growth & productivity > Financial development & growth"
@@ -19,6 +32,20 @@
  "W1515337969": {
   "a": "Burgess, R., Jedwab, R., Miguel, E. A., Morjaria, A., & Padró i Miquel, G."
  },
+ "W1515423266": {
+  "tp": "Political economy & institutions > Economic systems, transition & reform"
+ },
+ "W1515997910": {
+  "a": "Eichner, A. S., & Kregel, J. A.",
+  "t": "An Essay on Post-Keynesian Theory: A New Paradigm in Economics"
+ },
+ "W1526528820": {
+  "tp": "Econometrics & quantitative methods > Discrete choice, selection & structural models",
+  "y": "2001"
+ },
+ "W1535770433": {
+  "tp": "Labor economics > Human capital & the returns to schooling"
+ },
  "W1536235390": {
   "t": "Optimal Taxation and Public Production I: Production Efficiency",
   "tp": "Public economics > Optimal taxation & tax design",
@@ -27,17 +54,51 @@
  "W1537056716": {
   "y": "1984"
  },
+ "W1538415063": {
+  "tp": "Monetary economics & central banking > Monetary transmission & policy shocks"
+ },
  "W1547358889": {
   "v": "*Journal of Economic Literature* 25(2): 699–738.",
   "y": "1987"
  },
+ "W1548368641": {
+  "t": "Health, Nutrition, and Economic Development",
+  "tp": "Development economics > Health, nutrition & schooling in poor countries"
+ },
+ "W1549822893": {
+  "tp": "Development economics > Informality, firms & labor in poor countries"
+ },
+ "W1550902027": {
+  "tp": "Culture, media & society > Culture, trust & social capital"
+ },
+ "W1553548925": {
+  "tp": "Economic history > Living standards, demography & inequality in history"
+ },
+ "W1561324832": {
+  "a": "Hall, R. E., & Jorgenson, D. W."
+ },
+ "W1561513404": {
+  "tp": "Asset pricing & financial markets > Market efficiency, anomalies & return predictability"
+ },
+ "W1563430010": {
+  "tp": "Environmental, energy & resource economics > Energy economics & oil markets"
+ },
  "W1572874895": {
   "tp": "Labor economics > Immigration & migration"
+ },
+ "W1574662445": {
+  "tp": "Behavioral & experimental economics > Social preferences, fairness & cooperation"
+ },
+ "W1578703982": {
+  "tp": "History of economic thought & methodology > Keynes, macroeconomic thought & monetary debates"
  },
  "W1579116188": {
   "a": "Heiner, R. A.",
   "link": "",
   "v": "*American Economic Review* 73(4): 560–595."
+ },
+ "W1582571306": {
+  "tp": "Econometrics & quantitative methods > Estimation & inference theory"
  },
  "W1586335931": {
   "t": "Forecasting with artificial neural networks: The state of the art"
@@ -48,8 +109,21 @@
  "W1590481350": {
   "t": "The Not-For-Profit Hospital as a Physicians' Cooperative"
  },
+ "W1597980305": {
+  "tp": "Culture, media & society > Culture, trust & social capital"
+ },
+ "W1598097039": {
+  "a": "Ranis, G., & Fei, J. C. H.",
+  "t": "A Theory of Economic Development"
+ },
+ "W1598401034": {
+  "tp": "History of economic thought & methodology > Methodology & philosophy of economics"
+ },
  "W1598457958": {
   "t": "Innovation in cities: Science-based diversity, specialization and localized competition"
+ },
+ "W1600936475": {
+  "tp": "Economic growth & productivity > Neoclassical growth & convergence"
  },
  "W1601136252": {
   "y": "1992"
@@ -57,8 +131,24 @@
  "W1603936847": {
   "y": "1971"
  },
+ "W1606756137": {
+  "tp": "Labor economics > Wage structure & inequality"
+ },
+ "W1608267444": {
+  "tp": "Labor economics > Human capital & the returns to schooling",
+  "y": "1975"
+ },
  "W1665138673": {
   "a": "Thomas, D."
+ },
+ "W1671065816": {
+  "tp": "Asset pricing & financial markets > Consumption-based asset pricing & the equity premium"
+ },
+ "W167159579": {
+  "t": "The Role of Agriculture in Economic Development"
+ },
+ "W1765051938": {
+  "tp": "Asset pricing & financial markets > Market microstructure & liquidity"
  },
  "W1781347434": {
   "a": "Harris, J. R., & Todaro, M. P.",
@@ -67,17 +157,32 @@
  "W1788744250": {
   "a": "Gopikrishnan, P., Meyer, M. S., Amaral, L. A. N., & Stanley, H. E."
  },
+ "W1805699599": {
+  "tp": "Monetary economics & central banking > Monetary transmission & policy shocks"
+ },
+ "W1900002979": {
+  "tp": "Microeconomic theory > Asymmetric information, signaling & screening"
+ },
  "W1905678139": {
   "y": "2018"
  },
+ "W1914485124": {
+  "tp": "Development economics > Development strategy & growth in poor countries"
+ },
  "W1930224448": {
   "t": "School Vouchers and Student Outcomes: Experimental Evidence from Washington, DC"
+ },
+ "W1933529014": {
+  "t": "Agency Costs, Net Worth, and Business Fluctuations"
  },
  "W1944585346": {
   "tp": "Public economics > Tax evasion, avoidance & enforcement"
  },
  "W1960343571": {
   "t": "The Maddison Project: collaborative research on historical national accounts"
+ },
+ "W1965753518": {
+  "tp": "International trade > Gravity, trade costs & trade flows"
  },
  "W1966041856": {
   "tp": "Macroeconomics > Consumption & saving"
@@ -94,6 +199,12 @@
  "W1967454769": {
   "tp": "Development economics > Risk, insurance & vulnerability"
  },
+ "W1968050863": {
+  "tp": "Public economics > Public goods, externalities & cost–benefit analysis"
+ },
+ "W1968869144": {
+  "tp": "Political economy & institutions > Public choice, rent-seeking & interest groups"
+ },
  "W1970144470": {
   "tp": "Corporate finance & governance > Capital structure & financing decisions"
  },
@@ -104,6 +215,9 @@
   "a": "Eggertsson, G. B., & Woodford, M.",
   "t": "The Zero Bound on Interest Rates and Optimal Monetary Policy",
   "tp": "Monetary economics & central banking > Zero lower bound & unconventional policy"
+ },
+ "W1975395389": {
+  "tp": "Econometrics & quantitative methods > Time series: unit roots, cointegration & VARs"
  },
  "W1976429703": {
   "tp": "Behavioral & experimental economics > Social preferences, fairness & cooperation"
@@ -117,8 +231,17 @@
  "W1978050391": {
   "y": "2008"
  },
+ "W1978180733": {
+  "tp": "Game theory & market design > Mechanism design & implementation"
+ },
  "W1979132028": {
   "y": "1991"
+ },
+ "W1979427225": {
+  "tp": "Economic growth & productivity > Productivity, misallocation & firm dynamics"
+ },
+ "W1979954303": {
+  "tp": "Econometrics & quantitative methods > Measurement, index numbers & data"
  },
  "W1980354286": {
   "tp": "Environmental, energy & resource economics > Energy economics & oil markets"
@@ -128,6 +251,12 @@
  },
  "W1984539215": {
   "tp": "Population, family & gender > Aging, retirement & family transfers"
+ },
+ "W1984618475": {
+  "tp": "Microeconomic theory > Production, costs & duality"
+ },
+ "W1985364799": {
+  "tp": "Microeconomic theory > Consumer choice & demand"
  },
  "W1989864366": {
   "tp": "Economic growth & productivity > Neoclassical growth & convergence"
@@ -147,6 +276,12 @@
  "W1996760592": {
   "tp": "Development economics > Governance & public service delivery"
  },
+ "W1998095887": {
+  "tp": "Labor economics > Job search, unemployment & unemployment insurance"
+ },
+ "W2001709588": {
+  "tp": "Innovation, technology & the digital economy > R&D, patents & the economics of innovation"
+ },
  "W2002408352": {
   "tp": "International trade > Multinationals, FDI & global value chains"
  },
@@ -159,6 +294,12 @@
  "W2005161470": {
   "a": "Etzkowitz, H., Webster, A., Gebhardt, C., & Terra, B. R. C."
  },
+ "W2005194216": {
+  "tp": "Microeconomic theory > Asymmetric information, signaling & screening"
+ },
+ "W2005930083": {
+  "tp": "Microeconomic theory > Welfare economics & social choice"
+ },
  "W2013963437": {
   "a": "Barro, R. J., & Sala-i-Martín, X."
  },
@@ -168,11 +309,17 @@
  "W2014738872": {
   "tp": "Inequality, poverty & mobility > Poverty: measurement & dynamics"
  },
+ "W2014954487": {
+  "tp": "History of economic thought & methodology > Marginalism & the neoclassical tradition"
+ },
  "W2015007620": {
   "tp": "Game theory & market design > Auctions"
  },
  "W2018504450": {
   "t": "Alfred Marshall Lecture: Social Capital as Good Culture"
+ },
+ "W2018579465": {
+  "tp": "Inequality, poverty & mobility > Income & wealth inequality"
  },
  "W2019459021": {
   "tp": "Econometrics & quantitative methods > Time series: unit roots, cointegration & VARs"
@@ -183,6 +330,12 @@
  "W2023063828": {
   "tp": "Labor economics > Labor supply, taxes & hours"
  },
+ "W2023235317": {
+  "tp": "Economic growth & productivity > Endogenous growth, ideas & technology"
+ },
+ "W2024045908": {
+  "tp": "Firms, organizations & entrepreneurship > Theory of the firm & transaction costs"
+ },
  "W2024216388": {
   "tp": "Law & economics > Property rights & the Coase theorem"
  },
@@ -191,6 +344,9 @@
  },
  "W2026217839": {
   "tp": "International trade > Multinationals, FDI & global value chains"
+ },
+ "W2026537342": {
+  "tp": "Political economy & institutions > Conflict, war & state capacity"
  },
  "W2027382631": {
   "tp": "Econometrics & quantitative methods > Panel data & spatial econometrics"
@@ -203,6 +359,12 @@
  },
  "W2028532700": {
   "tp": "Health economics > Economic evaluation & the value of health"
+ },
+ "W2029764184": {
+  "tp": "Behavioral & experimental economics > Social preferences, fairness & cooperation"
+ },
+ "W2031509845": {
+  "tp": "International trade > Comparative advantage & classical trade theory"
  },
  "W2031849821": {
   "t": "Colloquium: Statistical mechanics of money, wealth, and income"
@@ -225,11 +387,26 @@
  "W2037164372": {
   "y": "2001"
  },
+ "W2038106030": {
+  "tp": "Labor economics > Human capital & the returns to schooling"
+ },
+ "W2038295726": {
+  "tp": "Econometrics & quantitative methods > Volatility & financial econometrics"
+ },
+ "W2038625161": {
+  "tp": "Microeconomic theory > Risk, uncertainty & decision theory"
+ },
  "W2039326439": {
   "tp": "History of economic thought & methodology > Keynes, macroeconomic thought & monetary debates"
  },
  "W2039734130": {
   "y": "2012"
+ },
+ "W2040656473": {
+  "tp": "Firms, organizations & entrepreneurship > Theory of the firm & transaction costs"
+ },
+ "W2040760444": {
+  "tp": "Behavioral & experimental economics > Experiments on markets & games"
  },
  "W2040826293": {
   "y": "1983"
@@ -237,18 +414,33 @@
  "W2042005398": {
   "t": "“Bargaining” and Gender Relations: Within and Beyond the Household"
  },
+ "W2042611711": {
+  "tp": "Econometrics & quantitative methods > Estimation & inference theory"
+ },
  "W2043146257": {
   "a": "Stanley, H. E., Afanasyev, V., Amaral, L. A. N., et al."
  },
  "W2043332151": {
   "t": "Value-based Business Strategy"
  },
+ "W2044944116": {
+  "tp": "Behavioral & experimental economics > Heuristics, biases & bounded rationality"
+ },
  "W2046357557": {
   "v": "*Journal of Business & Economic Statistics* 12(4): 371–389.",
   "y": "1994"
  },
+ "W2046604788": {
+  "tp": "Environmental, energy & resource economics > Sustainability & ecological economics"
+ },
  "W2047560619": {
   "tp": "Macroeconomics > Fiscal policy & government debt"
+ },
+ "W2048849456": {
+  "tp": "International trade > Multinationals, FDI & global value chains"
+ },
+ "W2052357007": {
+  "tp": "Econometrics & quantitative methods > Estimation & inference theory"
  },
  "W2052419127": {
   "tp": "Innovation, technology & the digital economy > Digital economy, information goods & AI"
@@ -256,9 +448,18 @@
  "W2053814546": {
   "tp": "Macroeconomics > Fiscal policy & government debt"
  },
+ "W2053966798": {
+  "tp": "Econometrics & quantitative methods > Causal inference & program evaluation"
+ },
  "W2054342105": {
   "v": "*Journal of Political Economy* 71(5): 421–440.",
   "y": "1963"
+ },
+ "W2054513190": {
+  "t": "The Effectiveness of Government Spending on Education and Health Care in Developing and Transition Economies"
+ },
+ "W2055836625": {
+  "tp": "Public economics > Public goods, externalities & cost–benefit analysis"
  },
  "W2056846968": {
   "tp": "Urban, regional & spatial economics > Agglomeration & economic geography"
@@ -272,11 +473,20 @@
  "W2057675067": {
   "y": "1991"
  },
+ "W2059191774": {
+  "tp": "Game theory & market design > Equilibrium concepts & foundations"
+ },
+ "W2060027873": {
+  "tp": "Political economy & institutions > Voting, elections & political competition"
+ },
  "W2063593194": {
   "tp": "Econometrics & quantitative methods > Volatility & financial econometrics"
  },
  "W2064061280": {
   "tp": "Economic growth & productivity > Neoclassical growth & convergence"
+ },
+ "W2065699488": {
+  "tp": "Environmental, energy & resource economics > Valuing the environment"
  },
  "W2067782665": {
   "y": "2012"
@@ -289,6 +499,9 @@
  },
  "W2071249181": {
   "tp": "International trade > Multinationals, FDI & global value chains"
+ },
+ "W2072480436": {
+  "tp": "Political economy & institutions > Economic systems, transition & reform"
  },
  "W2073773768": {
   "t": "Why is economics not an evolutionary science?",
@@ -303,8 +516,20 @@
   "tp": "International trade > Multinationals, FDI & global value chains",
   "y": "2014"
  },
+ "W2078234023": {
+  "tp": "Game theory & market design > Auctions"
+ },
+ "W2078262739": {
+  "tp": "Econometrics & quantitative methods > Time series: unit roots, cointegration & VARs"
+ },
  "W2080260572": {
   "tp": "Agricultural & food economics > Rural land, conservation & the farm environment"
+ },
+ "W2080375052": {
+  "tp": "Econometrics & quantitative methods > Estimation & inference theory"
+ },
+ "W2080450677": {
+  "tp": "Asset pricing & financial markets > Market efficiency, anomalies & return predictability"
  },
  "W2081553388": {
   "tp": "Political economy & institutions > Voting, elections & political competition"
@@ -321,14 +546,23 @@
  "W2085752922": {
   "a": "Calmfors, L., & Driffill, J."
  },
+ "W2085925457": {
+  "tp": "Econometrics & quantitative methods > Estimation & inference theory"
+ },
  "W2086888884": {
   "tp": "Microeconomic theory > Asymmetric information, signaling & screening"
  },
  "W2087133333": {
   "a": "Song, Y., & Knaap, G.-J."
  },
+ "W2087726820": {
+  "tp": "Econometrics & quantitative methods > Time series: unit roots, cointegration & VARs"
+ },
  "W2088510049": {
   "a": "Podobnik, B., Jiang, Z.-Q., Zhou, W.-X., & Stanley, H. E."
+ },
+ "W2089369595": {
+  "tp": "Environmental, energy & resource economics > Valuing the environment"
  },
  "W2089409887": {
   "a": "Podobnik, B., & Stanley, H. E."
@@ -340,11 +574,23 @@
   "tp": "Health economics > Health, human capital & socioeconomic status",
   "y": "2004"
  },
+ "W2091732022": {
+  "tp": "International trade > Comparative advantage & classical trade theory"
+ },
+ "W2094765387": {
+  "tp": "Firms, organizations & entrepreneurship > Entrepreneurship & small business"
+ },
+ "W2095683117": {
+  "tp": "Monetary economics & central banking > Inflation & the Phillips curve"
+ },
  "W2095824465": {
   "a": "Stanley, H. E., Amaral, L. A. N., Gopikrishnan, P., & Plerou, V."
  },
  "W2096037123": {
   "y": "2001"
+ },
+ "W2096416445": {
+  "a": "Grossman, S. J., & Stiglitz, J. E."
  },
  "W2097119464": {
   "tp": "Macroeconomics > Expectations, information & uncertainty"
@@ -364,6 +610,9 @@
  "W2100360956": {
   "a": "Lee, Y., Amaral, L. A. N., Canning, D., Meyer, M. S., & Stanley, H. E."
  },
+ "W2100534062": {
+  "tp": "Behavioral & experimental economics > Experiments on markets & games"
+ },
  "W2101618658": {
   "a": "Preis, T., Moat, H. S., & Stanley, H. E."
  },
@@ -382,6 +631,9 @@
  "W2103679355": {
   "y": "1997"
  },
+ "W2103685628": {
+  "tp": "Environmental, energy & resource economics > Environmental policy instruments"
+ },
  "W2106580408": {
   "tp": "Microeconomic theory > Contracts, moral hazard & incentives"
  },
@@ -395,6 +647,9 @@
  "W2108547887": {
   "tp": "Urban, regional & spatial economics > Regional growth & convergence"
  },
+ "W2108561834": {
+  "tp": "Behavioral & experimental economics > Field experiments & behavior in the wild"
+ },
  "W2109286696": {
   "tp": "Development economics > Agriculture, land & rural households"
  },
@@ -404,6 +659,9 @@
  },
  "W2110537446": {
   "a": "Beck, T., Clarke, G., Groff, A., Keefer, P., & Walsh, P."
+ },
+ "W2110787586": {
+  "tp": "Econometrics & quantitative methods > Estimation & inference theory"
  },
  "W2111295978": {
   "t": "Efficient Contract Design for Agri-Environment Policy"
@@ -426,6 +684,9 @@
  "W2113704261": {
   "y": "2004"
  },
+ "W2115155348": {
+  "tp": "Econometrics & quantitative methods > Panel data & spatial econometrics"
+ },
  "W2115657206": {
   "y": "2011"
  },
@@ -434,6 +695,9 @@
  },
  "W2117178635": {
   "tp": "Econometrics & quantitative methods > Estimation & inference theory"
+ },
+ "W2117278512": {
+  "tp": "Asset pricing & financial markets > Portfolio theory & the CAPM"
  },
  "W2117946532": {
   "tp": "Labor economics > Immigration & migration"
@@ -445,6 +709,12 @@
  "W2119511193": {
   "t": "Brown Fades: The End of Court-Ordered School Desegregation and the Resegregation of American Public Schools"
  },
+ "W2120840497": {
+  "tp": "History of economic thought & methodology > Methodology & philosophy of economics"
+ },
+ "W2120937813": {
+  "tp": "Labor economics > Job search, unemployment & unemployment insurance"
+ },
  "W2121005211": {
   "tp": "Culture, media & society > Culture, trust & social capital"
  },
@@ -453,6 +723,9 @@
  },
  "W2121722424": {
   "y": "2012"
+ },
+ "W2122415632": {
+  "tp": "Econometrics & quantitative methods > Estimation & inference theory"
  },
  "W2122528211": {
   "a": "Gabaix, X., Gopikrishnan, P., Plerou, V., & Stanley, H. E."
@@ -481,6 +754,10 @@
  "W2125534266": {
   "a": "Lucas, R. E."
  },
+ "W2126101898": {
+  "a": "McCloskey, D. N.",
+  "t": "The Rhetoric of Economics"
+ },
  "W2128633294": {
   "a": "Daniel, K., Hirshleifer, D. A., & Subrahmanyam, A."
  },
@@ -491,11 +768,24 @@
  "W2128778916": {
   "t": "Using daily stock returns: The case of event studies"
  },
+ "W2129688763": {
+  "tp": "Health economics > Economic evaluation & the value of health"
+ },
  "W2129998937": {
   "tp": "Innovation, technology & the digital economy > Digital economy, information goods & AI"
  },
+ "W2131071299": {
+  "tp": "Econometrics & quantitative methods > Instrumental variables & identification"
+ },
+ "W2131740028": {
+  "v": "*Journal of Law and Economics* 3: 1–44.",
+  "y": "1960"
+ },
  "W2131773668": {
   "a": "Fama, E. F."
+ },
+ "W2132807882": {
+  "tp": "Microeconomic theory > Risk, uncertainty & decision theory"
  },
  "W2133013164": {
   "tp": "Development economics > Agriculture, land & rural households"
@@ -543,6 +833,9 @@
  "W2144038585": {
   "a": "Amaral, L. A. N., Buldyrev, S. V., Havlin, S., Salinger, M. A., & Stanley, H. E."
  },
+ "W2144470805": {
+  "tp": "Corporate finance & governance > Payout policy: dividends & repurchases"
+ },
  "W2144570112": {
   "y": "2008"
  },
@@ -552,6 +845,9 @@
  "W2145107370": {
   "a": "Frederick, S., Loewenstein, G. F., & O’Donoghue, T."
  },
+ "W2145208974": {
+  "tp": "Econometrics & quantitative methods > Time series: unit roots, cointegration & VARs"
+ },
  "W2145411167": {
   "y": "2012"
  },
@@ -560,6 +856,9 @@
  },
  "W2145930759": {
   "tp": "Macroeconomics > Expectations, information & uncertainty"
+ },
+ "W2146257737": {
+  "tp": "Microeconomic theory > Social & economic networks"
  },
  "W2147039585": {
   "tp": "Political economy & institutions > Conflict, war & state capacity"
@@ -573,6 +872,19 @@
  "W2149093093": {
   "a": "Carbone, A., Castelli, G., & Stanley, H. E."
  },
+ "W2150092284": {
+  "tp": "Health economics > Economic evaluation & the value of health"
+ },
+ "W2150118316": {
+  "a": "LaLonde, R. J.",
+  "tp": "Econometrics & quantitative methods > Causal inference & program evaluation"
+ },
+ "W2150678469": {
+  "tp": "Behavioral & experimental economics > Heuristics, biases & bounded rationality"
+ },
+ "W2151517224": {
+  "tp": "Econometrics & quantitative methods > Measurement, index numbers & data"
+ },
  "W2151648574": {
   "tp": "Banking, intermediation & financial crises > Bank regulation, capital & risk-taking"
  },
@@ -585,6 +897,9 @@
  "W2153461421": {
   "tp": "Economic growth & productivity > Neoclassical growth & convergence"
  },
+ "W2153599323": {
+  "tp": "Asset pricing & financial markets > Funds, institutions & asset management"
+ },
  "W2156324400": {
   "t": "Financialisation and capital accumulation in the non-financial corporate sector: A theoretical and empirical investigation on the US economy: 1973-2003",
   "tp": "Corporate finance & governance > Investment, cash & financing constraints"
@@ -592,6 +907,9 @@
  "W2157131365": {
   "a": "Martin, R., & Sunley, P.",
   "tp": "Urban, regional & spatial economics > Regional growth & convergence"
+ },
+ "W2157350782": {
+  "tp": "Econometrics & quantitative methods > Bayesian & computational methods"
  },
  "W2157774440": {
   "tp": "Economic growth & productivity > Neoclassical growth & convergence"
@@ -624,6 +942,9 @@
   "tp": "International trade > Trade agreements, WTO & regionalism",
   "y": "2007"
  },
+ "W2163488867": {
+  "tp": "Monetary economics & central banking > Money demand & monetary theory"
+ },
  "W2163569945": {
   "tp": "Game theory & market design > Learning & evolution in games"
  },
@@ -636,6 +957,12 @@
  "W2165369389": {
   "tp": "Development economics > Risk, insurance & vulnerability"
  },
+ "W2165744048": {
+  "tp": "History of economic thought & methodology > Austrian, institutional & heterodox schools"
+ },
+ "W2165969148": {
+  "tp": "Asset pricing & financial markets > Market efficiency, anomalies & return predictability"
+ },
  "W2166974667": {
   "a": "Mankiw, N. G., Romer, D., & Weil, D. N."
  },
@@ -647,6 +974,9 @@
  },
  "W2168421867": {
   "tp": "Firms, organizations & entrepreneurship > Incentives, pay & personnel economics"
+ },
+ "W2168571614": {
+  "tp": "Inequality, poverty & mobility > Income & wealth inequality"
  },
  "W2168605160": {
   "tp": "Economic growth & productivity > Endogenous growth, ideas & technology"
@@ -663,8 +993,14 @@
  "W2169830338": {
   "tp": "Economic growth & productivity > Productivity, misallocation & firm dynamics"
  },
+ "W2169999403": {
+  "tp": "Behavioral & experimental economics > Social preferences, fairness & cooperation"
+ },
  "W2170453002": {
   "a": "Podobnik, B., Wang, D., Horvatić, D., Grosse, I., & Stanley, H. E."
+ },
+ "W2170513424": {
+  "a": "Deaton, A., & Muellbauer, J."
  },
  "W2170568085": {
   "y": "2012"
@@ -699,8 +1035,24 @@
  "W2275088575": {
   "a": "Hong, T., & Fan, S."
  },
+ "W2313281002": {
+  "tp": "Corporate finance & governance > Law, disclosure & comparative financial systems",
+  "y": "2014"
+ },
  "W2313551483": {
   "tp": "Development economics > Development strategy & growth in poor countries"
+ },
+ "W2316506176": {
+  "tp": "Microeconomic theory > Risk, uncertainty & decision theory"
+ },
+ "W2321541861": {
+  "tp": "Econometrics & quantitative methods > Time series: unit roots, cointegration & VARs"
+ },
+ "W2324357856": {
+  "tp": "Agricultural & food economics > Farm production, technology & risk"
+ },
+ "W2324838518": {
+  "tp": "Econometrics & quantitative methods > Time series: unit roots, cointegration & VARs"
  },
  "W2360467051": {
   "tp": "Innovation, technology & the digital economy > Digital economy, information goods & AI"
@@ -742,11 +1094,17 @@
  "W2884420074": {
   "t": "The impact of waiting time on patient outcomes: Evidence from early intervention in psychosis services in England"
  },
+ "W2887089210": {
+  "tp": "Microeconomic theory > Social & economic networks"
+ },
  "W2889738356": {
   "tp": "Public economics > Social security, pensions & social insurance"
  },
  "W2889827801": {
   "y": "2012"
+ },
+ "W2890048301": {
+  "t": "The Social Costs of Monopoly and Regulation"
  },
  "W2891220841": {
   "t": "Social Mobility and the Demand for Redistribution: The POUM Hypothesis"
@@ -756,6 +1114,9 @@
  },
  "W2891326822": {
   "y": "2003"
+ },
+ "W2891440059": {
+  "tp": "Economic growth & productivity > Neoclassical growth & convergence"
  },
  "W2891485059": {
   "tp": "International trade > Gravity, trade costs & trade flows"
@@ -784,6 +1145,10 @@
  "W2918799501": {
   "tp": "Macroeconomics > Fiscal policy & government debt"
  },
+ "W2927298185": {
+  "tp": "Econometrics & quantitative methods > Estimation & inference theory",
+  "y": "2020"
+ },
  "W2938687760": {
   "tp": "Monetary economics & central banking > Zero lower bound & unconventional policy",
   "y": "2019"
@@ -794,6 +1159,12 @@
  "W2992101963": {
   "v": "*Journal of Monetary Economics* 125: 62–79.",
   "y": "2022"
+ },
+ "W2993827275": {
+  "tp": "Econometrics & quantitative methods > Estimation & inference theory"
+ },
+ "W2994219315": {
+  "tp": "Macroeconomics > Investment & capital"
  },
  "W2994756033": {
   "y": "2004"
@@ -815,6 +1186,9 @@
   "a": "Lang, L. H. P., & Stulz, R. M.",
   "tp": "Corporate finance & governance > Investment, cash & financing constraints"
  },
+ "W3021304644": {
+  "tp": "Econometrics & quantitative methods > Panel data & spatial econometrics"
+ },
  "W3021625863": {
   "a": "Aghion, P., Dechezleprêtre, A., Hémous, D., Martin, R., & Van Reenen, J. M."
  },
@@ -823,6 +1197,9 @@
  },
  "W3021889044": {
   "tp": "Corporate finance & governance > Ownership, boards & corporate governance"
+ },
+ "W3022774728": {
+  "tp": "Econometrics & quantitative methods > Instrumental variables & identification"
  },
  "W3022790766": {
   "a": "Botero, J. C., Djankov, S., La Porta, R., López-de-Silanes, F., & Shleifer, A."
@@ -857,6 +1234,9 @@
  "W3121354442": {
   "tp": "Development economics > Risk, insurance & vulnerability"
  },
+ "W3121445015": {
+  "tp": "Asset pricing & financial markets > Market efficiency, anomalies & return predictability"
+ },
  "W3121453444": {
   "y": "2009"
  },
@@ -877,6 +1257,9 @@
  },
  "W3121630491": {
   "y": "2009"
+ },
+ "W3121701465": {
+  "tp": "Game theory & market design > Mechanism design & implementation"
  },
  "W3121720731": {
   "tp": "Corporate finance & governance > Investment, cash & financing constraints"
@@ -905,11 +1288,20 @@
  "W3122190505": {
   "tp": "Environmental, energy & resource economics > Sustainability & ecological economics"
  },
+ "W3122330270": {
+  "tp": "Corporate finance & governance > Executive compensation & managers"
+ },
  "W3122427457": {
   "tp": "Banking, intermediation & financial crises > Credit markets & lending"
  },
+ "W3122597312": {
+  "a": "Grossman, S. J., & Stiglitz, J. E."
+ },
  "W3122609859": {
   "tp": "Culture, media & society > Culture, trust & social capital"
+ },
+ "W3122740798": {
+  "tp": "Behavioral & experimental economics > Experiments on markets & games"
  },
  "W3122843332": {
   "y": "2008"
@@ -952,8 +1344,14 @@
  "W3123542774": {
   "tp": "Culture, media & society > Culture, trust & social capital"
  },
+ "W3123569544": {
+  "tp": "Microeconomic theory > Contracts, moral hazard & incentives"
+ },
  "W3123683947": {
   "y": "2006"
+ },
+ "W3123822975": {
+  "tp": "Asset pricing & financial markets > Market efficiency, anomalies & return predictability"
  },
  "W3124052700": {
   "a": "Wagstaff, A. R., Lindelöw, M., Gao, J., Xu, L., & Qian, J."
@@ -975,11 +1373,20 @@
  "W3124391672": {
   "a": "Berkowitz, D., Pistor, K., & Richard, J.-F."
  },
+ "W3124454571": {
+  "tp": "Econometrics & quantitative methods > Volatility & financial econometrics"
+ },
  "W3124478565": {
   "y": "2008"
  },
+ "W3124580288": {
+  "tp": "Macroeconomics > Investment & capital"
+ },
  "W3124700401": {
   "tp": "Population, family & gender > Fertility & the economics of children"
+ },
+ "W3124704119": {
+  "tp": "Asset pricing & financial markets > Consumption-based asset pricing & the equity premium"
  },
  "W3124744803": {
   "y": "2007"
@@ -1025,6 +1432,9 @@
   "tp": "Labor economics > Technology, tasks & automation",
   "y": "2018"
  },
+ "W3125511954": {
+  "tp": "Development economics > Informality, firms & labor in poor countries"
+ },
  "W3125586325": {
   "y": "2019"
  },
@@ -1040,8 +1450,14 @@
  "W3125969230": {
   "y": "2021"
  },
+ "W3126026145": {
+  "tp": "Behavioral & experimental economics > Happiness & well-being"
+ },
  "W3126077909": {
   "y": "2008"
+ },
+ "W3126117480": {
+  "a": "Sah, R. K., & Stiglitz, J. E."
  },
  "W3128873853": {
   "y": "2021"
@@ -1050,8 +1466,14 @@
   "tp": "Environmental, energy & resource economics > Climate change economics",
   "y": "2021"
  },
+ "W3156650419": {
+  "tp": "Asset pricing & financial markets > FinTech, crypto & sustainable finance"
+ },
  "W3161792430": {
   "y": "2022"
+ },
+ "W3170999623": {
+  "a": "Stern, N."
  },
  "W3190948128": {
   "y": "2016"
@@ -1068,15 +1490,24 @@
  "W4231721874": {
   "a": "Barro, R. J., & Sala-i-Martin, X."
  },
+ "W4233461763": {
+  "tp": "Behavioral & experimental economics > Heuristics, biases & bounded rationality"
+ },
  "W4233731957": {
   "tp": "Macroeconomics > Expectations, information & uncertainty"
  },
  "W4237239309": {
   "y": "2015"
  },
+ "W4237390087": {
+  "tp": "Environmental, energy & resource economics > Natural resources & conservation"
+ },
  "W4237421641": {
   "a": "Azoulay, P., Graff Zivin, J., & Wang, J.",
   "tp": "Innovation, technology & the digital economy > Science, universities & knowledge"
+ },
+ "W4238212557": {
+  "tp": "Behavioral & experimental economics > Heuristics, biases & bounded rationality"
  },
  "W4238757406": {
   "a": "Goetz, A. M., & Sen Gupta, R."
@@ -1084,11 +1515,20 @@
  "W4241742455": {
   "tp": "Innovation, technology & the digital economy > Technology diffusion & technological change"
  },
+ "W4245156943": {
+  "tp": "Microeconomic theory > Asymmetric information, signaling & screening"
+ },
  "W4245391281": {
   "a": "Stanley, H. E., Amaral, L. A. N., Canning, D., et al."
  },
  "W4251446432": {
   "tp": "Behavioral & experimental economics > Field experiments & behavior in the wild"
+ },
+ "W4252127527": {
+  "tp": "Econometrics & quantitative methods > Measurement, index numbers & data"
+ },
+ "W4254285159": {
+  "tp": "Econometrics & quantitative methods > Estimation & inference theory"
  },
  "W4256216147": {
   "tp": "Political economy & institutions > Institutions & long-run development"
@@ -1103,6 +1543,9 @@
  },
  "W615208969": {
   "tp": "Urban, regional & spatial economics > Cities, urban growth & spatial equilibrium"
+ },
+ "W964915218": {
+  "tp": "History of economic thought & methodology > Keynes, macroeconomic thought & monetary debates"
  },
  "fd05": {
   "tp": ""

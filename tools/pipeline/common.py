@@ -43,19 +43,23 @@ def catalog():
     A paper listed under a second topic appears again with that topic's names."""
     papers = load_json(DATA / "catalog.json")["papers"]
     by_id = {p["id"]: p for p in papers}
+    topics = (load_json(DATA / "economics.json") or {}).get("topics", [])
+    for t in topics:                                   # rows first, so that a pointer can name any of them
+        for e in t["p"]:
+            if not isinstance(e, str):
+                pid, title, a, y, v, link, _cites, stars = e[:8]
+                p = dict(id=pid, t=title, a=a, y=y, v=v, n=e[9] if len(e) > 9 else "", s=stars, vf=False,
+                         f=t["f"], ar=t.get("ar", ""), tp=t["tp"], st="")
+                if link:
+                    p["link"] = link if link.startswith("http") else "https://doi.org/" + link
+                by_id[pid] = p
     out = list(papers)
-    for t in (load_json(DATA / "economics.json") or {}).get("topics", []):
+    for t in topics:
         place = dict(f=t["f"], ar=t.get("ar", ""), tp=t["tp"], st="")
         for e in t["p"]:
-            if isinstance(e, str):
-                if e in by_id:
-                    out.append(dict(by_id[e], **place))
-                continue
-            pid, title, a, y, v, link, _cites, stars = e[:8]
-            p = dict(id=pid, t=title, a=a, y=y, v=v, n="", s=stars, vf=False, **place)
-            if link:
-                p["link"] = link if link.startswith("http") else "https://doi.org/" + link
-            out.append(p)
+            pid = e if isinstance(e, str) else e[0]
+            if pid in by_id:
+                out.append(dict(by_id[pid], **place))
     return out
 
 

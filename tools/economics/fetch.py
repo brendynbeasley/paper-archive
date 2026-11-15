@@ -8,6 +8,11 @@ account it allows about 1,000 list requests a day per network, so this script as
 (not committed). Each line of those files is one paper: title, authors, year, journal,
 DOI, citation count, plus the keywords and abstract used to sort it into a topic.
 
+A second, smaller pull per journal ("alt") asks for papers that have a copy in the journal
+but that OpenAlex files somewhere else first: a working-paper series, a repository, a later
+reprint in a book. Many classics are recorded that way (Coase 1960 sits under a reprint in
+an anthology), and the first pull misses them.
+
 Nothing here writes to the site. tools/economics/build.py turns the corpus into
 data/economics.json.
 """
@@ -28,9 +33,19 @@ SELECT = ('id,doi,title,publication_year,type,cited_by_count,authorships,primary
           'primary_topic,topics,keywords,abstract_inverted_index,language,is_paratext,is_retracted,open_access')
 RECENT_FROM = 2012          # second pull per leading journal: most cited since this year
 RESERVE = 40                # stop when this few requests are left in today's allowance
+GAP = 0.17                  # seconds between requests (the limit is 10 a second)
 
 lock = threading.Lock()
 state = {'remaining': None, 'calls': 0, 'stop': False}
+
+
+def pace():
+    """OpenAlex also allows only 10 requests a second: leave a gap between any two."""
+    with lock:
+        wait = state.get('next', 0) - time.time()
+        state['next'] = max(time.time(), state.get('next', 0)) + GAP
+    if wait > 0:
+        time.sleep(wait)
 
 
 def get(path, params):
@@ -38,6 +53,7 @@ def get(path, params):
     for attempt in range(6):
         if state['stop']:
             return None
+        pace()
         try:
             req = urllib.request.Request(url, headers={'User-Agent': UA})
             with urllib.request.urlopen(req, timeout=90) as r:
@@ -53,6 +69,9 @@ def get(path, params):
         except urllib.error.HTTPError as e:
             if e.code == 429:
                 body = e.read().decode('utf-8', 'replace')[:300]
+                if 'per second' in body.lower():           # too fast, not out of allowance
+                    time.sleep(1.5)
+                    continue
                 if 'budget' in body.lower() or 'credit' in body.lower() or 'limit' in body.lower():
                     print('  allowance used up for today:', body, flush=True)
                     state['stop'] = True
@@ -98,10 +117,17 @@ def abstract_text(inv, limit=1800):
     return ' '.join(w for _, w in words)[:limit]
 
 
-def slim(w, src):
+def slim(w, src, alt=False):
     loc = w.get('primary_location') or {}
     b = w.get('biblio') or {}
-    return {
+    extra = {}
+    if alt:                 # filed elsewhere: remember where, and where the journal's own copy lives
+        mine = [l.get('landing_page_url') or '' for l in w.get('locations') or []
+                if ((l.get('source') or {}).get('id') or '').endswith('/' + src['sid'])]
+        psrc = loc.get('source') or {}
+        extra = {'alt': 1, 'jurls': [u for u in mine if u], 'psrc': psrc.get('display_name') or '',
+                 'ptype': psrc.get('type') or ''}
+    return dict(extra, **{
         'id': w['id'].rsplit('/', 1)[1],
         'doi': (w.get('doi') or '').replace('https://doi.org/', ''),
         't': w.get('title') or '',
@@ -110,7 +136,7 @@ def slim(w, src):
         'c': w.get('cited_by_count') or 0,
         'au': [(a.get('raw_author_name') or '', (a.get('author') or {}).get('display_name') or '') for a in w.get('authorships') or []],
         'src': src['sid'],
-        'j': ((loc.get('source') or {}).get('display_name')) or src['name'],
+        'j': src['name'] if alt else ((loc.get('source') or {}).get('display_name')) or src['name'],
         'vol': b.get('volume'), 'iss': b.get('issue'), 'fp': b.get('first_page'), 'lp': b.get('last_page'),
         'url': loc.get('landing_page_url') or '',
         'oa': (w.get('open_access') or {}).get('oa_url') or '',
@@ -120,7 +146,7 @@ def slim(w, src):
         'ab': abstract_text(w.get('abstract_inverted_index')),
         'lang': w.get('language'),
         'para': bool(w.get('is_paratext')), 'retr': bool(w.get('is_retracted')),
-    }
+    })
 
 
 def jobs_for(src):
@@ -131,6 +157,8 @@ def jobs_for(src):
     base = f"primary_location.source.id:{src['sid']}"
     out = [(f"{src['sid']}_all_{p}", base, p) for p in range(1, pages + 1)]
     out += [(f"{src['sid']}_new_{p}", f"{base},publication_year:>{RECENT_FROM - 1}", p) for p in range(1, recent + 1)]
+    elsewhere = f"locations.source.id:{src['sid']},primary_location.source.id:!{src['sid']}"
+    out += [(f"{src['sid']}_alt_{p}", elsewhere, p) for p in range(1, (2 if tier == 1 else 1) + 1)]
     return out
 
 
@@ -139,10 +167,12 @@ def run(job):
     path = os.path.join(CORPUS, name + '.jsonl')
     if os.path.exists(path) or state['stop']:
         return 0
-    d = get('works', {'filter': flt, 'sort': 'cited_by_count:desc', 'per-page': 200, 'page': page, 'select': SELECT})
+    alt = '_alt_' in name
+    d = get('works', {'filter': flt, 'sort': 'cited_by_count:desc', 'per-page': 200, 'page': page,
+                      'select': SELECT + (',locations' if alt else '')})
     if d is None:
         return 0
-    rows = [slim(w, src) for w in d.get('results', [])]
+    rows = [slim(w, src, alt) for w in d.get('results', [])]
     tmp = path + '.tmp'
     with open(tmp, 'w', encoding='utf-8') as f:
         for r in rows:
