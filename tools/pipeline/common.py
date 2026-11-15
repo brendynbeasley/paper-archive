@@ -38,7 +38,25 @@ def save_json(path, obj, indent=1):
 
 
 def catalog():
-    return load_json(DATA / "catalog.json")["papers"]
+    """Every paper on the site, in list order: the monopoly bibliography (catalog.json), then the
+    rest of economics (economics.json, which stores each topic once and its papers as rows).
+    A paper listed under a second topic appears again with that topic's names."""
+    papers = load_json(DATA / "catalog.json")["papers"]
+    by_id = {p["id"]: p for p in papers}
+    out = list(papers)
+    for t in (load_json(DATA / "economics.json") or {}).get("topics", []):
+        place = dict(f=t["f"], ar=t.get("ar", ""), tp=t["tp"], st="")
+        for e in t["p"]:
+            if isinstance(e, str):
+                if e in by_id:
+                    out.append(dict(by_id[e], **place))
+                continue
+            pid, title, a, y, v, link, _cites, stars = e[:8]
+            p = dict(id=pid, t=title, a=a, y=y, v=v, n="", s=stars, vf=False, **place)
+            if link:
+                p["link"] = link if link.startswith("http") else "https://doi.org/" + link
+            out.append(p)
+    return out
 
 
 def topic_papers(topic):
