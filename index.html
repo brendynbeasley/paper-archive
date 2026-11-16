@@ -140,24 +140,6 @@
       </div>
       <label class="inline">Weeks start on <select id="gWs"><option value="1">Monday</option><option value="0">Sunday</option></select></label>
     </fieldset>
-    <details class="more-details">
-      <summary>Advanced: save with your own GitHub token</summary>
-      <div class="fields">
-        <label>GitHub token <span class="hint">only needed if the save relay is not connected</span>
-          <input id="sToken" type="password" autocomplete="off" placeholder="github_pat_…">
-        </label>
-        <p class="hint"><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create a token</a>: only this repo, Contents set to read and write. It stays in this browser.</p>
-        <div class="row3">
-          <label>User<input id="sOwner" autocomplete="off"></label>
-          <label>Repo<input id="sRepo" autocomplete="off"></label>
-          <label>Branch<input id="sBranch" autocomplete="off" placeholder="main"></label>
-        </div>
-        <div class="dlgfoot">
-          <button class="pill" type="button" id="sTest">Test token</button>
-          <button class="linkbtn danger" type="button" id="sForget">Remove token from this device</button>
-        </div>
-      </div>
-    </details>
     <p class="formerr" id="setMsg" hidden></p>
     <div class="dlgfoot">
       <button class="linkbtn" type="button" id="sExport">Download a backup</button>
@@ -227,6 +209,6 @@
 <datalist id="topicList"></datalist>
 <datalist id="subList"></datalist>
 <div id="toast" class="toast" role="status" hidden></div>
-<script src="app.js?v=9"></script>
+<script src="app.js?v=11"></script>
 </body>
 </html>

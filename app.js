@@ -4,13 +4,15 @@
  *   data/catalog.json    the monopoly and market power bibliography (6,185 papers)
  *   data/economics.json  the rest of economics, built by tools/economics/
  *   data/sciences.json   econophysics, mathematics and statistics, built by tools/sciences/
- * Your own data lives in two more files, read from and written back to the repo as commits:
+ * Your own data lives in two more files:
  *   data/library.json    papers you add, edits to any paper (notes, links, flashcards), your focus,
  *                        weekly goals, and extra fields, areas and topics
  *   data/progress.json   the date of each of the six steps, per paper
- * Saving goes through a small relay (SYNC_URL below, code in sync/worker.js) that holds the repo
- * token, so anyone on any device can save without signing in. Without the relay, a GitHub token
- * entered in Settings does the same for that one device; with neither, changes stay in the browser.
+ * Saving needs no account or token. Each change is posted to a public channel on ntfy.sh (a free
+ * message service with no sign-up), which every device reads on top of the two files. A GitHub
+ * Action in this repo (.github/workflows/save.yml, tools/save_sync.py) copies the changes into the
+ * files every 10 minutes, so the repo keeps the permanent record. The channel keeps messages for
+ * 12 hours, far longer than the Action needs.
  *
  * The way of working: pick a focus (a field, an area, a topic, or the market power reading plan),
  * then go through it one topic at a time, each paper in six steps: download it (with a prompt to paste
@@ -19,8 +21,9 @@
 (() => {
 'use strict';
 
-// The save relay's address (a Cloudflare Worker running sync/worker.js). Empty until it is set up.
-const SYNC_URL = '';
+// The channel every device posts its changes to and reads them from. tools/save_sync.py uses the same name.
+const CHANNEL = 'paper-archive-sync-q7v3k9x2m4';
+const NTFY = 'https://ntfy.sh';
 
 const STATUSES = [['dl', 'Downloaded'], ['pr', 'Printed'], ['rd', 'Read'], ['nt', 'Notes'], ['rs', 'Researched'], ['fl', 'Flashcards']];
 const NSTEP = STATUSES.length;
@@ -100,55 +103,124 @@ const S = {
     S.cfg.repo = seg && !seg.includes('.') ? seg : `${m[1]}.github.io`;
   }
 })();
-// Shared saving: on the live site (or with ?shared=1 while testing), every visitor saves through the relay.
-const SHARED = !!SYNC_URL && (/\.github\.io$/i.test(location.hostname) || /[?&]shared=1\b/.test(location.search));
-const hasRepo = () => !!(S.cfg.owner && S.cfg.repo);
-const online = () => SHARED || hasRepo();
-const canWrite = () => SHARED || (hasRepo() && !!S.cfg.token);
+if (S.cfg.token) { delete S.cfg.token; store.set(CFG_KEY, S.cfg); }   // tokens are no longer used: forget any saved one
+// Shared saving is on for the live site. A local copy keeps changes in the browser, unless it is
+// opened with ?shared=1 (and, for testing, ?channel=<a test channel>).
+const PARAMS = new URLSearchParams(location.search);
+const LIVE = /\.github\.io$/i.test(location.hostname);
+const SHARED = LIVE || PARAMS.has('shared');
+const TOPIC = (!LIVE && PARAMS.get('channel')) || CHANNEL;
+const canWrite = () => SHARED;
 
-/* ---------- reading and writing the two data files ---------- */
-function b64encode(str) {
-  const bytes = new TextEncoder().encode(str);
-  let bin = '';
-  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
-  return btoa(bin);
+/* ---------- the shared channel ---------- */
+// What one save posts: only what changed, each piece carrying the time it changed (u), so any
+// device, and the Action, can apply the changes in any order and get the same result.
+const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+const KEY = /^[a-zA-Z]{1,24}$/;
+const URL_KEYS = ['link', 'research', 'learn', 'deck', 'pdf'];
+// Anyone can post to the channel, so everything read from it is checked: steps are dates, links
+// are web links, text has a length limit.
+// A change dated in the future would outrank every later edit, so it is ignored.
+const future = (e) => typeof e.u === 'number' && e.u > Date.now() + 864e5;
+function cleanEntry(e) {
+  if (!isObj(e) || future(e)) return null;
+  const out = {};
+  for (const [k, v] of Object.entries(e)) {
+    if (k === 'u') { if (typeof v === 'number') out.u = v; }
+    else if (/^[a-z]{2}$/.test(k) && typeof v === 'string' && DAY.test(v)) out[k] = v;
+  }
+  return out;
 }
-function b64decode(b64) {
-  const bin = atob(b64.replace(/\s/g, ''));
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return new TextDecoder().decode(bytes);
+function cleanPaper(e) {
+  if (!isObj(e) || future(e)) return null;
+  const out = {};
+  for (const [k, v] of Object.entries(e)) {
+    if (!KEY.test(k)) continue;
+    if (k === 'cards') { if (Array.isArray(v)) out.cards = v.filter(isObj).slice(0, MAX_CARDS).map((c) => ({ q: String(c.q || '').slice(0, 400), a: String(c.a || '').slice(0, 600) })); }
+    else if (URL_KEYS.includes(k)) { if (typeof v === 'string' && (!v || /^https?:\/\//i.test(v))) out[k] = v.slice(0, 2000); }
+    else if (typeof v === 'string') out[k] = v.slice(0, 5000);
+    else if (typeof v === 'number' || typeof v === 'boolean') out[k] = v;
+  }
+  return out;
 }
-const relayUrl = (path) => `${SYNC_URL.replace(/\/+$/, '')}/${path}`;
-function apiUrl(path) {
-  return `https://api.github.com/repos/${encodeURIComponent(S.cfg.owner)}/${encodeURIComponent(S.cfg.repo)}/contents/${path}`;
+function cleanSetting(e) {
+  if (!isObj(e) || future(e)) return null;
+  const out = {};
+  for (const [k, v] of Object.entries(e)) if (KEY.test(k) && (typeof v === 'number' || (typeof v === 'string' && v.length <= 300))) out[k] = v;
+  return out;
 }
-function headers() {
-  const h = { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
-  if (S.cfg.token) h.Authorization = `Bearer ${S.cfg.token}`;
-  return h;
+function applyDelta(lib, prog, d) {
+  if (!isObj(d)) return;
+  if (isObj(d.p)) for (const [id, e] of Object.entries(d.p)) { const c = cleanEntry(e); if (c && id.length <= 64) prog.p[id] = newer(prog.p[id], c); }
+  if (isObj(d.e)) for (const [id, e] of Object.entries(d.e)) { const c = cleanPaper(e); if (c && id.length <= 64) lib.edits[id] = newer(lib.edits[id], c); }
+  if (Array.isArray(d.a)) for (const e of d.a) {
+    const c = cleanPaper(e);
+    if (!c || typeof c.id !== 'string' || c.id.length > 64 || !c.t) continue;
+    const i = lib.added.findIndex((x) => x.id === c.id);
+    if (i < 0) lib.added.push(c); else lib.added[i] = newer(lib.added[i], c);
+  }
+  for (const k of ['removed', 'fields', 'areas', 'topics']) {
+    if (!Array.isArray(d[k])) continue;
+    lib[k] = lib[k] || [];
+    for (const x of d[k]) if (typeof x === 'string' && x.length <= 300 && !lib[k].includes(x)) lib[k].push(x);
+  }
+  if (lib.removed.length) { const gone = new Set(lib.removed); lib.added = lib.added.filter((x) => !gone.has(x.id)); }
+  for (const k of ['goals', 'focus']) { const c = cleanSetting(d[k]); if (c) lib[k] = newer(lib[k], c); }
 }
-class GhError extends Error { constructor(status, msg) { super(msg); this.status = status; } }
-async function ghGet(path) {
-  const r = SHARED
-    ? await fetch(`${relayUrl(path)}?t=${Date.now()}`, { cache: 'no-store' })
-    : await fetch(`${apiUrl(path)}?ref=${encodeURIComponent(S.cfg.branch || 'main')}&t=${Date.now()}`, { headers: headers(), cache: 'no-store' });
-  if (r.status === 404) return { data: null, sha: null };
-  if (!r.ok) throw new GhError(r.status, await errText(r));
-  const j = await r.json();
-  return { data: JSON.parse(b64decode(j.content)), sha: j.sha };
+// Every change still on the channel (the last 12 hours), oldest first. A long change is posted in
+// parts and put back together here.
+async function readChannel() {
+  const r = await fetch(`${NTFY}/${encodeURIComponent(TOPIC)}/json?poll=1&since=all`, { cache: 'no-store' });   // (no cache-busting parameter: ntfy reads t= as a title filter)
+  if (!r.ok) throw Object.assign(new Error('channel'), { status: r.status });
+  const parts = new Map(), out = [];
+  for (const line of (await r.text()).split('\n')) {
+    let m, d;
+    try { m = JSON.parse(line); d = JSON.parse(m.message); } catch { continue; }
+    if (m.event !== 'message' || !isObj(d) || d.pa !== 1) continue;
+    if (typeof d.c === 'string') {
+      if (!(d.n > 0 && d.n <= 200 && d.i >= 0 && d.i < d.n && typeof d.s === 'string')) continue;
+      const g = parts.get(d.c) || { n: d.n, s: [], t: m.time };
+      g.s[d.i] = d.s; parts.set(d.c, g);
+      if (g.s.filter((x) => typeof x === 'string').length === g.n) { try { out.push([g.t, JSON.parse(g.s.join(''))]); } catch { /* broken */ } parts.delete(d.c); }
+    } else out.push([m.time, d]);
+  }
+  return out.sort((a, b) => a[0] - b[0]).map((x) => x[1]);
 }
-async function ghPut(path, obj, sha, message) {
-  const body = { message, content: b64encode(JSON.stringify(obj, null, 1) + '\n'), branch: S.cfg.branch || 'main' };
-  if (sha) body.sha = sha;
-  const json = JSON.stringify(body);
-  const h = SHARED ? { 'Content-Type': 'application/json' } : { ...headers(), 'Content-Type': 'application/json' };
-  // keepalive lets the save finish even if the tab is closing (browsers cap it at 64 KB)
-  const r = await fetch(SHARED ? relayUrl(path) : apiUrl(path), { method: 'PUT', headers: h, body: json, keepalive: json.length < 60000 });
-  if (!r.ok) throw new GhError(r.status, await errText(r));
-  return (await r.json()).content.sha;
+// Post one change, in parts if it is long (ntfy.sh keeps a message as text up to 4 KB).
+async function postChange(delta, keepalive) {
+  const body = JSON.stringify(Object.assign({ pa: 1 }, delta));
+  const size = (s) => new TextEncoder().encode(s).length;
+  let msgs = [body];
+  for (let step = 1500; size(msgs.reduce((a, b) => (size(b) > size(a) ? b : a), '')) > 3800; step = Math.floor(step / 2)) {
+    const c = Math.random().toString(36).slice(2, 12), pieces = [];
+    for (let i = 0; i < body.length; i += step) pieces.push(body.slice(i, i + step));
+    msgs = pieces.map((s, i) => JSON.stringify({ pa: 1, c, i, n: pieces.length, s }));
+  }
+  for (const m of msgs) {
+    const r = await fetch(`${NTFY}/${encodeURIComponent(TOPIC)}`, { method: 'POST', body: m, keepalive: !!keepalive });
+    if (!r.ok) throw Object.assign(new Error('post'), { status: r.status });
+  }
 }
-async function errText(r) { try { return (await r.json()).message || r.statusText; } catch { return r.statusText; } }
+// What this browser has that the shared copy doesn't (or has an older version of).
+function changesSince(remote, local) {
+  const d = {};
+  const ahead = (a, b) => !!b && (!a || (b.u || 0) > (a.u || 0));
+  const p = {}, e = {};
+  for (const [id, x] of Object.entries(local.progress.p)) if (ahead(remote.progress.p[id], x)) p[id] = x;
+  for (const [id, x] of Object.entries(local.library.edits)) if (ahead(remote.library.edits[id], x)) e[id] = x;
+  if (Object.keys(p).length) d.p = p;
+  if (Object.keys(e).length) d.e = e;
+  const ra = new Map(remote.library.added.map((x) => [x.id, x]));
+  const a = local.library.added.filter((x) => ahead(ra.get(x.id), x));
+  if (a.length) d.a = a;
+  for (const k of ['removed', 'fields', 'areas', 'topics']) {
+    const have = new Set(remote.library[k] || []), add = (local.library[k] || []).filter((x) => !have.has(x));
+    if (add.length) d[k] = add;
+  }
+  for (const k of ['goals', 'focus']) if (ahead(remote.library[k], local.library[k])) d[k] = local.library[k];
+  return d;
+}
 
 /* ---------- merging (two devices edited at once) ---------- */
 const newer = (a, b) => (!a ? b : !b ? a : (b.u || 0) > (a.u || 0) ? b : a);
@@ -193,19 +265,22 @@ async function fetchStatic(path, fallback, fresh = true) {
   try { const r = await fetch(fresh ? `${path}?t=${Date.now()}` : path, fresh ? { cache: 'no-store' } : {}); if (r.ok) return await r.json(); } catch { /* offline */ }
   return fallback;
 }
+// The shared copy: the two files as the repo has them now (on the live site, straight from GitHub,
+// which is fresher than the published page), plus every change on the channel since.
+async function fetchRemote() {
+  const src = (path) => (LIVE ? `https://raw.githubusercontent.com/${S.cfg.owner}/${S.cfg.repo}/main/${path}` : path);
+  const get = async (path) => (await fetchStatic(src(path), null)) || (LIVE ? fetchStatic(path, null) : null);
+  const [lib, prog] = await Promise.all([get(FILES.library), get(FILES.progress)]);
+  if (!lib || !prog) throw Object.assign(new Error('offline'), { status: 0 });
+  const remote = { library: mergeLibrary(lib, null), progress: mergeProgress(prog, null) };
+  if (SHARED) for (const d of await readChannel()) applyDelta(remote.library, remote.progress, d);
+  S.remote = remote;
+  return remote;
+}
 async function pull() {
-  if (!online()) {
-    // Not on GitHub Pages and no repo configured: use the files next to the page.
-    if (!S.dirty.library) S.library = Object.assign(emptyLibrary(), await fetchStatic(FILES.library, S.library));
-    if (!S.dirty.progress) S.progress = Object.assign(emptyProgress(), await fetchStatic(FILES.progress, S.progress));
-    return;
-  }
-  for (const kind of ['library', 'progress']) {
-    const { data, sha } = await ghGet(FILES[kind]);
-    const merge = kind === 'library' ? mergeLibrary : mergeProgress;
-    S[kind] = S.dirty[kind] ? merge(data, S[kind]) : merge(data, null);
-    S.sha[kind] = sha;
-  }
+  const remote = await fetchRemote();
+  S.library = S.dirty.library ? mergeLibrary(remote.library, S.library) : remote.library;
+  S.progress = S.dirty.progress ? mergeProgress(remote.progress, S.progress) : remote.progress;
 }
 // The second and third catalogs store each topic once and its papers as short rows; unpack them
 // into the same shape as catalog.json. A bare id in a topic is an extra listing of an existing paper.
@@ -240,41 +315,32 @@ function changed(kind, message) {
   clearTimeout(syncTimer);
   syncTimer = setTimeout(sync, 1500);
 }
-function commitMessage() {
-  const m = S.messages;
-  if (m.length === 1) return m[0];
-  if (!m.length) return 'Update archive';
-  return `Update archive (${m.length} changes)\n\n${m.slice(0, 40).map((x) => '- ' + x).join('\n')}`;
-}
 function failReason(e) {
-  if (SHARED) return e.status === 422 ? 'the archive refused the change' : e.status >= 500 ? 'the save relay is not working' : 'offline, or the archive could not be reached';
-  return e.status === 401 ? 'token rejected' : e.status === 403 || e.status === 404 ? 'token lacks write access to this repo' : 'offline or GitHub unreachable';
+  return e.status === 429 ? 'too many saves at once' : 'offline, or the save service could not be reached';
+}
+const snapshot = () => JSON.stringify([S.library, S.progress]);
+// Take in what changed elsewhere; redraw only if something did (so typing isn't interrupted).
+function adopt(before) {
+  if (snapshot() === before) return;
+  S.hay.clear(); rebuild(); render();
 }
 async function sync() {
   if (!canWrite() || !(S.dirty.progress || S.dirty.library)) return;
   if (syncing) { again = true; return; }
   syncing = true;
   setSync('busy', 'Saving…');
-  const message = commitMessage();
-  const msgCount = S.messages.length;
+  const ver = Object.assign({}, S.dirty), msgCount = S.messages.length;
   try {
-    for (const kind of ['library', 'progress']) {
-      const ver = S.dirty[kind];
-      if (!ver) continue;
-      try {
-        S.sha[kind] = await ghPut(FILES[kind], S[kind], S.sha[kind], message);
-      } catch (e) {
-        if (e.status !== 409 && e.status !== 422) throw e;
-        // Another device saved first: fetch its version, merge, try once more.
-        const remote = await ghGet(FILES[kind]);
-        S[kind] = (kind === 'library' ? mergeLibrary : mergeProgress)(remote.data, S[kind]);
-        S.sha[kind] = await ghPut(FILES[kind], S[kind], remote.sha, message);
-        S.hay.clear(); rebuild(); render();
-      }
-      S.dirty[kind] = Math.max(0, S.dirty[kind] - ver);
-    }
+    const remote = await fetchRemote();
+    const d = changesSince(remote, S);
+    if (Object.keys(d).length) await postChange(Object.assign(d, { u: Date.now(), m: S.messages.slice(0, 40) }));
+    const before = snapshot();
+    S.library = mergeLibrary(remote.library, S.library);
+    S.progress = mergeProgress(remote.progress, S.progress);
+    for (const k of ['library', 'progress']) S.dirty[k] = Math.max(0, S.dirty[k] - ver[k]);
     S.messages = S.messages.slice(msgCount);
     saveCache();
+    adopt(before);
     setSync('ok', `Saved ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · on every device`);
   } catch (e) {
     saveCache();
@@ -939,8 +1005,9 @@ function renderBanner() {
   const pending = (S.dirty.progress || 0) + (S.dirty.library || 0);
   const show = !canWrite();
   $('saveBanner').hidden = !show;
-  if (show) $('saveBannerText').textContent = (pending ? `${plural(pending, 'change')} ${pending === 1 ? 'is' : 'are'} saved in this browser only. ` : 'Changes are saved in this browser for now. ')
-    + 'Saving for every device switches on once the archive’s save relay is connected.';
+  if (show) $('saveBannerText').textContent = 'This is a local copy of the site: '
+    + (pending ? `${plural(pending, 'change')} ${pending === 1 ? 'is' : 'are'} saved in this browser only.` : 'changes stay in this browser.')
+    + ' On the live site, every change saves for everyone.';
 }
 const setAccent = (c) => document.documentElement.style.setProperty('--fc', c);
 
@@ -1817,8 +1884,6 @@ function saveGroup() {
 
 const GOAL_INPUTS = { dl: 'gDl', pr: 'gPr', rd: 'gRd', nt: 'gNt', rs: 'gRs', fl: 'gFl' };
 function openSettings(focus) {
-  $('sOwner').value = S.cfg.owner; $('sRepo').value = S.cfg.repo; $('sBranch').value = S.cfg.branch || 'main';
-  $('sToken').value = S.cfg.token ? '••••••••' : '';
   $('setMsg').hidden = true;
   const G = goals();
   for (const [s, el] of Object.entries(GOAL_INPUTS)) $(el).value = G[s];
@@ -1826,43 +1891,15 @@ function openSettings(focus) {
   const F = getFocus();
   $('sFocusName').textContent = F ? focusName(F) : 'not set yet';
   $('setStatus').innerHTML = SHARED
-    ? '<b class="okc">Saving is on for everyone.</b> Every tick and edit is saved to the archive within a couple of seconds and shows on every device. Anyone with the link can view and edit.'
-    : canWrite() ? `<b class="okc">Saving with your GitHub token on this device.</b> Changes go to ${esc(S.cfg.owner)}/${esc(S.cfg.repo)} and show on every device.`
-      : '<b>Changes are saved in this browser for now.</b> Saving for every device switches on once the archive’s save relay is connected (the README explains the one-time setup). Until then, a GitHub token under Advanced saves from this device.';
+    ? '<b class="okc">Saving is on, for everyone, with nothing to set up.</b> Every tick and edit is saved within a couple of seconds and shows on every device. The repo keeps a permanent copy, updated every 10 minutes. Anyone with the link can view and edit.'
+    : '<b>This is a local copy of the site.</b> Changes here stay in this browser. On the live site, every change saves for everyone.';
   $('setDlg').showModal();
   if (focus === 'goals') { $('gDl').focus(); $('gDl').select(); }
 }
-function readSettings() {
-  const tok = $('sToken').value.trim();
-  return { owner: $('sOwner').value.trim(), repo: $('sRepo').value.trim(), branch: $('sBranch').value.trim() || 'main', token: tok === '••••••••' ? S.cfg.token : tok };
-}
-async function testSettings() {
-  const prev = S.cfg; S.cfg = readSettings();
-  const m = $('setMsg'); m.hidden = false; m.className = 'formerr'; m.textContent = 'Checking…';
-  try {
-    const r = await fetch(`https://api.github.com/repos/${encodeURIComponent(S.cfg.owner)}/${encodeURIComponent(S.cfg.repo)}`, { headers: headers(), cache: 'no-store' });
-    if (!r.ok) throw new GhError(r.status, await errText(r));
-    const j = await r.json();
-    const push = j.permissions && j.permissions.push;
-    m.className = 'formerr ok';
-    m.textContent = push ? `Connected to ${j.full_name}. This device can save changes.` : S.cfg.token ? `Found ${j.full_name}, but this token can't write to it. Give it Contents: read and write.` : `Found ${j.full_name}. Add a token to save from this device.`;
-    if (!push) m.className = 'formerr';
-  } catch (e) {
-    m.textContent = e.status === 401 ? 'GitHub rejected this token.' : e.status === 404 ? 'Repo not found. Check the user and repo name. A private repo needs a token.' : 'Could not reach GitHub.';
-  } finally { S.cfg = prev; }
-}
-async function applySettings() {
+function applySettings() {
   const want = { ws: $('gWs').value };
   for (const [s, el] of Object.entries(GOAL_INPUTS)) want[s] = $(el).value;
   setGoals(want);
-  const next = readSettings();
-  const repoChanged = next.owner !== S.cfg.owner || next.repo !== S.cfg.repo || next.branch !== S.cfg.branch;
-  const tokenChanged = next.token !== S.cfg.token;
-  if (!repoChanged && !tokenChanged) return;
-  S.cfg = next; store.set(CFG_KEY, S.cfg);
-  if (repoChanged) { S.sha = { progress: null, library: null }; }
-  await refresh(true);
-  sync();
 }
 function exportBackup() {
   const blob = new Blob([JSON.stringify({ exported: new Date().toISOString(), library: S.library, progress: S.progress }, null, 1)], { type: 'application/json' });
@@ -1947,12 +1984,13 @@ async function refresh(force) {
   if (syncing) return;
   lastPull = Date.now();
   try {
+    const before = snapshot();
     await pull();
-    saveCache(); S.hay.clear(); rebuild(); render();
+    saveCache(); adopt(before);
     if (S.dirty.progress || S.dirty.library) { if (canWrite()) sync(); else setSync('local', 'Saved in this browser'); }
-    else setSync(canWrite() ? 'ok' : 'local', SHARED ? 'Up to date · saves for everyone' : canWrite() ? 'Synced with GitHub' : online() ? 'Viewing · changes stay in this browser' : 'Local copy');
+    else setSync(canWrite() ? 'ok' : 'local', SHARED ? 'Up to date · saves for everyone' : 'Local copy · changes stay in this browser');
   } catch (e) {
-    setSync('warn', e.status === 403 ? 'Rate limit hit. Showing the saved copy.' : 'Offline. Showing the saved copy.');
+    setSync('warn', 'Offline. Showing the copy saved in this browser.');
   }
 }
 
@@ -2169,18 +2207,26 @@ function bind() {
   $('themeBtn').addEventListener('click', cycleTheme);
   $('sumCopy').addEventListener('click', copySummaryLines);
   $('setForm').addEventListener('submit', (e) => { if (e.submitter && e.submitter.value === 'save') applySettings(); });
-  $('sTest').addEventListener('click', testSettings);
   $('sExport').addEventListener('click', exportBackup);
-  $('sForget').addEventListener('click', () => { S.cfg.token = ''; store.set(CFG_KEY, S.cfg); $('sToken').value = ''; toast('Token removed from this device'); refresh(true); });
   $('navToggle').addEventListener('click', () => {
     const open = !$('sidebar').classList.contains('open');
     $('sidebar').classList.toggle('open', open); $('navToggle').setAttribute('aria-expanded', String(open)); $('scrim').hidden = !open;
   });
-  // Save straight away when you switch tabs, lock the phone or close the page.
-  const flush = () => { if (canWrite() && (S.dirty.progress || S.dirty.library)) { clearTimeout(syncTimer); sync(); } };
+  // Save straight away when you switch tabs, lock the phone or close the page: post what's new
+  // against the last shared copy at once (the browser finishes the request even as the page closes).
+  // The next regular save confirms it; posting the same change twice does no harm.
+  const flush = () => {
+    if (!canWrite() || !(S.dirty.progress || S.dirty.library)) return;
+    clearTimeout(syncTimer);
+    if (S.remote && !syncing) {
+      const d = changesSince(S.remote, S);
+      if (Object.keys(d).length) postChange(Object.assign(d, { u: Date.now(), m: S.messages.slice(0, 40) }), true).catch(() => {});
+    }
+    syncTimer = setTimeout(sync, 1500);
+  };
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refresh(false); else flush(); });
   window.addEventListener('pagehide', flush);
-  window.addEventListener('beforeunload', (e) => { if (syncing || (canWrite() && (S.dirty.progress || S.dirty.library))) { flush(); e.preventDefault(); e.returnValue = ''; } });
+  window.addEventListener('beforeunload', flush);
   $('saveBannerBtn').addEventListener('click', () => openSettings());
   window.addEventListener('online', () => refresh(true));
   // Pick up what other devices saved, every minute while the page is open.

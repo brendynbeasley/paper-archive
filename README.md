@@ -59,22 +59,8 @@ About 1,480 papers from the monopoly bibliography also belong in one of the new 
 
 1. Create a new **public** repo on GitHub, for example `paper-archive`, and push this folder to it.
 2. In the repo, go to **Settings → Pages → Build and deployment**. Set the source to **Deploy from a branch**, pick `main` and `/ (root)`, then save. After about a minute the site is live at `https://<your-username>.github.io/paper-archive/`.
-3. Switch on saving from every device, below. It takes about five minutes, once.
 
-### Saving from every device
-
-A static site cannot write to its repo by itself, and asking for a GitHub token on every phone and laptop is a chore. So a tiny relay holds one token and lets the site read and write exactly two files, `data/progress.json` and `data/library.json`, and nothing else. After that, clicking a button is all it takes, on any device, with no sign-in. The relay is a free Cloudflare Worker (the free plan allows 100,000 requests a day, far more than this needs), and its whole code is `sync/worker.js`.
-
-1. **Make a token.** On GitHub go to **Settings → Developer settings → Fine-grained tokens → Generate new token**. Name it `paper-archive relay`, set **Repository access → Only select repositories → `paper-archive`**, and under **Permissions → Repository** set **Contents: Read and write**. Copy the token.
-2. **Make the Worker.** Sign in at [dash.cloudflare.com](https://dash.cloudflare.com) (a free account), open **Workers & Pages → Create → Create Worker**, name it `paper-archive-sync` and click **Deploy**. Then click **Edit code**, replace everything with the contents of `sync/worker.js`, and click **Deploy** again.
-3. **Give it the token.** In the Worker's **Settings → Variables and Secrets**, click **Add**, choose type **Secret**, name it `GITHUB_TOKEN`, paste the token and save. The token lives only there; it is never in the repo or in anyone's browser.
-4. **Point the site at it.** Copy the Worker's address (it looks like `https://paper-archive-sync.<your-name>.workers.dev`), put it between the quotes of `const SYNC_URL = '';` at the top of `app.js`, then commit and push.
-
-That's it. Open the site on any device and tick something: the status at the top right says **Saved · on every device** within a couple of seconds, and the change shows up as a commit in the repo. Whatever a browser saved before the relay existed is pushed the first time that browser opens the site.
-
-If you use a different repo name or GitHub account, change `OWNER` and `REPO` at the top of `sync/worker.js`, and add your site's address to `ORIGINS` there.
-
-Without the relay the site still works: changes are kept in the browser, and a GitHub token under **Settings → Advanced** saves from that one device.
+That's all. Saving works from the first click, on every device, with no account, token or sign-in.
 
 ## How it saves
 
@@ -86,15 +72,17 @@ Without the relay the site still works: changes are kept in the browser, and a G
 | `data/citations.json` | Citation counts for the papers in `catalog.json` | `tools/economics/cites.py` |
 | `data/library.json` | Papers you add, edits (links, notes, research links, interactive pages, flashcards, moves), your focus, weekly goals, new fields and topics | The app |
 | `data/progress.json` | The date of each of the six steps, for each paper | The app |
-| `sync/worker.js` | The save relay (runs on Cloudflare, not on GitHub Pages) | You, once |
+| `.github/workflows/save.yml`, `tools/save_sync.py` | Copy the changes saved on the site into the two files above, every 10 minutes | GitHub Actions |
 
-Each change is committed to the repo a second or two after you click. Quick clicks are batched into one commit, and the commit message lists them, for example `Read: A Theory of Oligopoly`. Your git history is therefore a dated log of everything you've done.
+Saving needs nothing set up. Each click is posted at once to a public channel on [ntfy.sh](https://ntfy.sh), a free message service that needs no account, and every device reads the channel on top of the two files, so a change shows up everywhere within a minute. Every 10 minutes a GitHub Action in this repo copies the new changes into `data/progress.json` and `data/library.json` and commits them, using the permission GitHub gives every workflow run. The commit message lists the changes, for example `Read: A Theory of Oligopoly`, so the git history is a dated log of everything you've done. The channel keeps each change for 12 hours, far longer than the Action needs.
 
-If two devices save at the same moment, the app merges both sets of changes. If you're offline, changes are kept in the browser and pushed as soon as you're back. An open page also picks up what other devices saved, once a minute.
+If two devices change the same paper, the change made last wins; changes to different papers never clash. If you're offline, changes are kept in the browser and sent as soon as you're back. An open page picks up what other devices saved once a minute.
+
+If you use a different repo or channel name, change `CHANNEL` at the top of `app.js` and in `tools/save_sync.py`. GitHub pauses scheduled workflows after 60 days without any commits; if that happens, it emails you, and **Actions → Save progress → Enable workflow** restarts it. Changes still in any browser are sent again on that browser's next visit.
 
 ## Public by design
 
-Anyone with the link can see everything: what's been downloaded, printed, read, noted, researched and turned into flashcards, week by week, with the research links and the cards. Anyone can also click the buttons, and that is intended. Every change is a commit, so nothing is ever lost: to undo a change, revert its commit on GitHub, or restore `data/progress.json` or `data/library.json` from an earlier commit. The relay only accepts files that look like the archive's own, so a stray request cannot break the site or touch its code.
+Anyone with the link can see everything: what's been downloaded, printed, read, noted, researched and turned into flashcards, week by week, with the research links and the cards. Anyone can also click the buttons, and that is intended. Every change is a commit, so nothing is ever lost: to undo a change, revert its commit on GitHub, or restore `data/progress.json` or `data/library.json` from an earlier commit. Everything read from the channel is checked before it is used (steps must be dates, links must be web links, text has a length limit), and the channel can only change the two data files, never the site or its code.
 
 ## Finding your way around
 
@@ -147,7 +135,7 @@ The setup's last step, or **Settings → Weekly goals**, sets how many papers a 
 
 ## Saving
 
-Every click saves to the browser at once, then to the repo a second or two later. It also saves straight away when you switch tabs, lock your phone or close the page, and the site warns you if you try to close it mid-save. The dot at the top right shows where things stand. Until the relay is set up, a yellow banner says how many changes are only in that browser; once it is, they're pushed automatically.
+Every click saves to the browser at once and to everyone a second or two later. It also saves straight away when you switch tabs, lock your phone or close the page. The dot at the top right shows where things stand. A copy of the site run on your own computer keeps changes in that browser only, and says so in a banner.
 
 ## Stars and citation counts
 

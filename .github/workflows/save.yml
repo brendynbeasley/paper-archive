@@ -1,0 +1,40 @@
+# Copies the changes saved on the site (posted to the archive's ntfy.sh channel) into
+# data/library.json and data/progress.json, so the repo keeps the permanent record.
+# It uses the token GitHub gives every workflow run, so there is nothing to set up.
+name: Save progress
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: save-progress
+  cancel-in-progress: false
+
+jobs:
+  save:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copy new changes into the archive
+        run: python3 tools/save_sync.py "$RUNNER_TEMP/message.txt"
+      - name: Commit and push
+        run: |
+          if git diff --quiet -- data/library.json data/progress.json; then
+            echo "Nothing new to save."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/library.json data/progress.json
+          git commit -q -F "$RUNNER_TEMP/message.txt"
+          for attempt in 1 2 3; do
+            git push && exit 0
+            git pull --rebase -q
+          done
+          exit 1
