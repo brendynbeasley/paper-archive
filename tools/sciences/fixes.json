@@ -1,4 +1,11 @@
 {
+ "W105632781": {
+  "tp": "Time series analysis > Forecasting methods & evaluation"
+ },
+ "W115789971": {
+  "t": "Verschwindungssätze für analytische Kohomologiegruppen auf komplexen Räumen",
+  "tp": "Algebraic geometry > Hodge theory & complex algebraic geometry"
+ },
  "W118296737": {
   "not": [
    "Mathematics"
@@ -6,6 +13,9 @@
  },
  "W1183479064": {
   "tp": "Topology > General topology"
+ },
+ "W1230571684": {
+  "tp": "Partial differential equations > Hyperbolic equations & conservation laws"
  },
  "W123439666": {
   "tp": "Mathematical physics > Mathematical quantum mechanics"
@@ -22,6 +32,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W1482778848": {
+  "tp": "Differential geometry > Ricci flow & geometric analysis"
  },
  "W1487321909": {
   "tp": "Statistical learning & machine learning > Unsupervised learning & dimension reduction"
@@ -40,6 +53,14 @@
    "Mathematics"
   ]
  },
+ "W1492711015": {
+  "tp": "Partial differential equations > Nonlinear dispersive & wave equations"
+ },
+ "W1494482350": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W1494641788": {
   "tp": "Theoretical computer science > Cryptography"
  },
@@ -50,6 +71,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W1498759836": {
+  "tp": "Time series analysis > Nonlinear time series & volatility"
  },
  "W1506069954": {
   "tp": "Regression & linear models > Model selection & information criteria"
@@ -68,16 +92,28 @@
    "Econophysics"
   ]
  },
+ "W1518096223": {
+  "tp": "Functional analysis & operator theory > Banach spaces & their geometry"
+ },
  "W1520377376": {
   "not": [
    "Statistics"
   ]
  },
+ "W1522547150": {
+  "a": "Böhning, D."
+ },
  "W1523095595": {
   "tp": "Biostatistics > Survival analysis & the Cox model"
  },
+ "W1524433941": {
+  "tp": "Differential geometry > Ricci flow & geometric analysis"
+ },
  "W1526262927": {
   "tp": "Bayesian statistics > Bayesian foundations & subjective probability"
+ },
+ "W1528068698": {
+  "tp": "Spatial & environmental statistics > Extreme value theory"
  },
  "W1530054495": {
   "tp": "Real & harmonic analysis > Special functions & asymptotic analysis"
@@ -128,6 +164,9 @@
    "Mathematics"
   ]
  },
+ "W1553594703": {
+  "tp": "Spatial & environmental statistics > Areal data & spatial autoregression"
+ },
  "W1554544485": {
   "tp": "Spatial & environmental statistics > Areal data & spatial autoregression"
  },
@@ -149,6 +188,12 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W1570900291": {
+  "tp": "Algebra > Representation theory"
+ },
+ "W1571839244": {
+  "tp": "Differential geometry > Symplectic & contact geometry"
  },
  "W1571870753": {
   "tp": "Statistical learning & machine learning > Kernel methods & support vector machines"
@@ -179,6 +224,9 @@
  "W1592170628": {
   "tp": "Geometry: classical, convex & discrete > Euclidean, projective & non-Euclidean geometry"
  },
+ "W159361115": {
+  "tp": "Multivariate analysis > Covariance matrices & multivariate distributions"
+ },
  "W1595334554": {
   "not": [
    "Mathematics"
@@ -203,6 +251,9 @@
  },
  "W1604721544": {
   "tp": "Number theory > Modular & automorphic forms"
+ },
+ "W1608561939": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
  },
  "W1608810703": {
   "not": [
@@ -296,6 +347,11 @@
  "W1849729440": {
   "tp": "Statistical learning & machine learning > Unsupervised learning & dimension reduction"
  },
+ "W1850520213": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W1851508906": {
   "tp": "Topology > Characteristic classes, cobordism & topological K-theory"
  },
@@ -308,6 +364,9 @@
   "not": [
    "Statistics"
   ]
+ },
+ "W1894101563": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
  },
  "W1897081267": {
   "not": [
@@ -338,6 +397,12 @@
  "W1950302429": {
   "tp": "Nonparametric & semiparametric statistics > Splines & nonparametric regression"
  },
+ "W1950330800": {
+  "t": "Méthodes de calcul différentiel absolu et leurs applications"
+ },
+ "W1963613129": {
+  "tp": "Multivariate analysis > Principal components & factor analysis"
+ },
  "W1963724113": {
   "t": "Caractérisation de quelques espaces d'interpolation"
  },
@@ -351,12 +416,22 @@
    "Mathematics"
   ]
  },
+ "W1963828749": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W1964070472": {
   "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
  },
  "W1964081855": {
   "not": [
    "Econophysics"
+  ]
+ },
+ "W1964128680": {
+  "not": [
+   "Mathematics"
   ]
  },
  "W1964490787": {
@@ -379,11 +454,19 @@
  "W1965159161": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
  },
+ "W1965344661": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W1965661232": {
-  "tp": "Networks & systemic risk > Network science foundations"
+  "tp": "Sociophysics & collective behavior > Social contagion & spreading on networks"
  },
  "W1965682166": {
   "tp": "Mathematical physics > Mathematical quantum mechanics"
+ },
+ "W1965730174": {
+  "tp": "Spatial & environmental statistics > Ecological statistics & capture–recapture"
  },
  "W1965761421": {
   "not": [
@@ -395,6 +478,9 @@
    "Mathematics"
   ]
  },
+ "W1965902853": {
+  "tp": "Nonparametric & semiparametric statistics > Bootstrap & resampling"
+ },
  "W1966047691": {
   "not": [
    "Econophysics"
@@ -403,8 +489,17 @@
  "W1966121613": {
   "t": "HyperKähler and quaternionic Kähler geometry"
  },
+ "W1966227249": {
+  "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
+ },
+ "W1966382600": {
+  "tp": "Partial differential equations > Nonlinear dispersive & wave equations"
+ },
  "W1966586297": {
   "tp": "Functional analysis & operator theory > Operator algebras"
+ },
+ "W1966610321": {
+  "tp": "Regression & linear models > Least squares & the linear model"
  },
  "W1966617542": {
   "not": [
@@ -417,13 +512,39 @@
  "W1967174286": {
   "tp": "Theoretical computer science > Automata, formal languages & semantics"
  },
+ "W1967228187": {
+  "tp": "Regression & linear models > Robust statistics"
+ },
+ "W1967231248": {
+  "tp": "Numerical analysis & scientific computing > Numerical linear algebra"
+ },
  "W1967332578": {
   "tp": "Functional analysis & operator theory > Hilbert space & spectral theory"
+ },
+ "W1967469744": {
+  "tp": "Numerical analysis & scientific computing > Finite element methods"
+ },
+ "W1967497913": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
  },
  "W1967542684": {
   "not": [
    "Mathematics"
   ]
+ },
+ "W1967790043": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
+ },
+ "W1967793983": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W1967797812": {
+  "tp": "Topology > Knot theory & quantum invariants"
+ },
+ "W1967853550": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
  },
  "W1967903203": {
   "not": [
@@ -440,6 +561,9 @@
  },
  "W1968035761": {
   "tp": "Complex analysis > Riemann surfaces & Teichmüller theory"
+ },
+ "W1968380471": {
+  "tp": "Algebra > Commutative algebra & ring theory"
  },
  "W1968405752": {
   "tp": "Sociophysics & collective behavior > Opinion dynamics & voter models"
@@ -460,10 +584,16 @@
  "W1968598896": {
   "tp": "Mathematical physics > Quantum field theory & conformal field theory"
  },
+ "W1968634208": {
+  "tp": "Geometry: classical, convex & discrete > Discrete & computational geometry"
+ },
  "W1968876433": {
   "not": [
    "Mathematics"
   ]
+ },
+ "W1968960848": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
  },
  "W1969072025": {
   "not": [
@@ -481,6 +611,9 @@
  "W1969754919": {
   "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
  },
+ "W1969768229": {
+  "tp": "Partial differential equations > Viscosity solutions & free boundary problems"
+ },
  "W1970047968": {
   "not": [
    "Statistics"
@@ -491,13 +624,25 @@
    "Mathematics"
   ]
  },
+ "W1970195958": {
+  "tp": "Partial differential equations > Viscosity solutions & free boundary problems"
+ },
  "W1970224775": {
   "tp": "Partial differential equations > Parabolic & reaction–diffusion equations"
+ },
+ "W1970260630": {
+  "tp": "Stochastic models & methods > Physics approaches to option pricing & risk"
  },
  "W1970352604": {
   "not": [
    "Mathematics"
   ]
+ },
+ "W1970375348": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
+ },
+ "W1970436221": {
+  "t": "The Nonlinear Differential Equation y″ + p(x)y + cy⁻³ = 0"
  },
  "W1970621705": {
   "tp": "Mathematical physics > Integrable systems & solitons"
@@ -513,6 +658,12 @@
    "Econophysics"
   ]
  },
+ "W1970868143": {
+  "tp": "Applied mathematics & modeling > Epidemic models"
+ },
+ "W1971082588": {
+  "tp": "Information & coding theory > Sampling, signals & compressed sensing"
+ },
  "W1971441597": {
   "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
  },
@@ -525,6 +676,9 @@
   "not": [
    "Econophysics"
   ]
+ },
+ "W1972079575": {
+  "tp": "Spatial & environmental statistics > Ecological statistics & capture–recapture"
  },
  "W1972156862": {
   "not": [
@@ -542,6 +696,16 @@
  "W1972625678": {
   "tp": "Regression & linear models > Mixed models & multilevel data"
  },
+ "W1972638244": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W1972665826": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W1972738071": {
   "not": [
    "Mathematics"
@@ -556,6 +720,9 @@
  "W1973072331": {
   "tp": "Statistical properties of markets > Multifractality & scaling"
  },
+ "W1973089024": {
+  "tp": "Real & harmonic analysis > Function spaces & interpolation"
+ },
  "W1973119332": {
   "not": [
    "Mathematics"
@@ -564,6 +731,11 @@
  "W1973137995": {
   "tp": "Statistical inference > Probability distributions & distribution theory"
  },
+ "W1973198827": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W1973342538": {
   "tp": "Theoretical computer science > Computational complexity & P versus NP"
  },
@@ -571,6 +743,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W1973397215": {
+  "tp": "Optimization & control > Nonlinear & nonsmooth optimization"
  },
  "W1973429805": {
   "not": [
@@ -582,6 +757,14 @@
  },
  "W1973614663": {
   "tp": "Biostatistics > Statistical genetics & genomics"
+ },
+ "W1973627705": {
+  "tp": "Causal inference > Mediation & time-varying treatments"
+ },
+ "W1973818348": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W1973889959": {
   "t": "Sinai-Bowen-Ruelle measures for certain Hénon maps"
@@ -613,6 +796,9 @@
    "Statistics"
   ]
  },
+ "W1974851736": {
+  "tp": "Multivariate analysis > Multidimensional scaling & correspondence analysis"
+ },
  "W1974913150": {
   "not": [
    "Mathematics"
@@ -630,6 +816,9 @@
  },
  "W1975107026": {
   "tp": "Statistical inference > Hypothesis tests & p-values"
+ },
+ "W1975295150": {
+  "tp": "Partial differential equations > Nonlinear dispersive & wave equations"
  },
  "W1975318518": {
   "not": [
@@ -649,8 +838,15 @@
  "W1975409770": {
   "tp": "Regression & linear models > Model selection & information criteria"
  },
+ "W1975474302": {
+  "t": "A block spin construction of ondelettes. Part I: Lemarié functions",
+  "tp": "Real & harmonic analysis > Wavelets & time–frequency analysis"
+ },
  "W1975537977": {
   "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
+ },
+ "W1975578747": {
+  "tp": "Psychometrics & social-science statistics > Item response theory"
  },
  "W1975628738": {
   "tp": "Numerical analysis & scientific computing > Finite difference & finite volume methods"
@@ -673,9 +869,19 @@
    "Statistics"
   ]
  },
+ "W1975800378": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W1975964493": {
   "not": [
    "Mathematics"
+  ]
+ },
+ "W1976034413": {
+  "not": [
+   "Statistics"
   ]
  },
  "W1976149214": {
@@ -683,17 +889,35 @@
    "Econophysics"
   ]
  },
+ "W1976232622": {
+  "tp": "Sociophysics & collective behavior > Social contagion & spreading on networks"
+ },
  "W1976284538": {
   "tp": "Partial differential equations > Elliptic equations & regularity"
  },
  "W1976379494": {
   "t": "Über die Bestimmung Dirichletscher Reihen durch Funktionalgleichungen"
  },
+ "W1976429900": {
+  "tp": "Regression & linear models > Analysis of variance"
+ },
+ "W1976451714": {
+  "tp": "Partial differential equations > Parabolic & reaction–diffusion equations"
+ },
+ "W1976557506": {
+  "tp": "Time series analysis > Nonlinear time series & volatility"
+ },
  "W1976754227": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
  },
+ "W1977035465": {
+  "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
+ },
  "W1977104149": {
   "tp": "Algebra > Fields, Galois theory & polynomial equations"
+ },
+ "W1977155350": {
+  "tp": "Mathematical physics > Rigorous statistical mechanics"
  },
  "W1977157110": {
   "not": [
@@ -704,6 +928,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W1977317053": {
+  "tp": "Graph theory > Spectral graph theory & expanders"
  },
  "W1977360274": {
   "not": [
@@ -722,6 +949,9 @@
   "not": [
    "Econophysics"
   ]
+ },
+ "W1977731207": {
+  "tp": "Mathematical physics > Integrable systems & solitons"
  },
  "W1977809994": {
   "tp": "Mathematical physics > Mathematical quantum mechanics"
@@ -749,13 +979,24 @@
    "Mathematics"
   ]
  },
+ "W1978185261": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W1978426901": {
   "not": [
    "Econophysics"
   ]
  },
+ "W1978461111": {
+  "tp": "Numerical analysis & scientific computing > Spectral methods & fast algorithms"
+ },
  "W1978473840": {
   "tp": "Mathematical physics > Mathematical quantum mechanics"
+ },
+ "W1978505184": {
+  "tp": "Partial differential equations > Parabolic & reaction–diffusion equations"
  },
  "W1978514520": {
   "not": [
@@ -765,9 +1006,31 @@
  "W1978657060": {
   "tp": "Applied mathematics & modeling > Fluid dynamics & turbulence"
  },
+ "W1978679372": {
+  "tp": "Applied mathematics & modeling > Epidemic models"
+ },
+ "W1978716969": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
+ },
  "W1978864992": {
   "not": [
    "Statistics"
+  ]
+ },
+ "W1979064790": {
+  "tp": "Optimization & control > Convex optimization & interior-point methods"
+ },
+ "W1979202275": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W1979230873": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
+ },
+ "W1979346010": {
+  "not": [
+   "Mathematics"
   ]
  },
  "W1979408141": {
@@ -775,8 +1038,16 @@
    "Statistics"
   ]
  },
+ "W1979502974": {
+  "tp": "Numerical analysis & scientific computing > Spectral methods & fast algorithms"
+ },
  "W1979704006": {
   "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
+ },
+ "W1979907385": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W1979955365": {
   "tp": "Biostatistics > Dose–response, bioassay & pharmacokinetics"
@@ -786,6 +1057,9 @@
    "Mathematics"
   ]
  },
+ "W1980073652": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
+ },
  "W1980183495": {
   "tp": "Survey sampling & measurement > Measurement, reliability & agreement"
  },
@@ -793,6 +1067,9 @@
   "not": [
    "Econophysics"
   ]
+ },
+ "W1980381661": {
+  "t": "Über das Gesetz des iterierten Logarithmus"
  },
  "W1980509985": {
   "not": [
@@ -806,6 +1083,12 @@
  },
  "W1980609237": {
   "tp": "Multivariate analysis > Cluster analysis & mixture models"
+ },
+ "W1980674207": {
+  "tp": "Biostatistics > Statistical genetics & genomics"
+ },
+ "W1980761056": {
+  "tp": "Functional analysis & operator theory > Banach spaces & their geometry"
  },
  "W1981014117": {
   "not": [
@@ -828,6 +1111,14 @@
    "Mathematics"
   ]
  },
+ "W1981606737": {
+  "tp": "Nonparametric & semiparametric statistics > Rank & permutation tests"
+ },
+ "W1981636025": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W1981788920": {
   "tp": "Regression & linear models > Mixed models & multilevel data"
  },
@@ -835,6 +1126,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W1981837834": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
  },
  "W1981868363": {
   "not": [
@@ -846,11 +1140,20 @@
    "Mathematics"
   ]
  },
+ "W1982018344": {
+  "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
+ },
+ "W1982059935": {
+  "tp": "Applied mathematics & modeling > Inverse problems & imaging"
+ },
  "W1982443980": {
   "tp": "Partial differential equations > Elliptic equations & regularity"
  },
  "W1982465309": {
   "tp": "Numerical analysis & scientific computing > Finite element methods"
+ },
+ "W1982482853": {
+  "tp": "Algebra > Linear algebra & matrix theory"
  },
  "W1982580897": {
   "not": [
@@ -860,6 +1163,19 @@
  "W1982711485": {
   "not": [
    "Statistics"
+  ]
+ },
+ "W1982788594": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W1982859549": {
+  "tp": "Numerical analysis & scientific computing > Numerical linear algebra"
+ },
+ "W1983017040": {
+  "not": [
+   "Mathematics"
   ]
  },
  "W1983036416": {
@@ -873,6 +1189,21 @@
    "Mathematics"
   ]
  },
+ "W1983199177": {
+  "t": "Schrödinger operators with magnetic fields: III. Atoms in homogeneous magnetic field"
+ },
+ "W1983210113": {
+  "tp": "Partial differential equations > Nonlinear dispersive & wave equations"
+ },
+ "W1983345526": {
+  "tp": "Partial differential equations > Viscosity solutions & free boundary problems"
+ },
+ "W1983347342": {
+  "tp": "Spatial & environmental statistics > Ecological statistics & capture–recapture"
+ },
+ "W1983349998": {
+  "tp": "Applied mathematics & modeling > Asymptotic & perturbation methods"
+ },
  "W1983381361": {
   "not": [
    "Statistics"
@@ -880,6 +1211,9 @@
  },
  "W1983438352": {
   "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
+ },
+ "W1983447967": {
+  "tp": "Sociophysics & collective behavior > Social contagion & spreading on networks"
  },
  "W1983496390": {
   "not": [
@@ -923,6 +1257,9 @@
    "Mathematics"
   ]
  },
+ "W1984363050": {
+  "tp": "Regression & linear models > Generalized linear models"
+ },
  "W1984431842": {
   "not": [
    "Statistics"
@@ -953,6 +1290,11 @@
    "Statistics"
   ]
  },
+ "W1985784623": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W1985791213": {
   "not": [
    "Statistics"
@@ -963,10 +1305,19 @@
    "Econophysics"
   ]
  },
+ "W1985899288": {
+  "t": "Über eine Modifikation der Riemannschen Geometrie"
+ },
  "W1985999806": {
   "not": [
    "Mathematics"
   ]
+ },
+ "W1986095376": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
+ },
+ "W1986208405": {
+  "tp": "Probability theory > Foundations & limit theorems"
  },
  "W1986271191": {
   "not": [
@@ -1008,6 +1359,9 @@
  "W1987264442": {
   "a": "Ellingsrud, G., & Strømme, S. A."
  },
+ "W1987279313": {
+  "tp": "Mathematical physics > Mirror symmetry & mathematics of string theory"
+ },
  "W1987418661": {
   "not": [
    "Statistics"
@@ -1029,8 +1383,22 @@
    "Statistics"
   ]
  },
+ "W1987716198": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W1987851547": {
+  "tp": "Applied mathematics & modeling > Epidemic models"
+ },
  "W1987881172": {
   "tp": "Mathematical physics > Mathematical quantum mechanics"
+ },
+ "W1987881677": {
+  "tp": "Applied mathematics & modeling > Epidemic models"
+ },
+ "W1988033854": {
+  "tp": "Applied mathematics & modeling > Asymptotic & perturbation methods"
  },
  "W1988076732": {
   "not": [
@@ -1042,8 +1410,17 @@
    "Statistics"
   ]
  },
+ "W1988244564": {
+  "tp": "Dynamical systems & ergodic theory > Hamiltonian systems & KAM theory"
+ },
+ "W1988288472": {
+  "tp": "Probability theory > Queues, branching & applied probability"
+ },
  "W1988374166": {
   "tp": "Theoretical computer science > Cryptography"
+ },
+ "W1988374512": {
+  "tp": "Time series analysis > ARMA models & linear time series"
  },
  "W1988466183": {
   "not": [
@@ -1097,6 +1474,11 @@
    "Mathematics"
   ]
  },
+ "W1989767423": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W1989952213": {
   "tp": "Networks & systemic risk > Network science foundations"
  },
@@ -1105,8 +1487,26 @@
    "Mathematics"
   ]
  },
+ "W1990121351": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W1990144397": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W1990157709": {
   "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
+ },
+ "W1990236116": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W1990391051": {
+  "tp": "Mathematical physics > Integrable systems & solitons"
  },
  "W1990433225": {
   "not": [
@@ -1121,11 +1521,21 @@
  "W1990647126": {
   "tp": "Time series analysis > ARMA models & linear time series"
  },
+ "W1990675333": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W1990739729": {
   "tp": "Numerical analysis & scientific computing > Finite difference & finite volume methods"
  },
  "W1990885492": {
   "tp": "Mathematical physics > Rigorous statistical mechanics"
+ },
+ "W1990978745": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W1990991669": {
   "not": [
@@ -1140,11 +1550,20 @@
    "Mathematics"
   ]
  },
+ "W1991397548": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
+ },
+ "W1991399360": {
+  "tp": "Algebra > Commutative algebra & ring theory"
+ },
  "W1991595392": {
   "tp": "Statistical properties of markets > Multifractality & scaling"
  },
  "W1992107140": {
   "tp": "Networks & systemic risk > Network science foundations"
+ },
+ "W1992147656": {
+  "tp": "Nonparametric & semiparametric statistics > Empirical likelihood & estimating equations"
  },
  "W1992628502": {
   "not": [
@@ -1154,6 +1573,9 @@
  "W1992633748": {
   "tp": "Nonparametric & semiparametric statistics > Splines & nonparametric regression"
  },
+ "W1992709943": {
+  "tp": "Mathematical physics > Rigorous statistical mechanics"
+ },
  "W1992812527": {
   "tp": "Partial differential equations > Hyperbolic equations & conservation laws"
  },
@@ -1162,12 +1584,26 @@
    "Econophysics"
   ]
  },
+ "W1993000235": {
+  "tp": "Real & harmonic analysis > Function spaces & interpolation"
+ },
+ "W1993022201": {
+  "tp": "Theoretical computer science > Algorithms & data structures"
+ },
  "W1993027641": {
   "t": "Über die Absolutabweichung einer differentiierbaren Funktion von ihrem Integralmittelwert"
+ },
+ "W1993077418": {
+  "tp": "Real & harmonic analysis > Wavelets & time–frequency analysis"
  },
  "W1993220186": {
   "not": [
    "Econophysics"
+  ]
+ },
+ "W1993224014": {
+  "not": [
+   "Statistics"
   ]
  },
  "W1993284846": {
@@ -1197,6 +1633,9 @@
  "W1993604235": {
   "tp": "Partial differential equations > Elliptic equations & regularity"
  },
+ "W1993744672": {
+  "tp": "Combinatorics > The probabilistic method & random graphs"
+ },
  "W1993760488": {
   "tp": "Multivariate analysis > Principal components & factor analysis"
  },
@@ -1206,6 +1645,9 @@
  "W1993838378": {
   "tp": "Regression & linear models > Generalized linear models"
  },
+ "W1994117304": {
+  "t": "Über eine von Rayleigh formulierte Minimaleigenschaft des Kreises"
+ },
  "W1994143674": {
   "not": [
    "Econophysics"
@@ -1213,6 +1655,9 @@
  },
  "W1994162076": {
   "tp": "Differential geometry > Riemannian geometry & curvature"
+ },
+ "W1994204156": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
  },
  "W1994233698": {
   "tp": "Stochastic models & methods > Fractal & detrended fluctuation analysis"
@@ -1228,6 +1673,11 @@
  "W1994858552": {
   "not": [
    "Mathematics"
+  ]
+ },
+ "W1994951969": {
+  "not": [
+   "Statistics"
   ]
  },
  "W1994957333": {
@@ -1246,6 +1696,9 @@
    "Econophysics"
   ]
  },
+ "W1995358042": {
+  "tp": "Partial differential equations > Hyperbolic equations & conservation laws"
+ },
  "W1995377855": {
   "not": [
    "Mathematics"
@@ -1259,10 +1712,16 @@
    "Mathematics"
   ]
  },
+ "W1995608339": {
+  "tp": "Applied mathematics & modeling > Epidemic models"
+ },
  "W1995643906": {
   "not": [
    "Mathematics"
   ]
+ },
+ "W1995673551": {
+  "tp": "Statistical inference > Probability distributions & distribution theory"
  },
  "W1995763455": {
   "not": [
@@ -1272,8 +1731,16 @@
  "W1995799881": {
   "tp": "Theoretical computer science > Automata, formal languages & semantics"
  },
+ "W1995992845": {
+  "tp": "Applied mathematics & modeling > Pattern formation & mathematical physiology"
+ },
  "W1996007769": {
   "tp": "Stochastic models & methods > Fractal & detrended fluctuation analysis"
+ },
+ "W1996114343": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W1996124770": {
   "not": [
@@ -1314,6 +1781,9 @@
  "W1997112349": {
   "t": "Über Dirichletsche Reihen und algebraische Differentialgleichungen"
  },
+ "W1997138061": {
+  "tp": "Optimization & control > Control theory & systems"
+ },
  "W1997186932": {
   "not": [
    "Mathematics"
@@ -1323,6 +1793,10 @@
   "not": [
    "Econophysics"
   ]
+ },
+ "W1997290951": {
+  "t": "The decorated Teichmüller space of punctured surfaces",
+  "tp": "Complex analysis > Riemann surfaces & Teichmüller theory"
  },
  "W1997414622": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
@@ -1340,6 +1814,9 @@
    "Econophysics"
   ]
  },
+ "W1997668616": {
+  "tp": "Regression & linear models > Regression diagnostics & transformations"
+ },
  "W1997690032": {
   "not": [
    "Econophysics"
@@ -1351,6 +1828,11 @@
  "W1997904803": {
   "not": [
    "Statistics"
+  ]
+ },
+ "W1997916831": {
+  "not": [
+   "Mathematics"
   ]
  },
  "W1998123047": {
@@ -1378,8 +1860,19 @@
  "W1998643818": {
   "tp": "Regression & linear models > Generalized linear models"
  },
+ "W1998646770": {
+  "tp": "Mathematical physics > Integrable systems & solitons"
+ },
+ "W1998964055": {
+  "tp": "Theoretical computer science > Computational complexity & P versus NP"
+ },
  "W1998980189": {
   "t": "Grundlagen für eine Theorie des Jacobischen Kettenbruchalgorithmus"
+ },
+ "W1999198553": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W1999322550": {
   "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
@@ -1389,8 +1882,24 @@
    "Mathematics"
   ]
  },
+ "W1999479596": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W1999550436": {
   "tp": "Biostatistics > Diagnostic tests & ROC curves"
+ },
+ "W1999640431": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W1999983074": {
+  "t": "Jensen's inequality for operators and Löwner's theorem"
+ },
+ "W1999997760": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
  },
  "W2000067548": {
   "not": [
@@ -1410,10 +1919,16 @@
    "Econophysics"
   ]
  },
+ "W2000116885": {
+  "tp": "Functional analysis & operator theory > Banach spaces & their geometry"
+ },
  "W2000243709": {
   "not": [
    "Econophysics"
   ]
+ },
+ "W2000370113": {
+  "a": "Herrero, M. A., & Velázquez, J. J. L."
  },
  "W2000462523": {
   "not": [
@@ -1424,6 +1939,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2000554621": {
+  "tp": "Partial differential equations > Elliptic equations & regularity"
  },
  "W2000596011": {
   "tp": "Numerical analysis & scientific computing > Finite difference & finite volume methods"
@@ -1436,8 +1954,25 @@
    "Econophysics"
   ]
  },
+ "W2000642936": {
+  "tp": "Applied mathematics & modeling > Continuum mechanics & elasticity"
+ },
+ "W2000714860": {
+  "tp": "Optimization & control > Optimal control & dynamic programming"
+ },
+ "W2000742807": {
+  "tp": "Mathematical physics > Quantum field theory & conformal field theory"
+ },
+ "W2000804581": {
+  "tp": "Applied mathematics & modeling > Asymptotic & perturbation methods"
+ },
  "W2000814863": {
   "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
+ },
+ "W2000915153": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W2001109406": {
   "not": [
@@ -1447,15 +1982,27 @@
  "W2001149830": {
   "t": "Eine Verallgemeinerung der Quantenbedingungen für die Zwecke der Wellenmechanik"
  },
+ "W2001192987": {
+  "t": "Un théorème sur l'existence du mouvement plan d'un fluide parfait, homogène, incompressible, pendant un temps infiniment long"
+ },
+ "W2001251240": {
+  "t": "A boundary value problem associated with the second Painlevé transcendent and the Korteweg-de Vries equation"
+ },
  "W2001293558": {
   "not": [
    "Mathematics"
   ]
  },
+ "W2001412859": {
+  "tp": "Combinatorics > Enumerative & algebraic combinatorics"
+ },
  "W2001451047": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2001488223": {
+  "tp": "Applied mathematics & modeling > Epidemic models"
  },
  "W2001516747": {
   "not": [
@@ -1473,6 +2020,17 @@
    "Mathematics"
   ]
  },
+ "W2001915939": {
+  "tp": "Networks & systemic risk > Economic & trade networks"
+ },
+ "W2001992828": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2002020129": {
+  "tp": "Spatial & environmental statistics > Ecological statistics & capture–recapture"
+ },
  "W2002025203": {
   "tp": "Optimization & control > Integer & combinatorial optimization"
  },
@@ -1481,6 +2039,9 @@
    "Mathematics"
   ],
   "tp": "Spatial & environmental statistics > Spatial point patterns"
+ },
+ "W2002230262": {
+  "tp": "Optimization & control > Optimal control & dynamic programming"
  },
  "W2002331218": {
   "not": [
@@ -1495,6 +2056,15 @@
    "Mathematics"
   ]
  },
+ "W2002501536": {
+  "tp": "Partial differential equations > Parabolic & reaction–diffusion equations"
+ },
+ "W2002869784": {
+  "tp": "Nonparametric & semiparametric statistics > Splines & nonparametric regression"
+ },
+ "W2002893312": {
+  "tp": "Partial differential equations > Elliptic equations & regularity"
+ },
  "W2002912011": {
   "not": [
    "Statistics"
@@ -1506,6 +2076,14 @@
   ]
  },
  "W2003413166": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2003540088": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
+ },
+ "W2003601514": {
   "not": [
    "Mathematics"
   ]
@@ -1543,6 +2121,11 @@
    "Econophysics"
   ]
  },
+ "W2005064880": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2005105370": {
   "t": "Orbital stability of standing waves for some nonlinear Schrödinger equations"
  },
@@ -1558,6 +2141,9 @@
    "Mathematics"
   ]
  },
+ "W2005322908": {
+  "tp": "Probability theory > Martingales & stochastic processes"
+ },
  "W2005441291": {
   "tp": "Causal inference > Mediation & time-varying treatments"
  },
@@ -1569,6 +2155,18 @@
  },
  "W2005732955": {
   "tp": "High-dimensional statistics > The lasso & sparse regression"
+ },
+ "W2005755983": {
+  "tp": "Optimization & control > Optimal control & dynamic programming"
+ },
+ "W2005898672": {
+  "tp": "Applied mathematics & modeling > Continuum mechanics & elasticity"
+ },
+ "W2005912635": {
+  "tp": "Partial differential equations > Hyperbolic equations & conservation laws"
+ },
+ "W2005943426": {
+  "tp": "Real & harmonic analysis > Function spaces & interpolation"
  },
  "W2005988704": {
   "not": [
@@ -1595,6 +2193,9 @@
    "Statistics"
   ]
  },
+ "W2006336625": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
+ },
  "W2006423444": {
   "tp": "Applied mathematics & modeling > Epidemic models"
  },
@@ -1607,6 +2208,12 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2006513208": {
+  "tp": "Dynamical systems & ergodic theory > Ergodic theory & entropy"
+ },
+ "W2006533898": {
+  "tp": "Numerical analysis & scientific computing > Monte Carlo & stochastic simulation"
  },
  "W2006803905": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
@@ -1632,9 +2239,20 @@
    "Mathematics"
   ]
  },
+ "W2007424826": {
+  "tp": "Time series analysis > ARMA models & linear time series"
+ },
  "W2007463346": {
   "not": [
    "Statistics"
+  ]
+ },
+ "W2007578934": {
+  "t": "Einige Sätze Über Reihen von allgemeinen Orthogonalfunktionen"
+ },
+ "W2007594468": {
+  "not": [
+   "Mathematics"
   ]
  },
  "W2007705271": {
@@ -1645,6 +2263,11 @@
    "Statistics"
   ]
  },
+ "W2007886094": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2007915934": {
   "tp": "Complex analysis > Conformal mapping & geometric function theory"
  },
@@ -1653,6 +2276,9 @@
  },
  "W2008284432": {
   "t": "Pseudoconvex domains: An example with nontrivial Nebenhülle"
+ },
+ "W2008312103": {
+  "tp": "Causal inference > Causal graphs & structural causal models"
  },
  "W2008313676": {
   "not": [
@@ -1665,31 +2291,80 @@
  "W2008470187": {
   "tp": "Psychometrics & social-science statistics > Structural equation modeling"
  },
+ "W2008556889": {
+  "tp": "Partial differential equations > Nonlinear dispersive & wave equations"
+ },
  "W2008676721": {
   "not": [
    "Econophysics"
   ]
+ },
+ "W2008678051": {
+  "tp": "Multivariate analysis > Principal components & factor analysis"
  },
  "W2009013588": {
   "not": [
    "Econophysics"
   ]
  },
+ "W2009020532": {
+  "tp": "Applied mathematics & modeling > Inverse problems & imaging"
+ },
+ "W2009041809": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2009136691": {
   "tp": "Probability theory > Random matrices & free probability"
+ },
+ "W2009190245": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2009253656": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
  },
  "W2009363046": {
   "not": [
    "Econophysics"
   ]
  },
+ "W2009393079": {
+  "t": "The Becker-Döring cluster equations: Basic properties and asymptotic behaviour of solutions"
+ },
+ "W2009416174": {
+  "tp": "Dynamical systems & ergodic theory > Hamiltonian systems & KAM theory"
+ },
  "W2009455661": {
   "tp": "Functional analysis & operator theory > Hilbert space & spectral theory"
+ },
+ "W2009539575": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2009560557": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2009575609": {
+  "not": [
+   "Statistics"
+  ]
  },
  "W2009816832": {
   "not": [
    "Mathematics"
   ]
+ },
+ "W2009892809": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
+ },
+ "W2010165577": {
+  "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
  },
  "W2010362952": {
   "not": [
@@ -1714,9 +2389,23 @@
  "W2011058684": {
   "tp": "High-dimensional statistics > High-dimensional covariance & graphical models"
  },
+ "W2011108295": {
+  "tp": "Optimization & control > Convex optimization & interior-point methods"
+ },
  "W2011239886": {
   "not": [
    "Econophysics"
+  ]
+ },
+ "W2011254019": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
+ },
+ "W2011271861": {
+  "t": "Time decay for solutions of Schrödinger equations with rough and time-dependent potentials"
+ },
+ "W2011433920": {
+  "not": [
+   "Statistics"
   ]
  },
  "W2011480164": {
@@ -1731,6 +2420,9 @@
   "not": [
    "Econophysics"
   ]
+ },
+ "W2011872755": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
  },
  "W2011999472": {
   "tp": "Theoretical computer science > Algorithms & data structures"
@@ -1751,6 +2443,9 @@
    "Statistics"
   ]
  },
+ "W2012437014": {
+  "tp": "Numerical analysis & scientific computing > Finite element methods"
+ },
  "W2012454404": {
   "not": [
    "Statistics"
@@ -1767,11 +2462,22 @@
  "W2012722396": {
   "a": "Korányi, A., & Reimann, H. M."
  },
+ "W2012780282": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2013321956": {
+  "tp": "Applied mathematics & modeling > Inverse problems & imaging"
+ },
  "W2013392773": {
   "tp": "Sociophysics & collective behavior > Human mobility & spatial interaction"
  },
  "W2013520638": {
   "tp": "Theoretical computer science > Computational complexity & P versus NP"
+ },
+ "W2013750735": {
+  "a": "Duistermaat, J. J., & Grünbaum, F. A."
  },
  "W2013753628": {
   "not": [
@@ -1788,13 +2494,38 @@
    "Statistics"
   ]
  },
+ "W2014277111": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2014336342": {
+  "t": "Statistical mechanics of the nonlinear Schrödinger equation"
+ },
+ "W2014529209": {
+  "t": "Diffusion processes associated with Lévy generators"
+ },
  "W2014566738": {
   "not": [
    "Econophysics"
   ]
  },
+ "W2014658840": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2014725748": {
   "tp": "High-dimensional statistics > Penalized likelihood & regularization"
+ },
+ "W2014748986": {
+  "t": "Über die Determinanten mit überwiegender Hauptdiagonale"
+ },
+ "W2014749888": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
+ },
+ "W2014757225": {
+  "tp": "Real & harmonic analysis > Wavelets & time–frequency analysis"
  },
  "W2014892312": {
   "not": [
@@ -1825,6 +2556,9 @@
    "Mathematics"
   ]
  },
+ "W2015696818": {
+  "tp": "High-dimensional statistics > High-dimensional covariance & graphical models"
+ },
  "W2015840019": {
   "not": [
    "Statistics"
@@ -1845,15 +2579,24 @@
    "Statistics"
   ]
  },
+ "W2016021508": {
+  "tp": "Differential geometry > Riemannian geometry & curvature"
+ },
  "W2016123827": {
   "not": [
    "Statistics"
   ]
  },
+ "W2016190564": {
+  "tp": "Applied mathematics & modeling > Inverse problems & imaging"
+ },
  "W2016193062": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2016319756": {
+  "tp": "Algebra > Representation theory"
  },
  "W2016341899": {
   "tp": "Combinatorics > Extremal combinatorics & Ramsey theory"
@@ -1863,6 +2606,9 @@
    "Statistics"
   ]
  },
+ "W2016503956": {
+  "tp": "Optimization & control > Convex optimization & interior-point methods"
+ },
  "W2016533177": {
   "not": [
    "Mathematics"
@@ -1870,6 +2616,18 @@
  },
  "W2016559894": {
   "tp": "Theoretical computer science > Algorithms & data structures"
+ },
+ "W2016618538": {
+  "tp": "Partial differential equations > Elliptic equations & regularity"
+ },
+ "W2016657473": {
+  "tp": "Differential geometry > Symplectic & contact geometry"
+ },
+ "W2016680653": {
+  "tp": "Applied mathematics & modeling > Inverse problems & imaging"
+ },
+ "W2016729144": {
+  "tp": "Causal inference > Instrumental variables & principal stratification"
  },
  "W2016897253": {
   "not": [
@@ -1882,6 +2640,11 @@
  "W2017070295": {
   "not": [
    "Statistics"
+  ]
+ },
+ "W2017085810": {
+  "not": [
+   "Mathematics"
   ]
  },
  "W2017215485": {
@@ -1899,6 +2662,9 @@
    "Econophysics"
   ]
  },
+ "W2017614763": {
+  "tp": "Optimization & control > Convex optimization & interior-point methods"
+ },
  "W2017700359": {
   "tp": "Numerical analysis & scientific computing > Finite difference & finite volume methods"
  },
@@ -1912,8 +2678,22 @@
    "Econophysics"
   ]
  },
+ "W2017838066": {
+  "tp": "Numerical analysis & scientific computing > Numerical linear algebra"
+ },
+ "W2017882117": {
+  "tp": "Applied mathematics & modeling > Continuum mechanics & elasticity"
+ },
  "W2017963899": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
+ },
+ "W2017988667": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2017990598": {
+  "tp": "Sociophysics & collective behavior > Social contagion & spreading on networks"
  },
  "W2018094844": {
   "tp": "Theoretical computer science > Computational complexity & P versus NP"
@@ -1928,7 +2708,19 @@
    "Statistics"
   ]
  },
+ "W2018562795": {
+  "tp": "Theoretical computer science > Cryptography"
+ },
+ "W2018589578": {
+  "tp": "Partial differential equations > Hyperbolic equations & conservation laws"
+ },
+ "W2018696687": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
+ },
  "W2018804864": {
+  "tp": "Theoretical computer science > Algorithms & data structures"
+ },
+ "W2018963243": {
   "tp": "Theoretical computer science > Algorithms & data structures"
  },
  "W2019112050": {
@@ -1952,13 +2744,24 @@
    "Statistics"
   ]
  },
+ "W2019542451": {
+  "tp": "Sociophysics & collective behavior > Social contagion & spreading on networks"
+ },
  "W2019558609": {
   "tp": "Topology > Knot theory & quantum invariants"
+ },
+ "W2019634398": {
+  "not": [
+   "Statistics"
+  ]
  },
  "W2019833178": {
   "not": [
    "Mathematics"
   ]
+ },
+ "W2020081642": {
+  "t": "Das algebraische Analogon zu einem Satze von Fejér"
  },
  "W2020114693": {
   "not": [
@@ -2016,6 +2819,9 @@
  "W2021499246": {
   "t": "An obstruction to the existence of Einstein Kähler metrics"
  },
+ "W2021834060": {
+  "tp": "Applied mathematics & modeling > Epidemic models"
+ },
  "W2021930444": {
   "not": [
    "Statistics"
@@ -2024,8 +2830,14 @@
  "W2021965384": {
   "a": "Geymonat, G., Müller, S. C., & Triantafyllidis, N."
  },
+ "W2021973929": {
+  "tp": "Applied mathematics & modeling > Pattern formation & mathematical physiology"
+ },
  "W2022113252": {
   "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
+ },
+ "W2022171568": {
+  "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
  },
  "W2022281494": {
   "not": [
@@ -2038,7 +2850,15 @@
  "W2022453093": {
   "a": "Bismut, J.-M., Gillet, H., & Soulé, C."
  },
+ "W2022514908": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
+ },
  "W2022593932": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2022766601": {
   "not": [
    "Mathematics"
   ]
@@ -2047,6 +2867,9 @@
   "not": [
    "Statistics"
   ]
+ },
+ "W2022934807": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
  },
  "W2022943108": {
   "not": [
@@ -2084,6 +2907,12 @@
    "Statistics"
   ]
  },
+ "W2023694905": {
+  "tp": "Partial differential equations > Hyperbolic equations & conservation laws"
+ },
+ "W2023968886": {
+  "tp": "Sociophysics & collective behavior > Social contagion & spreading on networks"
+ },
  "W2024081693": {
   "tp": "Nonparametric & semiparametric statistics > Splines & nonparametric regression"
  },
@@ -2109,6 +2938,15 @@
  "W2024399144": {
   "t": "La 1-forme de torsion d'une variété hermitienne compacte"
  },
+ "W2024521873": {
+  "tp": "Partial differential equations > Elliptic equations & regularity"
+ },
+ "W2024571424": {
+  "tp": "Optimization & control > Control theory & systems"
+ },
+ "W2024598204": {
+  "tp": "Theoretical computer science > Algorithms & data structures"
+ },
  "W2024665095": {
   "not": [
    "Mathematics"
@@ -2116,6 +2954,15 @@
  },
  "W2024668293": {
   "tp": "Theoretical computer science > Algorithms & data structures"
+ },
+ "W2024670401": {
+  "tp": "Mathematical physics > Classical mechanics & symmetry"
+ },
+ "W2024766881": {
+  "tp": "Geometry: classical, convex & discrete > Discrete & computational geometry"
+ },
+ "W2024813476": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
  },
  "W2024913048": {
   "tp": "Functional analysis & operator theory > Hilbert space & spectral theory"
@@ -2135,6 +2982,18 @@
    "Mathematics"
   ]
  },
+ "W2025483504": {
+  "tp": "Statistical inference > Hypothesis tests & p-values"
+ },
+ "W2025567657": {
+  "tp": "Regression & linear models > Analysis of variance"
+ },
+ "W2025578652": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
+ },
+ "W2025667867": {
+  "tp": "Mathematical physics > Rigorous statistical mechanics"
+ },
  "W2025701811": {
   "not": [
    "Econophysics"
@@ -2151,10 +3010,16 @@
    "Mathematics"
   ]
  },
+ "W2025904721": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
+ },
  "W2026034143": {
   "not": [
    "Mathematics"
   ]
+ },
+ "W2026105403": {
+  "tp": "Time series analysis > ARMA models & linear time series"
  },
  "W2026187891": {
   "not": [
@@ -2174,8 +3039,16 @@
    "Mathematics"
   ]
  },
+ "W2026702408": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2026724609": {
   "tp": "Differential geometry > Riemannian geometry & curvature"
+ },
+ "W2026855422": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
  },
  "W2026898705": {
   "not": [
@@ -2189,6 +3062,11 @@
  },
  "W2027029357": {
   "t": "On Kähler-Einstein metrics on certain Kähler manifolds withC 1 (M)>0"
+ },
+ "W2027051144": {
+  "not": [
+   "Statistics"
+  ]
  },
  "W2027053301": {
   "not": [
@@ -2213,6 +3091,11 @@
    "Mathematics"
   ]
  },
+ "W2027896245": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2027973545": {
   "tp": "Design of experiments & quality > Design & analysis of computer experiments"
  },
@@ -2229,10 +3112,16 @@
    "Mathematics"
   ]
  },
+ "W2028903958": {
+  "tp": "Algebra > Representation theory"
+ },
  "W2028909370": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2028989647": {
+  "tp": "Numerical analysis & scientific computing > Numerical linear algebra"
  },
  "W2029050771": {
   "not": [
@@ -2262,6 +3151,11 @@
  "W2029401646": {
   "tp": "Stochastic models & methods > Fractal & detrended fluctuation analysis"
  },
+ "W2029415078": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2029480581": {
   "not": [
    "Statistics"
@@ -2273,11 +3167,28 @@
  "W2029574396": {
   "a": "Kollár, J., & Shepherd-Barron, N. I."
  },
+ "W2029660335": {
+  "tp": "Survey sampling & measurement > Measurement, reliability & agreement"
+ },
  "W2029700997": {
   "tp": "Number theory > Additive & combinatorial number theory"
  },
  "W2029918260": {
   "tp": "Numerical analysis & scientific computing > Finite element methods"
+ },
+ "W2029997459": {
+  "tp": "Applied mathematics & modeling > Epidemic models"
+ },
+ "W2030025160": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2030211848": {
+  "tp": "Mathematical physics > Classical mechanics & symmetry"
+ },
+ "W2030223911": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
  },
  "W2030369304": {
   "tp": "Mathematical physics > Mathematical quantum mechanics"
@@ -2291,15 +3202,36 @@
  "W2030486754": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
  },
+ "W2030587235": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
+ },
+ "W2030593486": {
+  "tp": "Mathematical physics > Integrable systems & solitons"
+ },
  "W2030799787": {
   "not": [
    "Econophysics"
   ]
  },
+ "W2030810782": {
+  "tp": "Partial differential equations > Elliptic equations & regularity"
+ },
  "W2030911724": {
   "not": [
    "Mathematics"
   ]
+ },
+ "W2030934791": {
+  "tp": "Real & harmonic analysis > Wavelets & time–frequency analysis"
+ },
+ "W2031070256": {
+  "tp": "Applied mathematics & modeling > Continuum mechanics & elasticity"
+ },
+ "W2031246048": {
+  "tp": "Graph theory > Spectral graph theory & expanders"
+ },
+ "W2031343718": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
  },
  "W2031346205": {
   "tp": "Spatial & environmental statistics > Ecological statistics & capture–recapture"
@@ -2309,10 +3241,16 @@
    "Mathematics"
   ]
  },
+ "W2031660543": {
+  "tp": "Mathematical physics > General relativity & mathematical cosmology"
+ },
  "W2031768652": {
   "tp": "Time series analysis > Nonlinear time series & volatility"
  },
  "W2031828766": {
+  "tp": "Mathematical physics > Mathematical quantum mechanics"
+ },
+ "W2031842061": {
   "tp": "Mathematical physics > Mathematical quantum mechanics"
  },
  "W2031908105": {
@@ -2322,6 +3260,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2032089508": {
+  "t": "Zur Weylschen Relativitätstheorie und der Weylschen Erweiterung des Krümmungstensorbegriffs"
  },
  "W2032101051": {
   "not": [
@@ -2342,6 +3283,12 @@
  "W2032484217": {
   "t": "The geometry of Teichmüller space via geodesic currents"
  },
+ "W2032599937": {
+  "tp": "Numerical analysis & scientific computing > Numerical linear algebra"
+ },
+ "W2032617942": {
+  "tp": "Applied mathematics & modeling > Inverse problems & imaging"
+ },
  "W2032677875": {
   "not": [
    "Statistics"
@@ -2353,15 +3300,31 @@
   ],
   "tp": "Stochastic models & methods > Fractal & detrended fluctuation analysis"
  },
+ "W2032742106": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2032767423": {
+  "tp": "Applied mathematics & modeling > Pattern formation & mathematical physiology"
+ },
  "W2032843526": {
   "not": [
    "Statistics"
   ]
  },
+ "W2033047171": {
+  "tp": "Mathematical physics > Integrable systems & solitons"
+ },
  "W2033412917": {
   "t": "On the representation of curves in Descartes' Géométrie"
  },
  "W2033527206": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2033587363": {
   "not": [
    "Statistics"
   ]
@@ -2372,16 +3335,41 @@
  "W2033900415": {
   "tp": "Numerical analysis & scientific computing > Monte Carlo & stochastic simulation"
  },
+ "W2034032542": {
+  "t": "Compact Kähler manifolds of positive bisectional curvature"
+ },
  "W2034096508": {
   "t": "Über ein Problem von Hayman"
+ },
+ "W2034135282": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W2034352409": {
   "not": [
    "Mathematics"
   ]
  },
+ "W2034398864": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2034501206": {
+  "tp": "Theoretical computer science > Algorithms & data structures"
+ },
  "W2034599918": {
   "tp": "Functional analysis & operator theory > Operator algebras"
+ },
+ "W2034649362": {
+  "tp": "Applied mathematics & modeling > Asymptotic & perturbation methods"
+ },
+ "W2034939914": {
+  "tp": "Functional analysis & operator theory > Banach spaces & their geometry"
+ },
+ "W2035098170": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
  },
  "W2035195608": {
   "not": [
@@ -2391,6 +3379,19 @@
  "W2035591380": {
   "tp": "Algebraic geometry > Étale cohomology, motives & the Weil conjectures"
  },
+ "W2035657978": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2035903324": {
+  "tp": "Mathematical physics > Mathematical quantum mechanics"
+ },
+ "W2035908552": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2035926374": {
   "not": [
    "Statistics"
@@ -2399,8 +3400,18 @@
  "W2036007974": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
  },
+ "W2036058479": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2036144354": {
   "tp": "Differential geometry > Riemannian geometry & curvature"
+ },
+ "W2036293827": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W2036312716": {
   "tp": "Algebra > Linear algebra & matrix theory"
@@ -2431,13 +3442,30 @@
    "Econophysics"
   ]
  },
+ "W2036987259": {
+  "tp": "Partial differential equations > Nonlinear dispersive & wave equations"
+ },
  "W2037034710": {
   "not": [
    "Mathematics"
   ]
  },
+ "W2037583691": {
+  "tp": "Applied mathematics & modeling > Pattern formation & mathematical physiology"
+ },
  "W2037673637": {
   "tp": "Mathematical physics > Quantum field theory & conformal field theory"
+ },
+ "W2037677143": {
+  "tp": "Applied mathematics & modeling > Inverse problems & imaging"
+ },
+ "W2037881439": {
+  "tp": "Sociophysics & collective behavior > Social contagion & spreading on networks"
+ },
+ "W2037900186": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W2037929372": {
   "not": [
@@ -2450,6 +3478,9 @@
  "W2038098381": {
   "tp": "Probability theory > Percolation, random walks & SLE"
  },
+ "W2038146650": {
+  "tp": "Causal inference > Mediation & time-varying treatments"
+ },
  "W2038186729": {
   "tp": "Statistical inference > Probability distributions & distribution theory"
  },
@@ -2459,6 +3490,14 @@
   ]
  },
  "W2038299421": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2038355908": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
+ },
+ "W2038365653": {
   "not": [
    "Mathematics"
   ]
@@ -2511,6 +3550,12 @@
  "W2040011853": {
   "tp": "Bayesian statistics > Bayesian foundations & subjective probability"
  },
+ "W2040052640": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
+ },
+ "W2040186456": {
+  "tp": "Partial differential equations > Elliptic equations & regularity"
+ },
  "W2040237604": {
   "not": [
    "Mathematics"
@@ -2526,14 +3571,44 @@
    "Econophysics"
   ]
  },
+ "W2040640649": {
+  "tp": "Biostatistics > Statistical genetics & genomics"
+ },
  "W2040924621": {
   "tp": "Theoretical computer science > Approximation & randomized algorithms"
  },
  "W2040931829": {
   "tp": "Applied mathematics & modeling > Inverse problems & imaging"
  },
+ "W2041098432": {
+  "tp": "Bayesian statistics > Priors & objective Bayes"
+ },
+ "W2041227709": {
+  "tp": "Multivariate analysis > Covariance matrices & multivariate distributions"
+ },
+ "W2041795948": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2041886662": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2041990574": {
   "a": "Kannan, R., Lovász, L., & Simonovits, M."
+ },
+ "W2042079719": {
+  "tp": "Survey sampling & measurement > Measurement, reliability & agreement"
+ },
+ "W2042355753": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2042447391": {
+  "tp": "Nonparametric & semiparametric statistics > Bootstrap & resampling"
  },
  "W2042466864": {
   "not": [
@@ -2548,10 +3623,35 @@
  "W2042537863": {
   "tp": "Dynamical systems & ergodic theory > Hyperbolic & smooth dynamics"
  },
+ "W2042578754": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2042614414": {
+  "tp": "Mathematical physics > Rigorous statistical mechanics"
+ },
  "W2042742130": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2042762108": {
+  "tp": "Complex analysis > Several complex variables"
+ },
+ "W2043095810": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2043120905": {
+  "tp": "Mathematical physics > Rigorous statistical mechanics"
+ },
+ "W2043220622": {
+  "tp": "Partial differential equations > Nonlinear dispersive & wave equations"
+ },
+ "W2043618245": {
+  "tp": "Differential geometry > Symplectic & contact geometry"
  },
  "W2043694962": {
   "not": [
@@ -2561,6 +3661,22 @@
  "W2043711675": {
   "tp": "Statistical properties of markets > Multifractality & scaling"
  },
+ "W2043726016": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2043750942": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2043857934": {
+  "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
+ },
+ "W2043990347": {
+  "tp": "Numerical analysis & scientific computing > Numerical linear algebra"
+ },
  "W2044034372": {
   "tp": "Topology > Differential topology & surgery"
  },
@@ -2568,6 +3684,15 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2044192670": {
+  "t": "Martingales, the Malliavin calculus and hypoellipticity under general Hörmander's conditions"
+ },
+ "W2044199052": {
+  "tp": "Theoretical computer science > Computational complexity & P versus NP"
+ },
+ "W2044418979": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
  },
  "W2044419029": {
   "tp": "Algebra > Commutative algebra & ring theory"
@@ -2586,6 +3711,9 @@
    "Statistics"
   ]
  },
+ "W2045194685": {
+  "tp": "Mathematical physics > Quantum field theory & conformal field theory"
+ },
  "W2045514685": {
   "not": [
    "Mathematics"
@@ -2596,14 +3724,46 @@
    "Statistics"
   ]
  },
+ "W2045978752": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2046043855": {
   "t": "Die Fundamentalgruppe des Raumes der regulären Orbits einer endlichen komplexen Spiegelungsgruppe"
+ },
+ "W2046127134": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
+ },
+ "W2046160987": {
+  "tp": "Theoretical computer science > Automata, formal languages & semantics"
+ },
+ "W2046304767": {
+  "tp": "Mathematical physics > Mathematical quantum mechanics"
+ },
+ "W2046351805": {
+  "tp": "Probability theory > Random matrices & free probability"
  },
  "W2046392353": {
   "tp": "Probability theory > Markov chains & mixing times"
  },
  "W2046399560": {
   "tp": "Networks & systemic risk > Network science foundations"
+ },
+ "W2046402929": {
+  "tp": "Numerical analysis & scientific computing > Numerical linear algebra"
+ },
+ "W2046478710": {
+  "tp": "Number theory > Modular & automorphic forms"
+ },
+ "W2046527278": {
+  "tp": "Dynamical systems & ergodic theory > Bifurcation theory & chaos"
+ },
+ "W2046557303": {
+  "tp": "Dynamical systems & ergodic theory > Bifurcation theory & chaos"
+ },
+ "W2046582129": {
+  "tp": "Partial differential equations > Parabolic & reaction–diffusion equations"
  },
  "W2046649829": {
   "tp": "Theoretical computer science > Algorithms & data structures"
@@ -2614,10 +3774,16 @@
  "W2046712067": {
   "tp": "Algebra > Commutative algebra & ring theory"
  },
+ "W2046740511": {
+  "tp": "Partial differential equations > Parabolic & reaction–diffusion equations"
+ },
  "W2046756894": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2046810640": {
+  "tp": "Survey sampling & measurement > Measurement, reliability & agreement"
  },
  "W2046815858": {
   "tp": "Combinatorics > Enumerative & algebraic combinatorics"
@@ -2632,8 +3798,20 @@
    "Econophysics"
   ]
  },
+ "W2046940295": {
+  "tp": "Topology > General topology"
+ },
  "W2047087993": {
   "tp": "Mathematical physics > Quantum field theory & conformal field theory"
+ },
+ "W2047171119": {
+  "t": "Détermination rigoureuse des ondes permanentes d'ampleur finie"
+ },
+ "W2047200029": {
+  "tp": "Functional analysis & operator theory > Hilbert space & spectral theory"
+ },
+ "W2047319220": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
  },
  "W2047348276": {
   "not": [
@@ -2653,15 +3831,32 @@
  "W2047793620": {
   "tp": "Partial differential equations > Navier–Stokes & fluid equations"
  },
+ "W2047815708": {
+  "tp": "Topology > Differential topology & surgery"
+ },
+ "W2047941733": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
+ },
  "W2047954471": {
   "not": [
    "Econophysics"
+  ]
+ },
+ "W20479761": {
+  "tp": "Regression & linear models > Generalized linear models"
+ },
+ "W2048057186": {
+  "not": [
+   "Mathematics"
   ]
  },
  "W2048092465": {
   "not": [
    "Mathematics"
   ]
+ },
+ "W2048094389": {
+  "tp": "Mathematical physics > Integrable systems & solitons"
  },
  "W2048117538": {
   "tp": "Mathematical physics > Rigorous statistical mechanics"
@@ -2677,6 +3872,11 @@
  "W2048305092": {
   "tp": "Real & harmonic analysis > Measure & integration"
  },
+ "W2048451896": {
+  "not": [
+   "Econophysics"
+  ]
+ },
  "W2048504073": {
   "tp": "Number theory > Elliptic curves & arithmetic geometry"
  },
@@ -2684,6 +3884,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2048561965": {
+  "tp": "Applied mathematics & modeling > Inverse problems & imaging"
  },
  "W2048626366": {
   "tp": "Applied mathematics & modeling > Continuum mechanics & elasticity"
@@ -2698,6 +3901,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2048864540": {
+  "t": "Classification und Integration von gewöhnlichen Differentialgleichungen zwischenxy, die eine Gruppe von Transformationen gestatten"
  },
  "W2049099580": {
   "not": [
@@ -2720,6 +3926,11 @@
  "W2049484903": {
   "not": [
    "Mathematics"
+  ]
+ },
+ "W2049534464": {
+  "not": [
+   "Statistics"
   ]
  },
  "W2049600089": {
@@ -2746,11 +3957,33 @@
    "Mathematics"
   ]
  },
+ "W2049963212": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2050059289": {
+  "tp": "Nonparametric & semiparametric statistics > Bootstrap & resampling"
+ },
+ "W2050143329": {
+  "tp": "Applied mathematics & modeling > Epidemic models"
+ },
+ "W2050171503": {
+  "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
+ },
+ "W2050246681": {
+  "tp": "Spatial & environmental statistics > Ecological statistics & capture–recapture"
+ },
  "W2050253754": {
   "tp": "Mathematical physics > Quantum field theory & conformal field theory"
  },
  "W2050297026": {
   "tp": "Regression & linear models > Model selection & information criteria"
+ },
+ "W2050323272": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W2050345155": {
   "tp": "Statistical computing & graphics > Statistical graphics & visualization"
@@ -2759,6 +3992,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2050545125": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
  },
  "W2050592460": {
   "tp": "Dynamical systems & ergodic theory > Ergodic theory & entropy"
@@ -2797,6 +4033,9 @@
  "W2051347137": {
   "tp": "Stochastic models & methods > Fractal & detrended fluctuation analysis"
  },
+ "W2051849157": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
+ },
  "W2051869207": {
   "not": [
    "Mathematics"
@@ -2804,6 +4043,9 @@
  },
  "W2051959027": {
   "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
+ },
+ "W2052167135": {
+  "tp": "Multivariate analysis > Multidimensional scaling & correspondence analysis"
  },
  "W2052339150": {
   "not": [
@@ -2814,6 +4056,12 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2052565283": {
+  "tp": "Optimization & control > Convex optimization & interior-point methods"
+ },
+ "W2052583646": {
+  "tp": "Functional analysis & operator theory > Hilbert space & spectral theory"
  },
  "W205259702": {
   "not": [
@@ -2833,10 +4081,16 @@
    "Mathematics"
   ]
  },
+ "W2052946502": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
+ },
  "W2053029150": {
   "not": [
    "Econophysics"
   ]
+ },
+ "W2053086840": {
+  "tp": "Algebra > Representation theory"
  },
  "W2053093277": {
   "not": [
@@ -2851,19 +4105,33 @@
  "W2053175782": {
   "tp": "Survey sampling & measurement > Measurement, reliability & agreement"
  },
+ "W2053544741": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
+ },
  "W2053565514": {
   "not": [
    "Mathematics"
   ],
   "tp": "Statistical inference > Likelihood, sufficiency & information"
  },
+ "W2053593375": {
+  "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
+ },
  "W2053653709": {
   "not": [
    "Econophysics"
   ]
  },
+ "W2053783019": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2053891585": {
   "tp": "Epidemiological statistics & meta-analysis > Confounding, bias & epidemiologic design"
+ },
+ "W2053904120": {
+  "tp": "Optimization & control > Control theory & systems"
  },
  "W2053923031": {
   "not": [
@@ -2883,11 +4151,22 @@
  "W2054249991": {
   "a": "Komlós, J., Sárközy, G. N., & Szemerédi, E."
  },
+ "W2054312336": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
+ },
  "W2054320306": {
   "tp": "Numerical analysis & scientific computing > Finite difference & finite volume methods"
  },
  "W2054431537": {
   "tp": "Partial differential equations > Elliptic equations & regularity"
+ },
+ "W2054565503": {
+  "tp": "Regression & linear models > Quantile, nonlinear & censored regression"
+ },
+ "W2054779687": {
+  "not": [
+   "Statistics"
+  ]
  },
  "W2054815042": {
   "not": [
@@ -2908,6 +4187,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2055021661": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
  },
  "W2055084071": {
   "not": [
@@ -2940,10 +4222,18 @@
    "Mathematics"
   ]
  },
+ "W2055910046": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2055922934": {
   "not": [
    "Econophysics"
   ]
+ },
+ "W2056326500": {
+  "tp": "Psychometrics & social-science statistics > Test theory & reliability"
  },
  "W2056544088": {
   "not": [
@@ -2956,7 +4246,18 @@
  "W2056651346": {
   "tp": "Stochastic models & methods > Fractal & detrended fluctuation analysis"
  },
+ "W2056823730": {
+  "tp": "Optimization & control > Optimal control & dynamic programming"
+ },
  "W2056859449": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2056992872": {
+  "tp": "Differential geometry > Ricci flow & geometric analysis"
+ },
+ "W2057053526": {
   "not": [
    "Mathematics"
   ]
@@ -2974,8 +4275,16 @@
    "Statistics"
   ]
  },
+ "W2057385229": {
+  "tp": "Applied mathematics & modeling > Fluid dynamics & turbulence"
+ },
  "W2057395226": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
+ },
+ "W2057434754": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W2057552658": {
   "t": "Über die Komposition der quadratischen Formen"
@@ -2985,13 +4294,22 @@
    "Mathematics"
   ]
  },
+ "W2057761253": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
+ },
  "W2057953526": {
   "not": [
    "Econophysics"
   ]
  },
+ "W2057967671": {
+  "tp": "Statistical inference > Hypothesis tests & p-values"
+ },
  "W2058105398": {
   "tp": "Sociophysics & collective behavior > Opinion dynamics & voter models"
+ },
+ "W2058111044": {
+  "tp": "Numerical analysis & scientific computing > Interpolation, splines & quadrature"
  },
  "W2058146578": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
@@ -3011,6 +4329,15 @@
    "Statistics"
   ]
  },
+ "W2058380015": {
+  "tp": "Partial differential equations > Calculus of variations & optimal transport"
+ },
+ "W2058401594": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
+ },
+ "W2058505341": {
+  "tp": "Mathematical physics > Quantum field theory & conformal field theory"
+ },
  "W2058530497": {
   "not": [
    "Statistics"
@@ -3028,6 +4355,14 @@
  "W2058929221": {
   "tp": "Regression & linear models > Mixed models & multilevel data"
  },
+ "W2058946062": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2058981386": {
+  "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
+ },
  "W2059017100": {
   "tp": "Numerical analysis & scientific computing > Finite element methods"
  },
@@ -3044,13 +4379,31 @@
    "Econophysics"
   ]
  },
+ "W2059107770": {
+  "t": "Begründung der kinetischen Gastheorie"
+ },
  "W2059126714": {
   "not": [
    "Mathematics"
   ]
  },
+ "W2059217809": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
+ },
  "W2059219162": {
   "tp": "Number theory > The Langlands program"
+ },
+ "W2059460735": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
+ },
+ "W2059473956": {
+  "tp": "Topology > Differential topology & surgery"
+ },
+ "W2059528526": {
+  "tp": "Complex analysis > Several complex variables"
+ },
+ "W2059552187": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
  },
  "W2059745395": {
   "tp": "Multivariate analysis > Principal components & factor analysis"
@@ -3060,8 +4413,27 @@
    "Statistics"
   ]
  },
+ "W2059867252": {
+  "tp": "Partial differential equations > Calculus of variations & optimal transport"
+ },
+ "W2059948212": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2060119452": {
+  "tp": "Mathematical physics > Classical mechanics & symmetry"
+ },
+ "W2060380213": {
+  "tp": "Theoretical computer science > Computational complexity & P versus NP"
+ },
  "W2060568485": {
   "tp": "Design of experiments & quality > Design & analysis of computer experiments"
+ },
+ "W2060680264": {
+  "not": [
+   "Statistics"
+  ]
  },
  "W2060842952": {
   "a": "Navarro, L., & Pérez, E."
@@ -3069,6 +4441,11 @@
  "W2060932845": {
   "not": [
    "Statistics"
+  ]
+ },
+ "W2060954098": {
+  "not": [
+   "Mathematics"
   ]
  },
  "W2061118827": {
@@ -3084,6 +4461,12 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2061689616": {
+  "tp": "Partial differential equations > Nonlinear dispersive & wave equations"
+ },
+ "W2061721224": {
+  "tp": "Algebra > Commutative algebra & ring theory"
  },
  "W2061735971": {
   "not": [
@@ -3104,18 +4487,36 @@
  "W2061938780": {
   "tp": "Bayesian statistics > Bayesian foundations & subjective probability"
  },
+ "W2062251955": {
+  "tp": "Dynamical systems & ergodic theory > Hamiltonian systems & KAM theory"
+ },
  "W2062314820": {
   "tp": "Applied mathematics & modeling > Continuum mechanics & elasticity"
+ },
+ "W2062595977": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
  },
  "W2062698543": {
   "not": [
    "Statistics"
   ]
  },
+ "W2062767125": {
+  "tp": "Theoretical computer science > Computational complexity & P versus NP"
+ },
+ "W2062863260": {
+  "tp": "Regression & linear models > Generalized linear models"
+ },
+ "W2062868118": {
+  "t": "Sur les formes quadratiques binaires indéfinies"
+ },
  "W2063134919": {
   "not": [
    "Econophysics"
   ]
+ },
+ "W2063195751": {
+  "tp": "Mathematical physics > General relativity & mathematical cosmology"
  },
  "W2063248556": {
   "tp": "Sociophysics & collective behavior > Opinion dynamics & voter models"
@@ -3138,16 +4539,27 @@
  "W2063777978": {
   "t": "History of the Lenz-Ising Model 1920–1950: From Ferromagnetic to Cooperative Phenomena"
  },
+ "W2063878321": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2063986268": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2064086982": {
+  "tp": "Geometry: classical, convex & discrete > Discrete & computational geometry"
  },
  "W2064197159": {
   "tp": "Stochastic models & methods > Fractal & detrended fluctuation analysis"
  },
  "W2064277607": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
+ },
+ "W2064335136": {
+  "tp": "Multivariate analysis > Discriminant analysis & classification rules"
  },
  "W2064361774": {
   "not": [
@@ -3158,6 +4570,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2064479203": {
+  "tp": "Real & harmonic analysis > Function spaces & interpolation"
  },
  "W2064515180": {
   "not": [
@@ -3199,6 +4614,24 @@
    "Statistics"
   ]
  },
+ "W2065260674": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2065272780": {
+  "tp": "Optimization & control > Control theory & systems"
+ },
+ "W2065322897": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2065328158": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2065354509": {
   "not": [
    "Econophysics"
@@ -3220,10 +4653,16 @@
  "W2065932192": {
   "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
  },
+ "W2066034918": {
+  "tp": "Functional analysis & operator theory > Hilbert space & spectral theory"
+ },
  "W2066184070": {
   "not": [
    "Mathematics"
   ]
+ },
+ "W2066188689": {
+  "tp": "Mathematical physics > Integrable systems & solitons"
  },
  "W2066347815": {
   "not": [
@@ -3235,36 +4674,74 @@
    "Mathematics"
   ]
  },
+ "W2066398715": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2066459185": {
   "a": "Tütüncü, R. H., Toh, K.-C., & Todd, M. J."
  },
  "W2066459332": {
   "tp": "Statistical learning & machine learning > Graphical models & latent variable learning"
  },
+ "W2066487713": {
+  "tp": "Functional analysis & operator theory > Hilbert space & spectral theory"
+ },
  "W2066838503": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2066849395": {
+  "tp": "Dynamical systems & ergodic theory > Hamiltonian systems & KAM theory"
  },
  "W2066881684": {
   "not": [
    "Econophysics"
   ]
  },
+ "W2066934211": {
+  "tp": "Mathematical physics > Integrable systems & solitons"
+ },
+ "W2066935708": {
+  "tp": "Mathematical physics > Integrable systems & solitons"
+ },
+ "W2066944044": {
+  "t": "On fully discrete Galerkin methods of second-order temporal accuracy for the nonlinear Schrödinger equation"
+ },
+ "W2067120253": {
+  "t": "Global optimization using interval analysis – the multi-dimensional case"
+ },
+ "W2067241000": {
+  "tp": "Applied mathematics & modeling > Epidemic models"
+ },
  "W2067339297": {
   "not": [
    "Mathematics"
   ]
+ },
+ "W2067580655": {
+  "tp": "Numerical analysis & scientific computing > Numerical linear algebra"
  },
  "W2067641453": {
   "not": [
    "Econophysics"
   ]
  },
+ "W2067757814": {
+  "tp": "Applied mathematics & modeling > Continuum mechanics & elasticity"
+ },
+ "W2067971241": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
+ },
  "W2068054968": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2068120653": {
+  "tp": "Nonparametric & semiparametric statistics > Splines & nonparametric regression"
  },
  "W2068199737": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
@@ -3301,8 +4778,33 @@
  "W2068792317": {
   "t": "The development of the Laplace Transform, 1737–1937 II. Poincaré to Doetsch, 1880–1937"
  },
+ "W2068888911": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2069080128": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2069082105": {
   "tp": "Stochastic models & methods > Fractal & detrended fluctuation analysis"
+ },
+ "W2069111276": {
+  "tp": "Optimization & control > Control theory & systems"
+ },
+ "W2069128211": {
+  "tp": "Algebra > Commutative algebra & ring theory"
+ },
+ "W2069129680": {
+  "tp": "Applied mathematics & modeling > Inverse problems & imaging"
+ },
+ "W2069144035": {
+  "tp": "Optimization & control > Nonlinear & nonsmooth optimization"
+ },
+ "W2069222964": {
+  "tp": "Partial differential equations > Nonlinear dispersive & wave equations"
  },
  "W2069241007": {
   "tp": "Spatial & environmental statistics > Ecological statistics & capture–recapture"
@@ -3327,6 +4829,12 @@
  "W2069626648": {
   "t": "Über die Abbildungen der dreidimensionalen Sphère auf die Kugelfläche"
  },
+ "W2069712919": {
+  "tp": "Geometry: classical, convex & discrete > Discrete & computational geometry"
+ },
+ "W2069724711": {
+  "tp": "Functional analysis & operator theory > Banach spaces & their geometry"
+ },
  "W2069754508": {
   "not": [
    "Statistics"
@@ -3346,6 +4854,12 @@
   "not": [
    "Econophysics"
   ]
+ },
+ "W2069893715": {
+  "tp": "Survey sampling & measurement > Measurement, reliability & agreement"
+ },
+ "W2069953772": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
  },
  "W2070092896": {
   "tp": "Differential geometry > Index theory & global analysis"
@@ -3376,6 +4890,17 @@
  "W2070798173": {
   "tp": "Functional analysis & operator theory > Semigroups & evolution equations"
  },
+ "W2071006253": {
+  "tp": "Probability theory > Queues, branching & applied probability"
+ },
+ "W2071058769": {
+  "tp": "Dynamical systems & ergodic theory > Hamiltonian systems & KAM theory"
+ },
+ "W2071106922": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2071304218": {
   "not": [
    "Statistics"
@@ -3385,6 +4910,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2071721660": {
+  "tp": "Statistical learning & machine learning > Boosting, bagging & random forests"
  },
  "W2071976711": {
   "tp": "Spatial & environmental statistics > Ecological statistics & capture–recapture"
@@ -3434,11 +4962,20 @@
  "W2073078790": {
   "tp": "Real & harmonic analysis > Function spaces & interpolation"
  },
+ "W2073287487": {
+  "tp": "Partial differential equations > Parabolic & reaction–diffusion equations"
+ },
+ "W2073338849": {
+  "t": "Stationäre zufällige Maße auf lokalkompakten Abelschen Gruppen"
+ },
  "W2073378999": {
   "tp": "Numerical analysis & scientific computing > Finite difference & finite volume methods"
  },
  "W2073540558": {
   "tp": "Functional analysis & operator theory > Hilbert space & spectral theory"
+ },
+ "W2073778876": {
+  "tp": "Mathematical physics > Rigorous statistical mechanics"
  },
  "W2074025077": {
   "not": [
@@ -3455,9 +4992,20 @@
    "Mathematics"
   ]
  },
+ "W2074286662": {
+  "tp": "Theoretical computer science > Algorithms & data structures"
+ },
+ "W2074411795": {
+  "tp": "Differential geometry > Minimal surfaces & geometric measure theory"
+ },
  "W2074685915": {
   "not": [
    "Econophysics"
+  ]
+ },
+ "W2074812853": {
+  "not": [
+   "Statistics"
   ]
  },
  "W2074863717": {
@@ -3471,6 +5019,11 @@
  "W2075241282": {
   "tp": "Numerical analysis & scientific computing > Finite difference & finite volume methods"
  },
+ "W2075290124": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2075416456": {
   "not": [
    "Econophysics"
@@ -3479,13 +5032,32 @@
  "W2075603209": {
   "t": "New volume ratio properties for convex symmetric bodies in ℝⁿ"
  },
+ "W2075610411": {
+  "tp": "Partial differential equations > Hyperbolic equations & conservation laws"
+ },
+ "W2075674376": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2075950485": {
   "not": [
    "Statistics"
   ]
  },
+ "W2075962318": {
+  "tp": "Applied mathematics & modeling > Continuum mechanics & elasticity"
+ },
  "W2075976062": {
   "tp": "Topology > Algebraic topology & homotopy theory"
+ },
+ "W2076172761": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2076189290": {
+  "tp": "Algebraic geometry > Curves, surfaces & classification"
  },
  "W2076273796": {
   "not": [
@@ -3495,15 +5067,24 @@
  "W2076351293": {
   "tp": "Differential geometry > Riemannian geometry & curvature"
  },
+ "W2076351635": {
+  "tp": "Partial differential equations > Viscosity solutions & free boundary problems"
+ },
  "W2076376395": {
   "not": [
    "Econophysics"
   ]
  },
+ "W2076457094": {
+  "tp": "Spatial & environmental statistics > Extreme value theory"
+ },
  "W2076668534": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2076868976": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
  },
  "W2076922992": {
   "not": [
@@ -3520,6 +5101,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2077165978": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
  },
  "W2077189739": {
   "t": "Éléments d'analyse de Karl Weierstrass"
@@ -3539,11 +5123,22 @@
    "Econophysics"
   ]
  },
+ "W2077681462": {
+  "t": "The existence of infinitely many supersingular primes for every elliptic curve over ℚ"
+ },
  "W2077770566": {
   "tp": "Information & coding theory > Source coding & data compression"
  },
+ "W2077804224": {
+  "tp": "Functional analysis & operator theory > Banach spaces & their geometry"
+ },
  "W2077827904": {
   "t": "Beispiele zur Differentialtopologie von Singularitäten"
+ },
+ "W2077887431": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W2078015570": {
   "not": [
@@ -3563,6 +5158,17 @@
    "Mathematics"
   ]
  },
+ "W2078259918": {
+  "tp": "Probability theory > Percolation, random walks & SLE"
+ },
+ "W2078278523": {
+  "tp": "Mathematical physics > Quantum field theory & conformal field theory"
+ },
+ "W2078310877": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2078432169": {
   "not": [
    "Mathematics"
@@ -3571,10 +5177,27 @@
  "W2078477559": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
  },
+ "W2078591780": {
+  "tp": "Topology > Differential topology & surgery"
+ },
+ "W2078690312": {
+  "t": "Nonlinear Schrödinger equations and simple Lie algebras"
+ },
+ "W2078699746": {
+  "tp": "Algebraic geometry > Schemes, sheaves & foundations"
+ },
  "W2078824647": {
   "not": [
    "Econophysics"
   ]
+ },
+ "W2078916342": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2079131035": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
  },
  "W2079235811": {
   "t": "Surface measures in Carnot-Carathéodory spaces"
@@ -3594,10 +5217,24 @@
  "W2079563517": {
   "tp": "Time series analysis > Forecasting methods & evaluation"
  },
+ "W2079587092": {
+  "t": "Fehlerabschätzungen und Extrapolation mit rationalen Funktionen bei Verfahren vom Richardson-Typus"
+ },
  "W2079754662": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2079773617": {
+  "a": "Ferus, D., Karcher, H., & Münzner, H. F.",
+  "t": "Cliffordalgebren und neue isoparametrische Hyperflächen",
+  "tp": "Differential geometry > Riemannian geometry & curvature"
+ },
+ "W2079914542": {
+  "tp": "Optimization & control > Optimal control & dynamic programming"
+ },
+ "W2080468976": {
+  "tp": "Complex analysis > Conformal mapping & geometric function theory"
  },
  "W2080517526": {
   "a": "Andersén, E., & Lempert, L.",
@@ -3613,19 +5250,40 @@
    "Mathematics"
   ]
  },
+ "W2080668001": {
+  "tp": "Partial differential equations > Hyperbolic equations & conservation laws"
+ },
  "W2080678955": {
   "tp": "Mathematical physics > Quantum field theory & conformal field theory"
  },
  "W2080743555": {
   "tp": "Topology > Knot theory & quantum invariants"
  },
+ "W2080821004": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2080865216": {
+  "t": "On universality of blow-up profile for L 2 critical nonlinear Schrödinger equation",
+  "tp": "Partial differential equations > Nonlinear dispersive & wave equations"
+ },
  "W2080983475": {
   "not": [
    "Statistics"
   ]
  },
+ "W2081047588": {
+  "tp": "Applied mathematics & modeling > Epidemic models"
+ },
+ "W2081085222": {
+  "tp": "Algebra > Representation theory"
+ },
  "W2081207514": {
   "a": "Morale, D., Capasso, V., & Oelschläger, K."
+ },
+ "W2081267180": {
+  "tp": "Applied mathematics & modeling > Epidemic models"
  },
  "W2081438405": {
   "tp": "Stochastic models & methods > Fractal & detrended fluctuation analysis"
@@ -3649,6 +5307,9 @@
    "Statistics"
   ]
  },
+ "W2081979086": {
+  "tp": "Partial differential equations > Hyperbolic equations & conservation laws"
+ },
  "W2081981742": {
   "not": [
    "Statistics"
@@ -3665,10 +5326,18 @@
  "W2082197725": {
   "t": "The dirichlet problem for a complex Monge-Ampère equation"
  },
+ "W2082198933": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2082442678": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2082562176": {
+  "tp": "High-dimensional statistics > Penalized likelihood & regularization"
  },
  "W2082729696": {
   "not": [
@@ -3680,16 +5349,25 @@
    "Mathematics"
   ]
  },
+ "W2083077778": {
+  "tp": "Causal inference > Propensity scores & matching"
+ },
  "W2083278075": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
  },
  "W2083361829": {
   "tp": "Stochastic models & methods > Fractal & detrended fluctuation analysis"
  },
+ "W2083372910": {
+  "tp": "Numerical analysis & scientific computing > Interpolation, splines & quadrature"
+ },
  "W2083459869": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2083547856": {
+  "tp": "Regression & linear models > Generalized linear models"
  },
  "W2083638266": {
   "not": [
@@ -3711,6 +5389,19 @@
    "Statistics"
   ]
  },
+ "W2084188731": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2084238990": {
+  "tp": "Statistical inference > Estimation & efficiency"
+ },
+ "W2084244869": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2084294564": {
   "not": [
    "Econophysics"
@@ -3726,15 +5417,24 @@
    "Statistics"
   ]
  },
+ "W2084454857": {
+  "tp": "Probability theory > Foundations & limit theorems"
+ },
  "W2084755618": {
   "not": [
    "Mathematics"
   ]
  },
+ "W2084782536": {
+  "a": "Müller-Krumbhaar, H., & Binder, K."
+ },
  "W2084891174": {
   "not": [
    "Econophysics"
   ]
+ },
+ "W2085022420": {
+  "tp": "Algebra > Representation theory"
  },
  "W2085230034": {
   "not": [
@@ -3745,6 +5445,9 @@
   "not": [
    "Statistics"
   ]
+ },
+ "W2085339746": {
+  "tp": "Number theory > The Riemann zeta function & L-functions"
  },
  "W2085413857": {
   "tp": "Mathematical physics > Integrable systems & solitons"
@@ -3789,12 +5492,25 @@
  "W2086192395": {
   "a": "Pöschel, J."
  },
+ "W2086197541": {
+  "tp": "Functional analysis & operator theory > Hilbert space & spectral theory"
+ },
  "W2086242486": {
   "not": [
    "Mathematics"
   ]
  },
  "W2086272729": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2086356330": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2086434437": {
   "not": [
    "Mathematics"
   ]
@@ -3865,11 +5581,19 @@
    "Mathematics"
   ]
  },
+ "W2088249411": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2088353214": {
   "tp": "Topology > Knot theory & quantum invariants"
  },
  "W2088386938": {
   "tp": "Theoretical computer science > Algorithms & data structures"
+ },
+ "W2088432334": {
+  "tp": "Dynamical systems & ergodic theory > Hamiltonian systems & KAM theory"
  },
  "W2088911135": {
   "tp": "High-dimensional statistics > Random matrix theory in statistics"
@@ -3886,6 +5610,15 @@
  "W2089171051": {
   "t": "Convergence results and a Poincaré-Bendixson trichotomy for asymptotically autonomous differential equations"
  },
+ "W2089293352": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
+ },
+ "W2089309544": {
+  "tp": "Numerical analysis & scientific computing > Numerical linear algebra"
+ },
+ "W2089450265": {
+  "tp": "Applied mathematics & modeling > Epidemic models"
+ },
  "W2089463633": {
   "not": [
    "Statistics"
@@ -3894,8 +5627,14 @@
  "W2089465567": {
   "tp": "Differential geometry > Riemannian geometry & curvature"
  },
+ "W2089820887": {
+  "tp": "Partial differential equations > Parabolic & reaction–diffusion equations"
+ },
  "W2089852843": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
+ },
+ "W2089895737": {
+  "tp": "Theoretical computer science > Quantum computation"
  },
  "W2090031172": {
   "not": [
@@ -3913,17 +5652,42 @@
  "W2090208105": {
   "tp": "Algebra > Linear algebra & matrix theory"
  },
+ "W2090224342": {
+  "tp": "Differential geometry > Riemannian geometry & curvature"
+ },
+ "W2090418561": {
+  "tp": "Graph theory > Spectral graph theory & expanders"
+ },
+ "W2090451298": {
+  "tp": "Optimization & control > Optimal control & dynamic programming"
+ },
+ "W2090463147": {
+  "tp": "Graph theory > Graph minors & structural graph theory"
+ },
  "W2090518410": {
   "not": [
    "Statistics"
   ]
  },
+ "W2090615127": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2090658088": {
   "tp": "Multivariate analysis > Cluster analysis & mixture models"
+ },
+ "W2090687449": {
+  "tp": "Complex analysis > Conformal mapping & geometric function theory"
  },
  "W2090697566": {
   "not": [
    "Mathematics"
+  ]
+ },
+ "W2090730513": {
+  "not": [
+   "Statistics"
   ]
  },
  "W2090777257": {
@@ -3935,13 +5699,16 @@
   ]
  },
  "W2090960684": {
-  "tp": "Theoretical computer science > Algorithms & data structures"
+  "tp": "Optimization & control > Integer & combinatorial optimization"
  },
  "W2091015960": {
   "t": "Excluded permutation matrices and the Stanley–Wilf conjecture"
  },
  "W2091022042": {
   "tp": "Number theory > Modular & automorphic forms"
+ },
+ "W2091227064": {
+  "tp": "Numerical analysis & scientific computing > Interpolation, splines & quadrature"
  },
  "W2091449379": {
   "not": [
@@ -3964,6 +5731,11 @@
    "Econophysics"
   ]
  },
+ "W2092075924": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2092184130": {
   "tp": "Networks & systemic risk > Network science foundations"
  },
@@ -3979,10 +5751,16 @@
  "W2092613863": {
   "tp": "Statistical inference > Multiple testing & false discovery rates"
  },
+ "W2092685198": {
+  "tp": "Statistical inference > Probability distributions & distribution theory"
+ },
  "W2092685486": {
   "not": [
    "Econophysics"
   ]
+ },
+ "W2092857742": {
+  "tp": "Multivariate analysis > Cluster analysis & mixture models"
  },
  "W2092861175": {
   "not": [
@@ -3996,6 +5774,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2092990185": {
+  "tp": "Spatial & environmental statistics > Areal data & spatial autoregression"
  },
  "W2093067381": {
   "not": [
@@ -4020,6 +5801,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2093788424": {
+  "tp": "Theoretical computer science > Algorithms & data structures"
  },
  "W2093828226": {
   "not": [
@@ -4046,6 +5830,11 @@
    "Mathematics"
   ]
  },
+ "W2094322451": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2094366212": {
   "not": [
    "Mathematics"
@@ -4064,6 +5853,14 @@
    "Mathematics"
   ]
  },
+ "W2094911197": {
+  "tp": "Algebra > Representation theory"
+ },
+ "W2094953527": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2095000651": {
   "not": [
    "Mathematics"
@@ -4072,10 +5869,23 @@
  "W2095072971": {
   "a": "Bethuel, F., Brezis, H., & Hélein, F."
  },
+ "W2095222360": {
+  "tp": "Numerical analysis & scientific computing > Numerical linear algebra"
+ },
+ "W2095343473": {
+  "tp": "Theoretical computer science > Algorithms & data structures"
+ },
+ "W2095375160": {
+  "tp": "Partial differential equations > Hyperbolic equations & conservation laws"
+ },
  "W2095395460": {
   "not": [
    "Econophysics"
   ]
+ },
+ "W2095487469": {
+  "a": "Cheeger, J., Müller, W. M., & Schrader, R.",
+  "tp": "Differential geometry > Riemannian geometry & curvature"
  },
  "W2095564494": {
   "not": [
@@ -4108,9 +5918,19 @@
    "Statistics"
   ]
  },
+ "W2096041903": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2096128575": {
   "not": [
    "Mathematics"
+  ]
+ },
+ "W2096409691": {
+  "not": [
+   "Statistics"
   ]
  },
  "W2096566523": {
@@ -4216,6 +6036,9 @@
    "Mathematics"
   ]
  },
+ "W2098823293": {
+  "tp": "Time series analysis > State space models & filtering"
+ },
  "W2098824966": {
   "tp": "Differential geometry > Complex & Kähler geometry"
  },
@@ -4239,6 +6062,11 @@
  },
  "W2099534828": {
   "tp": "Statistical learning & machine learning > Classification trees & nearest neighbors"
+ },
+ "W2099572752": {
+  "not": [
+   "Statistics"
+  ]
  },
  "W2099593264": {
   "tp": "Stochastic models & methods > Fractal & detrended fluctuation analysis"
@@ -4297,6 +6125,11 @@
  "W2101895751": {
   "tp": "Partial differential equations > Elliptic equations & regularity"
  },
+ "W2101928763": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2102372511": {
   "not": [
    "Mathematics"
@@ -4338,6 +6171,9 @@
  },
  "W2102790339": {
   "tp": "Statistical computing & graphics > Optimization & numerical methods in statistics"
+ },
+ "W2102961728": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
  },
  "W2102968146": {
   "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
@@ -4382,6 +6218,9 @@
  "W2103513244": {
   "tp": "Topology > Knot theory & quantum invariants"
  },
+ "W2103638447": {
+  "tp": "History, philosophy & teaching of statistics > Statistics education & statistical literacy"
+ },
  "W2103749128": {
   "tp": "Theoretical computer science > Computational complexity & P versus NP"
  },
@@ -4422,6 +6261,11 @@
  "W2104960492": {
   "tp": "Biostatistics > Diagnostic tests & ROC curves"
  },
+ "W2104998202": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2105171386": {
   "tp": "Causal inference > Potential outcomes & randomized experiments"
  },
@@ -4438,10 +6282,16 @@
  "W2105556121": {
   "tp": "Theoretical computer science > Computational complexity & P versus NP"
  },
+ "W2105588574": {
+  "tp": "Causal inference > Instrumental variables & principal stratification"
+ },
  "W2105723189": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2106147467": {
+  "tp": "Mathematical physics > Integrable systems & solitons"
  },
  "W2106253517": {
   "not": [
@@ -4453,10 +6303,21 @@
    "Mathematics"
   ]
  },
+ "W2106427229": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2106520440": {
+  "tp": "Partial differential equations > Nonlinear dispersive & wave equations"
+ },
  "W2106549261": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2106889389": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
  },
  "W2106929598": {
   "not": [
@@ -4464,6 +6325,11 @@
   ]
  },
  "W2107196928": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2107244732": {
   "not": [
    "Mathematics"
   ]
@@ -4507,6 +6373,9 @@
  "W2108451834": {
   "tp": "Biostatistics > Longitudinal & correlated data"
  },
+ "W2108477241": {
+  "tp": "Statistical inference > Hypothesis tests & p-values"
+ },
  "W2108710836": {
   "not": [
    "Mathematics"
@@ -4517,9 +6386,17 @@
    "Statistics"
   ]
  },
+ "W2109333600": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
+ },
  "W2109489513": {
   "not": [
    "Statistics"
+  ]
+ },
+ "W2109503531": {
+  "not": [
+   "Mathematics"
   ]
  },
  "W2109531142": {
@@ -4529,6 +6406,9 @@
   "not": [
    "Statistics"
   ]
+ },
+ "W2109806713": {
+  "tp": "Applied mathematics & modeling > Inverse problems & imaging"
  },
  "W2109843705": {
   "tp": "Time series analysis > State space models & filtering"
@@ -4606,6 +6486,15 @@
    "Mathematics"
   ]
  },
+ "W2111432497": {
+  "tp": "Functional analysis & operator theory > Operator algebras"
+ },
+ "W2111564493": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
+ },
+ "W2111572353": {
+  "tp": "Applied mathematics & modeling > Inverse problems & imaging"
+ },
  "W2111628838": {
   "not": [
    "Statistics"
@@ -4656,7 +6545,23 @@
    "Mathematics"
   ]
  },
+ "W2113097540": {
+  "tp": "Numerical analysis & scientific computing > Numerical linear algebra"
+ },
+ "W2113364987": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2113373290": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2113438075": {
+  "tp": "Geometry: classical, convex & discrete > Discrete & computational geometry"
+ },
+ "W2113753184": {
   "not": [
    "Statistics"
   ]
@@ -4666,11 +6571,19 @@
    "Statistics"
   ]
  },
+ "W2114192876": {
+  "tp": "Spatial & environmental statistics > Areal data & spatial autoregression"
+ },
  "W2114220616": {
   "tp": "Spatial & environmental statistics > Areal data & spatial autoregression"
  },
  "W2114242548": {
   "tp": "Causal inference > Potential outcomes & randomized experiments"
+ },
+ "W2114286085": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W2114367635": {
   "not": [
@@ -4774,15 +6687,31 @@
    "Statistics"
   ]
  },
+ "W2117481010": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2117553576": {
   "not": [
    "Statistics"
   ]
  },
+ "W2117802905": {
+  "t": "Discontinuity of the magnetization in one-dimensional 1/|x−y|² Ising and Potts models"
+ },
  "W2117905067": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2117974455": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2117988331": {
+  "tp": "High-dimensional statistics > Penalized likelihood & regularization"
  },
  "W2118097920": {
   "not": [
@@ -4822,7 +6751,15 @@
    "Mathematics"
   ]
  },
+ "W2118891797": {
+  "tp": "Theoretical computer science > Algorithms & data structures"
+ },
  "W2118934678": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2118996379": {
   "not": [
    "Statistics"
   ]
@@ -4834,6 +6771,11 @@
  },
  "W2119244918": {
   "tp": "Mathematical physics > Classical mechanics & symmetry"
+ },
+ "W2119296376": {
+  "not": [
+   "Statistics"
+  ]
  },
  "W2119381450": {
   "not": [
@@ -4861,13 +6803,24 @@
  "W2120062331": {
   "tp": "Real & harmonic analysis > Special functions & asymptotic analysis"
  },
+ "W2120294563": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2120346334": {
   "tp": "Statistical learning & machine learning > Bandits, reinforcement & online learning"
+ },
+ "W2121579066": {
+  "tp": "Partial differential equations > Elliptic equations & regularity"
  },
  "W2121647436": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2121650795": {
+  "tp": "Sociophysics & collective behavior > Cooperation & evolutionary games on networks"
  },
  "W2121739212": {
   "not": [
@@ -4910,6 +6863,9 @@
    "Statistics"
   ]
  },
+ "W2123074327": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
+ },
  "W2123119950": {
   "not": [
    "Statistics"
@@ -4946,6 +6902,11 @@
  "W2124214538": {
   "tp": "Optimization & control > Control theory & systems"
  },
+ "W2124250240": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2124335859": {
   "not": [
    "Statistics"
@@ -4966,6 +6927,9 @@
    "Statistics"
   ]
  },
+ "W2124792389": {
+  "tp": "Theoretical computer science > Quantum computation"
+ },
  "W2124964692": {
   "not": [
    "Statistics"
@@ -4981,10 +6945,24 @@
    "Statistics"
   ]
  },
+ "W2125185478": {
+  "tp": "Bayesian statistics > Bayesian nonparametrics"
+ },
  "W2125290397": {
   "not": [
    "Econophysics"
   ]
+ },
+ "W2125312723": {
+  "tp": "Applied mathematics & modeling > Fluid dynamics & turbulence"
+ },
+ "W2125498357": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2125536150": {
+  "tp": "High-dimensional statistics > The lasso & sparse regression"
  },
  "W2125538435": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
@@ -5009,6 +6987,9 @@
   "not": [
    "Statistics"
   ]
+ },
+ "W2125914984": {
+  "tp": "Multivariate analysis > Multidimensional scaling & correspondence analysis"
  },
  "W2126283076": {
   "not": [
@@ -5071,13 +7052,26 @@
    "Statistics"
   ]
  },
+ "W2127941149": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2127995963": {
   "not": [
    "Mathematics",
    "Statistics"
   ]
  },
+ "W2128076015": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
+ },
  "W2128243727": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2128251606": {
   "not": [
    "Statistics"
   ]
@@ -5097,6 +7091,9 @@
    "Statistics"
   ]
  },
+ "W2128448454": {
+  "tp": "Graph theory > Spectral graph theory & expanders"
+ },
  "W2128530362": {
   "not": [
    "Statistics"
@@ -5109,6 +7106,9 @@
  },
  "W2128777897": {
   "tp": "Information & coding theory > Source coding & data compression"
+ },
+ "W2128860595": {
+  "tp": "Nonparametric & semiparametric statistics > Splines & nonparametric regression"
  },
  "W2129076435": {
   "not": [
@@ -5171,6 +7171,9 @@
  "W2130527887": {
   "tp": "Optimization & control > Optimal control & dynamic programming"
  },
+ "W2130956967": {
+  "tp": "Information & coding theory > Source coding & data compression"
+ },
  "W2131086249": {
   "not": [
    "Statistics"
@@ -5183,6 +7186,9 @@
   "not": [
    "Statistics"
   ]
+ },
+ "W2132052962": {
+  "tp": "Applied mathematics & modeling > Epidemic models"
  },
  "W2132353975": {
   "not": [
@@ -5207,10 +7213,18 @@
    "Statistics"
   ]
  },
+ "W2133062571": {
+  "tp": "Theoretical computer science > Cryptography"
+ },
  "W2133135948": {
   "tp": "Mathematical physics > Rigorous statistical mechanics"
  },
  "W2133214726": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2133233905": {
   "not": [
    "Statistics"
   ]
@@ -5223,12 +7237,22 @@
  "W2133371793": {
   "tp": "Spatial & environmental statistics > Ecological statistics & capture–recapture"
  },
+ "W2133618411": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2133825299": {
   "tp": "Geometry: classical, convex & discrete > Discrete & computational geometry"
  },
  "W2133849899": {
   "not": [
    "Econophysics"
+  ]
+ },
+ "W2133861842": {
+  "not": [
+   "Statistics"
   ]
  },
  "W2133932282": {
@@ -5274,8 +7298,16 @@
    "Mathematics"
   ]
  },
+ "W2135029321": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
+ },
  "W2135052823": {
   "a": "Bökstedt, M., Hsiang, W. C., & Madsen, I."
+ },
+ "W2135064681": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W2135094859": {
   "not": [
@@ -5286,6 +7318,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2135361533": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
  },
  "W2135605498": {
   "tp": "Epidemiological statistics & meta-analysis > Confounding, bias & epidemiologic design"
@@ -5301,6 +7336,11 @@
   ]
  },
  "W2136104104": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2136131815": {
   "not": [
    "Statistics"
   ]
@@ -5334,6 +7374,14 @@
  },
  "W2137307912": {
   "tp": "Statistical computing & graphics > Sequential Monte Carlo & particle filters"
+ },
+ "W2137365113": {
+  "tp": "Combinatorics > The probabilistic method & random graphs"
+ },
+ "W2137485331": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W2137632745": {
   "not": [
@@ -5378,13 +7426,24 @@
    "Mathematics"
   ]
  },
+ "W2138661410": {
+  "tp": "Dynamical systems & ergodic theory > Ordinary differential equations & stability"
+ },
  "W2138662031": {
   "not": [
    "Mathematics"
   ]
  },
+ "W2138689104": {
+  "tp": "Bayesian statistics > Bayesian nonparametrics"
+ },
  "W2139364442": {
   "tp": "Stochastic models & methods > Fractal & detrended fluctuation analysis"
+ },
+ "W2139411414": {
+  "not": [
+   "Statistics"
+  ]
  },
  "W2139584447": {
   "not": [
@@ -5399,6 +7458,14 @@
    "Mathematics"
   ]
  },
+ "W2140348774": {
+  "tp": "Partial differential equations > Elliptic equations & regularity"
+ },
+ "W2140546948": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2140664056": {
   "tp": "Stochastic models & methods > Random walks, Lévy flights & anomalous diffusion"
  },
@@ -5407,8 +7474,21 @@
    "Mathematics"
   ]
  },
+ "W2140922502": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2140994015": {
+  "tp": "Graph theory > Spectral graph theory & expanders"
+ },
  "W2141019942": {
   "tp": "Causal inference > Potential outcomes & randomized experiments"
+ },
+ "W2141045864": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W2141218183": {
   "not": [
@@ -5417,6 +7497,11 @@
  },
  "W2141394518": {
   "tp": "Dynamical systems & ergodic theory > Bifurcation theory & chaos"
+ },
+ "W2141464042": {
+  "not": [
+   "Statistics"
+  ]
  },
  "W2141559645": {
   "not": [
@@ -5443,6 +7528,9 @@
    "Statistics"
   ]
  },
+ "W2142084183": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
+ },
  "W2142086811": {
   "not": [
    "Statistics"
@@ -5458,6 +7546,9 @@
    "Mathematics",
    "Statistics"
   ]
+ },
+ "W2142257518": {
+  "tp": "Causal inference > Mediation & time-varying treatments"
  },
  "W2142361665": {
   "not": [
@@ -5488,6 +7579,9 @@
   "not": [
    "Statistics"
   ]
+ },
+ "W2143109076": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
  },
  "W2143351549": {
   "not": [
@@ -5520,6 +7614,9 @@
   "not": [
    "Econophysics"
   ]
+ },
+ "W2144932012": {
+  "tp": "Numerical analysis & scientific computing > Numerical linear algebra"
  },
  "W2145411167": {
   "tp": "Causal inference > Potential outcomes & randomized experiments"
@@ -5573,6 +7670,9 @@
    "Statistics"
   ]
  },
+ "W2146403040": {
+  "tp": "Multivariate analysis > Discriminant analysis & classification rules"
+ },
  "W2146424137": {
   "tp": "Statistical properties of markets > Multifractality & scaling"
  },
@@ -5594,6 +7694,9 @@
   "not": [
    "Statistics"
   ]
+ },
+ "W2147156056": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
  },
  "W2147298660": {
   "not": [
@@ -5623,6 +7726,14 @@
    "Statistics"
   ]
  },
+ "W2147848673": {
+  "tp": "Probability theory > Markov chains & mixing times"
+ },
+ "W2147906388": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2148067905": {
   "not": [
    "Statistics"
@@ -5631,6 +7742,9 @@
  "W2148275926": {
   "a": "Kollár, J., Rónyai, L., & Szabó, T.",
   "t": "Norm-graphs and bipartite Turán numbers"
+ },
+ "W2148371346": {
+  "tp": "Regression & linear models > Generalized linear models"
  },
  "W2148410650": {
   "tp": "Graph theory > Graph coloring & the four color theorem"
@@ -5683,6 +7797,11 @@
    "Statistics"
   ]
  },
+ "W2149626936": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2149713648": {
   "not": [
    "Mathematics"
@@ -5693,13 +7812,22 @@
    "Econophysics"
   ]
  },
+ "W2150244542": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2150391795": {
   "not": [
    "Mathematics"
   ]
  },
+ "W2150937559": {
+  "tp": "Mathematical physics > Quantum field theory & conformal field theory"
+ },
  "W2150957592": {
   "not": [
+   "Mathematics",
    "Statistics"
   ]
  },
@@ -5711,6 +7839,17 @@
  "W2151177494": {
   "not": [
    "Mathematics"
+  ]
+ },
+ "W2151283225": {
+  "tp": "Applied mathematics & modeling > Inverse problems & imaging"
+ },
+ "W2151385137": {
+  "tp": "Statistical inference > Hypothesis tests & p-values"
+ },
+ "W2151423756": {
+  "not": [
+   "Statistics"
   ]
  },
  "W2151729750": {
@@ -5732,6 +7871,9 @@
   "not": [
    "Statistics"
   ]
+ },
+ "W2152171106": {
+  "tp": "Information & coding theory > Sampling, signals & compressed sensing"
  },
  "W2152328854": {
   "not": [
@@ -5761,15 +7903,29 @@
    "Statistics"
   ]
  },
+ "W2152904625": {
+  "tp": "Multivariate analysis > Cluster analysis & mixture models"
+ },
  "W2153201079": {
   "not": [
    "Statistics"
   ]
  },
+ "W2153347097": {
+  "tp": "Spatial & environmental statistics > Gaussian processes & spatio-temporal models"
+ },
  "W2153476503": {
   "tp": "Statistical learning & machine learning > Classification trees & nearest neighbors"
  },
+ "W2154070811": {
+  "tp": "Missing data & measurement error > The EM algorithm & incomplete data"
+ },
  "W2154071538": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2154136567": {
   "not": [
    "Statistics"
   ]
@@ -5781,6 +7937,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2154876043": {
+  "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
  },
  "W2155127143": {
   "not": [
@@ -5824,6 +7983,11 @@
  "W2156665896": {
   "tp": "Statistical learning & machine learning > Boosting, bagging & random forests"
  },
+ "W2157016812": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2157134953": {
   "tp": "Nonparametric & semiparametric statistics > Rank & permutation tests"
  },
@@ -5850,6 +8014,9 @@
    "Statistics"
   ]
  },
+ "W2158093589": {
+  "tp": "Regression & linear models > Generalized linear models"
+ },
  "W2158131535": {
   "not": [
    "Mathematics"
@@ -5862,6 +8029,9 @@
   "not": [
    "Statistics"
   ]
+ },
+ "W2158328144": {
+  "tp": "Networks & systemic risk > Economic & trade networks"
  },
  "W2158424806": {
   "not": [
@@ -5876,10 +8046,19 @@
    "Statistics"
   ]
  },
+ "W2158683620": {
+  "tp": "Applied mathematics & modeling > Continuum mechanics & elasticity"
+ },
  "W2159312879": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2159514083": {
+  "tp": "High-dimensional statistics > The lasso & sparse regression"
+ },
+ "W2159564086": {
+  "tp": "Networks & systemic risk > Financial networks & contagion"
  },
  "W2159566537": {
   "tp": "Theoretical computer science > Quantum computation"
@@ -5887,6 +8066,11 @@
  "W2159635590": {
   "not": [
    "Mathematics"
+  ]
+ },
+ "W2160229024": {
+  "not": [
+   "Statistics"
   ]
  },
  "W2160444846": {
@@ -5898,6 +8082,14 @@
   "not": [
    "Econophysics"
   ]
+ },
+ "W2160866642": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W2161147823": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
  },
  "W2161163382": {
   "tp": "Nonparametric & semiparametric statistics > Rank & permutation tests"
@@ -5952,6 +8144,9 @@
  "W2163137752": {
   "tp": "Theoretical computer science > Approximation & randomized algorithms"
  },
+ "W2163301924": {
+  "tp": "Probability theory > Percolation, random walks & SLE"
+ },
  "W2163352848": {
   "not": [
    "Statistics"
@@ -5967,18 +8162,37 @@
    "Statistics"
   ]
  },
+ "W2163915185": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2164122267": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2164301055": {
   "not": [
    "Statistics"
   ]
  },
+ "W2164586769": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
+ },
  "W2164624973": {
   "tp": "Mathematical physics > Quantum field theory & conformal field theory"
+ },
+ "W2164640872": {
+  "tp": "Optimization & control > Control theory & systems"
  },
  "W2164715561": {
   "not": [
    "Econophysics"
   ]
+ },
+ "W2164774824": {
+  "tp": "Real & harmonic analysis > Fourier analysis & singular integrals"
  },
  "W2165205968": {
   "not": [
@@ -5992,6 +8206,14 @@
   "not": [
    "Statistics"
   ]
+ },
+ "W2165515236": {
+  "not": [
+   "Econophysics"
+  ]
+ },
+ "W2165602985": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
  },
  "W2165639766": {
   "not": [
@@ -6021,6 +8243,11 @@
    "Statistics"
   ]
  },
+ "W2166072945": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2166347079": {
   "not": [
    "Mathematics"
@@ -6042,6 +8269,9 @@
  "W2167113113": {
   "tp": "Partial differential equations > Nonlinear dispersive & wave equations"
  },
+ "W2167156195": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
+ },
  "W2167510172": {
   "not": [
    "Statistics"
@@ -6055,6 +8285,17 @@
  "W2167675215": {
   "tp": "Topology > Four-manifolds & gauge theory"
  },
+ "W2167694824": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
+ },
+ "W2167844587": {
+  "tp": "Functional analysis & operator theory > Hilbert space & spectral theory"
+ },
+ "W2167969117": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2168228198": {
   "not": [
    "Statistics"
@@ -6064,6 +8305,9 @@
   "not": [
    "Statistics"
   ]
+ },
+ "W2168331993": {
+  "tp": "Bayesian statistics > Priors & objective Bayes"
  },
  "W2168356304": {
   "not": [
@@ -6104,6 +8348,11 @@
  "W2169134868": {
   "not": [
    "Statistics"
+  ]
+ },
+ "W2169169493": {
+  "not": [
+   "Mathematics"
   ]
  },
  "W2169359757": {
@@ -6150,6 +8399,11 @@
    "Statistics"
   ]
  },
+ "W2170034715": {
+  "not": [
+   "Statistics"
+  ]
+ },
  "W2170193181": {
   "not": [
    "Mathematics"
@@ -6182,6 +8436,11 @@
  "W2171039044": {
   "tp": "Probability theory > Queues, branching & applied probability"
  },
+ "W2171138390": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2171309390": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
  },
@@ -6191,6 +8450,9 @@
    "Mathematics"
   ]
  },
+ "W2171397807": {
+  "tp": "Functional analysis & operator theory > Noncommutative geometry"
+ },
  "W2171442490": {
   "not": [
    "Mathematics"
@@ -6199,6 +8461,9 @@
  },
  "W2171640513": {
   "tp": "Numerical analysis & scientific computing > Spectral methods & fast algorithms"
+ },
+ "W2171830216": {
+  "tp": "Optimization & control > Convex optimization & interior-point methods"
  },
  "W2171837816": {
   "not": [
@@ -6224,6 +8489,9 @@
  "W2173102980": {
   "tp": "Spatial & environmental statistics > Ecological statistics & capture–recapture"
  },
+ "W2173165070": {
+  "tp": "Optimization & control > Control theory & systems"
+ },
  "W2175456627": {
   "tp": "Optimization & control > Optimal control & dynamic programming"
  },
@@ -6242,6 +8510,9 @@
   "not": [
    "Statistics"
   ]
+ },
+ "W2178056246": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
  },
  "W2179042386": {
   "not": [
@@ -6326,8 +8597,16 @@
    "Statistics"
   ]
  },
+ "W2249970638": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2257024953": {
   "tp": "Multivariate analysis > Covariance matrices & multivariate distributions"
+ },
+ "W2257120546": {
+  "tp": "Differential geometry > Riemannian geometry & curvature"
  },
  "W2259472751": {
   "tp": "Regression & linear models > Model selection & information criteria"
@@ -6335,10 +8614,23 @@
  "W226176070": {
   "tp": "Spatial & environmental statistics > Ecological statistics & capture–recapture"
  },
+ "W2263715254": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2267236547": {
+  "tp": "Real & harmonic analysis > Approximation theory & orthogonal polynomials"
+ },
  "W2273310283": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
  },
  "W2275744032": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2277297397": {
   "not": [
    "Statistics"
   ]
@@ -6349,6 +8641,9 @@
  "W2290336547": {
   "tp": "Theoretical computer science > Quantum computation"
  },
+ "W22905875": {
+  "tp": "Statistical inference > Probability distributions & distribution theory"
+ },
  "W2290627980": {
   "not": [
    "Statistics"
@@ -6358,6 +8653,15 @@
   "not": [
    "Statistics"
   ]
+ },
+ "W2296489817": {
+  "tp": "Theoretical computer science > Cryptography"
+ },
+ "W2312726706": {
+  "tp": "Partial differential equations > Elliptic equations & regularity"
+ },
+ "W2314212607": {
+  "tp": "Mathematical physics > Classical mechanics & symmetry"
  },
  "W2315378999": {
   "tp": "Biostatistics > Clinical trials"
@@ -6378,8 +8682,14 @@
  "W2318093595": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
  },
+ "W2318358641": {
+  "tp": "Functional analysis & operator theory > Operator algebras"
+ },
  "W2318710720": {
   "a": "Bürger, R."
+ },
+ "W2318806192": {
+  "tp": "Spatial & environmental statistics > Ecological statistics & capture–recapture"
  },
  "W2319000796": {
   "tp": "Combinatorics > Enumerative & algebraic combinatorics"
@@ -6396,14 +8706,26 @@
  "W2323245002": {
   "tp": "Functional analysis & operator theory > Banach spaces & their geometry"
  },
+ "W2323735306": {
+  "tp": "Spatial & environmental statistics > Ecological statistics & capture–recapture"
+ },
  "W2323777246": {
   "tp": "Mathematical logic & foundations > Computability & recursion theory"
+ },
+ "W2325505781": {
+  "tp": "Differential geometry > Minimal surfaces & geometric measure theory"
  },
  "W2327105095": {
   "tp": "Spatial & environmental statistics > Ecological statistics & capture–recapture"
  },
  "W2327509254": {
   "tp": "Real & harmonic analysis > Fourier analysis & singular integrals"
+ },
+ "W2327931929": {
+  "tp": "History & philosophy of mathematics > Mathematics from 1700 to 1900"
+ },
+ "W2328009109": {
+  "tp": "Regression & linear models > Quantile, nonlinear & censored regression"
  },
  "W2328193362": {
   "tp": "Regression & linear models > Regression diagnostics & transformations"
@@ -6416,6 +8738,9 @@
  "W2328706611": {
   "tp": "Partial differential equations > Calculus of variations & optimal transport"
  },
+ "W2329260516": {
+  "tp": "Statistical inference > Hypothesis tests & p-values"
+ },
  "W2330301979": {
   "tp": "Combinatorics > Enumerative & algebraic combinatorics"
  },
@@ -6425,11 +8750,20 @@
  "W2331578546": {
   "tp": "Functional analysis & operator theory > Operator algebras"
  },
+ "W2332265223": {
+  "tp": "Graph theory > Graph coloring & the four color theorem"
+ },
+ "W2332843626": {
+  "tp": "Spatial & environmental statistics > Ecological statistics & capture–recapture"
+ },
  "W2333041090": {
   "tp": "Algebra > Linear algebra & matrix theory"
  },
  "W2333144228": {
   "tp": "Spatial & environmental statistics > Ecological statistics & capture–recapture"
+ },
+ "W2333300544": {
+  "tp": "Differential geometry > Ricci flow & geometric analysis"
  },
  "W2336770924": {
   "tp": "Theoretical computer science > Quantum computation"
@@ -6444,6 +8778,9 @@
    "Statistics"
   ]
  },
+ "W2338257668": {
+  "tp": "Statistical inference > Estimation & efficiency"
+ },
  "W2356559998": {
   "not": [
    "Statistics"
@@ -6454,6 +8791,10 @@
    "Econophysics"
   ]
  },
+ "W2366768275": {
+  "t": "Quasihomogene isolierte Singularitäten von Hyperflächen",
+  "tp": "Algebraic geometry > Curves, surfaces & classification"
+ },
  "W2370195024": {
   "t": "Deformation of Kähler matrics to Kähler-Einstein metrics on compact Kähler manifolds"
  },
@@ -6462,14 +8803,35 @@
    "Statistics"
   ]
  },
+ "W2380581110": {
+  "a": "Grüss, G.",
+  "t": "Über das Maximum des absoluten Betrages von $$\\frac{1}{{b - a}}\\int\\limits_a^b {f\\left( x \\right)} g\\left( x \\right)dx - \\frac{1}{{\\left( {b - a} \\right)^2 }}\\int\\limits_a^b {f\\left( x \\right)dx} \\int\\limits_a^b g \\left( x \\right)dx$$"
+ },
+ "W2381246980": {
+  "a": "Verfürth, R."
+ },
+ "W2396900654": {
+  "tp": "Statistical inference > Probability distributions & distribution theory"
+ },
  "W2397861637": {
   "not": [
    "Mathematics"
   ]
  },
+ "W2400770063": {
+  "tp": "Market microstructure & order flow > Market efficiency, trading & arbitrage"
+ },
+ "W2402588523": {
+  "tp": "Optimization & control > Nonlinear & nonsmooth optimization"
+ },
  "W2405887519": {
   "not": [
    "Statistics"
+  ]
+ },
+ "W2411622228": {
+  "not": [
+   "Econophysics"
   ]
  },
  "W2412782625": {
@@ -6482,6 +8844,9 @@
    "Statistics"
   ]
  },
+ "W2461825338": {
+  "tp": "Survey sampling & measurement > Probability sampling & estimation"
+ },
  "W2465579951": {
   "not": [
    "Statistics"
@@ -6489,6 +8854,9 @@
  },
  "W2466989778": {
   "tp": "Causal inference > Causal graphs & structural causal models"
+ },
+ "W2468762483": {
+  "tp": "Topology > Differential topology & surgery"
  },
  "W2470758581": {
   "not": [
@@ -6525,6 +8893,9 @@
  },
  "W2478014714": {
   "t": "Quadratische Körper im Gebiete der höheren Kongruenzen. I. Arithmetischer Teil"
+ },
+ "W2478260721": {
+  "t": "Sur les fonctions conjuguées"
  },
  "W2484086408": {
   "not": [
@@ -6577,6 +8948,12 @@
  "W2523170955": {
   "tp": "Functional analysis & operator theory > Hilbert space & spectral theory"
  },
+ "W2534090929": {
+  "tp": "Sociophysics & collective behavior > Opinion dynamics & voter models"
+ },
+ "W2534946191": {
+  "tp": "Partial differential equations > Parabolic & reaction–diffusion equations"
+ },
  "W2536620281": {
   "not": [
    "Mathematics"
@@ -6602,6 +8979,14 @@
  },
  "W2557117995": {
   "tp": "Statistical learning & machine learning > Boosting, bagging & random forests"
+ },
+ "W2563212924": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
+ },
+ "W2566154985": {
+  "not": [
+   "Statistics"
+  ]
  },
  "W2566971417": {
   "tp": "Networks & systemic risk > Network science foundations"
@@ -6645,6 +9030,9 @@
    "Econophysics"
   ]
  },
+ "W2598132548": {
+  "tp": "Partial differential equations > Nonlinear dispersive & wave equations"
+ },
  "W2599798715": {
   "t": "Characterization of the unit ball in ℂⁿ by its automorphism group"
  },
@@ -6655,6 +9043,9 @@
  },
  "W2603020828": {
   "tp": "History, philosophy & teaching of statistics > Statistics education & statistical literacy"
+ },
+ "W2603154707": {
+  "tp": "Partial differential equations > Elliptic equations & regularity"
  },
  "W2604086949": {
   "not": [
@@ -6727,6 +9118,16 @@
    "Statistics"
   ]
  },
+ "W2735861106": {
+  "not": [
+   "Econophysics"
+  ]
+ },
+ "W2738793433": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2739160792": {
   "tp": "Optimization & control > Nonlinear & nonsmooth optimization"
  },
@@ -6772,6 +9173,9 @@
   "not": [
    "Statistics"
   ]
+ },
+ "W2754952441": {
+  "tp": "Applied mathematics & modeling > Epidemic models"
  },
  "W2754962589": {
   "not": [
@@ -6858,10 +9262,21 @@
  "W2794722104": {
   "tp": "Multivariate analysis > Cluster analysis & mixture models"
  },
+ "W2796079430": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W2796418092": {
   "not": [
    "Statistics"
   ]
+ },
+ "W2796616088": {
+  "tp": "Biostatistics > Dose–response, bioassay & pharmacokinetics"
+ },
+ "W2797846142": {
+  "tp": "Time series analysis > Forecasting methods & evaluation"
  },
  "W2802643674": {
   "tp": "Statistical learning & machine learning > Boosting, bagging & random forests"
@@ -6948,6 +9363,9 @@
    "Statistics"
   ]
  },
+ "W2905074708": {
+  "tp": "Spatial & environmental statistics > Areal data & spatial autoregression"
+ },
  "W2905199852": {
   "not": [
    "Statistics"
@@ -6972,17 +9390,28 @@
  "W2912437396": {
   "tp": "Theoretical computer science > Approximation & randomized algorithms"
  },
+ "W2912626077": {
+  "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
+ },
  "W2913049457": {
   "t": "Critères de platitude et de projectivité: Techniques de « platification » d'un module"
  },
  "W2913340405": {
   "tp": "Statistical learning & machine learning > Statistical learning theory"
  },
+ "W2919176916": {
+  "tp": "History, philosophy & teaching of statistics > Philosophy of statistics & the replication debate"
+ },
  "W2922577842": {
   "tp": "Epidemiological statistics & meta-analysis > Meta-analysis & research synthesis"
  },
  "W2923691699": {
   "tp": "Causal inference > Mediation & time-varying treatments"
+ },
+ "W2924487690": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W2928165649": {
   "not": [
@@ -7005,6 +9434,11 @@
  },
  "W2951543747": {
   "tp": "Differential geometry > Complex & Kähler geometry"
+ },
+ "W2952620388": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W2953079921": {
   "not": [
@@ -7067,8 +9501,14 @@
    "Statistics"
   ]
  },
+ "W2964200067": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
+ },
  "W2964213744": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
+ },
+ "W2964305021": {
+  "tp": "Partial differential equations > Navier–Stokes & fluid equations"
  },
  "W2964523010": {
   "not": [
@@ -7077,6 +9517,11 @@
  },
  "W2965563166": {
   "tp": "Statistical learning & machine learning > Neural networks & deep learning"
+ },
+ "W2966090337": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W2969273703": {
   "not": [
@@ -7091,11 +9536,17 @@
  "W2973941913": {
   "tp": "Statistical learning & machine learning > Unsupervised learning & dimension reduction"
  },
+ "W2983682027": {
+  "tp": "Regression & linear models > Regression diagnostics & transformations"
+ },
  "W2984353870": {
   "tp": "Statistical learning & machine learning > Statistical learning theory"
  },
  "W2986057930": {
   "tp": "Real & harmonic analysis > Special functions & asymptotic analysis"
+ },
+ "W2990595759": {
+  "tp": "Applied mathematics & modeling > Inverse problems & imaging"
  },
  "W2993704645": {
   "not": [
@@ -7112,6 +9563,14 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W2997617958": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W2998014864": {
+  "t": "Studies on the Painlevé equations"
  },
  "W2998115938": {
   "not": [
@@ -7135,6 +9594,9 @@
   "not": [
    "Statistics"
   ]
+ },
+ "W3004128881": {
+  "tp": "Applied mathematics & modeling > Mathematical biology & population dynamics"
  },
  "W3004912618": {
   "not": [
@@ -7175,6 +9637,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W3009925463": {
+  "tp": "Regression & linear models > Generalized linear models"
  },
  "W3010233963": {
   "not": [
@@ -7238,6 +9703,11 @@
    "Mathematics"
   ]
  },
+ "W3014842224": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W3014948915": {
   "not": [
    "Mathematics"
@@ -7259,6 +9729,11 @@
  "W3015792206": {
   "not": [
    "Mathematics"
+  ]
+ },
+ "W3016007555": {
+  "not": [
+   "Statistics"
   ]
  },
  "W3016843226": {
@@ -7369,6 +9844,11 @@
  "W3042165818": {
   "tp": "Theoretical computer science > Algorithms & data structures"
  },
+ "W3045248985": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W3046194589": {
   "not": [
    "Statistics"
@@ -7411,8 +9891,21 @@
    "Statistics"
   ]
  },
+ "W3104302389": {
+  "tp": "Geometry: classical, convex & discrete > Discrete & computational geometry"
+ },
  "W3104331663": {
   "tp": "Nonparametric & semiparametric statistics > Rank & permutation tests"
+ },
+ "W3106991655": {
+  "not": [
+   "Mathematics"
+  ]
+ },
+ "W3109998099": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W3111278950": {
   "not": [
@@ -7425,6 +9918,14 @@
  "W3111914315": {
   "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
  },
+ "W3115781672": {
+  "tp": "Real & harmonic analysis > Approximation theory & orthogonal polynomials"
+ },
+ "W3119411150": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W3121487129": {
   "not": [
    "Mathematics"
@@ -7436,6 +9937,9 @@
  "W3121536068": {
   "t": "Récurrence et généricité"
  },
+ "W3121912489": {
+  "tp": "Networks & systemic risk > Financial networks & contagion"
+ },
  "W3122958054": {
   "tp": "Causal inference > Potential outcomes & randomized experiments"
  },
@@ -7444,6 +9948,12 @@
  },
  "W3123564515": {
   "tp": "Causal inference > Potential outcomes & randomized experiments"
+ },
+ "W3123918203": {
+  "tp": "Missing data & measurement error > Measurement error & errors-in-variables"
+ },
+ "W3124333825": {
+  "tp": "History, philosophy & teaching of statistics > Philosophy of statistics & the replication debate"
  },
  "W3124899688": {
   "not": [
@@ -7456,6 +9966,11 @@
  "W3127773267": {
   "not": [
    "Statistics"
+  ]
+ },
+ "W3129149202": {
+  "not": [
+   "Mathematics"
   ]
  },
  "W3134208712": {
@@ -7474,6 +9989,16 @@
  "W3138970751": {
   "not": [
    "Statistics"
+  ]
+ },
+ "W3140760072": {
+  "not": [
+   "Statistics"
+  ]
+ },
+ "W3141032947": {
+  "not": [
+   "Mathematics"
   ]
  },
  "W3142570770": {
@@ -7529,6 +10054,11 @@
  "W3187477437": {
   "tp": "Differential geometry > Minimal surfaces & geometric measure theory"
  },
+ "W3192259771": {
+  "not": [
+   "Mathematics"
+  ]
+ },
  "W3196659537": {
   "not": [
    "Statistics"
@@ -7555,6 +10085,9 @@
    "Mathematics"
   ]
  },
+ "W3214098784": {
+  "tp": "Numerical analysis & scientific computing > Numerical methods for differential equations"
+ },
  "W3216034703": {
   "tp": "Functional analysis & operator theory > Hilbert space & spectral theory"
  },
@@ -7576,6 +10109,11 @@
  },
  "W4213171111": {
   "tp": "Differential geometry > Minimal surfaces & geometric measure theory"
+ },
+ "W4220756778": {
+  "not": [
+   "Mathematics"
+  ]
  },
  "W4220867566": {
   "not": [
@@ -7652,10 +10190,22 @@
  "W4237616944": {
   "tp": "Mathematical logic & foundations > Set theory & forcing"
  },
+ "W4237622357": {
+  "tp": "Nonparametric & semiparametric statistics > Splines & nonparametric regression"
+ },
+ "W4238196649": {
+  "tp": "Complex analysis > Several complex variables"
+ },
+ "W4238619613": {
+  "tp": "Dynamical systems & ergodic theory > Bifurcation theory & chaos"
+ },
  "W4239147634": {
   "not": [
    "Statistics"
   ]
+ },
+ "W4244651065": {
+  "tp": "Probability theory > Random matrices & free probability"
  },
  "W4245557262": {
   "a": "Komlós, J., Major, P., & Tusnády, G."
@@ -7668,8 +10218,14 @@
    "Statistics"
   ]
  },
+ "W4247769007": {
+  "tp": "Multivariate analysis > Multidimensional scaling & correspondence analysis"
+ },
  "W4248194104": {
   "tp": "Algebraic geometry > Schemes, sheaves & foundations"
+ },
+ "W4248198221": {
+  "tp": "Complex analysis > Entire & meromorphic functions"
  },
  "W4248273320": {
   "tp": "Stochastic models & methods > Entropy, information & causality measures"
@@ -7678,6 +10234,9 @@
   "not": [
    "Mathematics"
   ]
+ },
+ "W4251031601": {
+  "tp": "Differential geometry > Minimal surfaces & geometric measure theory"
  },
  "W4251375806": {
   "tp": "Real & harmonic analysis > Special functions & asymptotic analysis"
@@ -7693,11 +10252,17 @@
  "W4252973173": {
   "tp": "Combinatorics > The probabilistic method & random graphs"
  },
+ "W4252979015": {
+  "tp": "Nonparametric & semiparametric statistics > Density estimation & kernel smoothing"
+ },
  "W4254807835": {
   "tp": "Combinatorics > Extremal combinatorics & Ramsey theory"
  },
  "W4255359412": {
   "tp": "Algebraic geometry > Schemes, sheaves & foundations"
+ },
+ "W4256550993": {
+  "tp": "Multivariate analysis > Multidimensional scaling & correspondence analysis"
  },
  "W4280494807": {
   "not": [
@@ -8376,6 +10941,9 @@
  "W76659856": {
   "a": "Jarník, V. C.",
   "t": "Über die simultanen diophantischen Approximationen"
+ },
+ "W78182116": {
+  "tp": "Nonparametric & semiparametric statistics > Density estimation & kernel smoothing"
  },
  "W999207820": {
   "tp": "Design of experiments & quality > Design & analysis of computer experiments"

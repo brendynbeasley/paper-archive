@@ -1303,8 +1303,8 @@ function bind() {
 }
 
 /* ---------- start ---------- */
-const DATA_V = '4';      // bump when data/economics.json is rebuilt, so browsers fetch the new copy
-const SCI_V = '1';       // the same for data/sciences.json
+const DATA_V = '5';      // bump when data/economics.json is rebuilt, so browsers fetch the new copy
+const SCI_V = '2';       // the same for data/sciences.json
 async function start() {
   if (!$('view') || !$('navTree')) {
     // This script arrived before the page that goes with it (an old copy of index.html is cached).

@@ -46,7 +46,7 @@ WORK = os.path.join(ROOT, 'work', 'sciences')
 OUT = os.path.join(ROOT, 'data', 'sciences.json')
 THIS_YEAR = date.today().year
 CAP = {'Econophysics': 60, 'Mathematics': 80, 'Statistics': 80}          # papers per topic
-KEEP_ABOVE = {'Econophysics': 600, 'Mathematics': 700, 'Statistics': 2500}  # listed even in a full topic
+KEEP_ABOVE = {'Econophysics': 250, 'Mathematics': 250, 'Statistics': 250}  # listed even in a full topic
 MUST, INFLUENTIAL = 8, 16
 LM_MUST_MAX = 15          # two-star landmarks per topic; the rest of a longer list get one star
 LANGS = {'Mathematics': {'en', 'fr', 'de', 'it', None}, 'Statistics': {'en', 'fr', None}, 'Econophysics': {'en', None}}
@@ -158,8 +158,9 @@ def existing_index():
 
 
 def last_published():
-    """Ids published in the committed data/sciences.json (id -> 'Area > Topic'), and the econophysics
-    rows of the committed data/economics.json (id -> (old topic, row))."""
+    """Ids published in the committed data/sciences.json (id -> 'Area > Topic'), and the published rows
+    themselves (id -> (topic, row)): the econophysics rows of the committed data/economics.json under
+    their old topic names, and every row of the committed data/sciences.json."""
     def show(path):
         try:
             return json.loads(subprocess.run(['git', '-C', ROOT, 'show', 'HEAD:' + path], capture_output=True,
@@ -178,6 +179,10 @@ def last_published():
             for p in t['p']:
                 if isinstance(p, list):
                     old_ep[p[0]] = (t['tp'], p)
+    for t in sci.get('topics', []):
+        for p in t['p']:
+            if isinstance(p, list):
+                old_ep.setdefault(p[0], (published[p[0]], p))
     return published, old_ep
 
 
@@ -281,6 +286,8 @@ def main():
             n_extra += k >= CAP[field]
             stars = 2 if k < must else 1 if k < MUST + INFLUENTIAL else 0
             ex = r['id'] if r['id'] in existing else ebuild.existing_id(r, r['_title'], by_doi, by_title)
+            if ex and ex != r['id'] and r['id'] in sticky:
+                ex = None                                 # published with its own id: keep that id alive
             if ex or r['id'] in listed:
                 pid = ex or r['id']
                 if (pid, ti) not in used_existing:
@@ -300,11 +307,11 @@ def main():
             listed[r['id']] = ti
             n_new += 1
 
-    # Published econophysics rows that are no longer in the corpus at all keep their old row (unless
-    # economics.json now lists the paper itself, in which case the id lives on there).
+    # Published rows that are no longer in the corpus at all keep their old row (unless economics.json
+    # now lists the paper itself, in which case the id lives on there).
     for pid, (old_tp, row) in old_ep.items():
-        if pid not in listed and pid not in lm_ids and pid not in existing and not pid.startswith('lm'):
-            where = OLD_EP_TOPICS.get(old_tp)
+        if pid not in listed and pid not in lm_ids and pid not in existing and not pid.startswith(('lm', 'ls')):
+            where = OLD_EP_TOPICS.get(old_tp, old_tp)
             if where in topic_index:
                 items[topic_index[where]].append((row[7], -1, row))
                 listed[pid] = topic_index[where]

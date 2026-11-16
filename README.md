@@ -2,58 +2,58 @@
 
 A personal archive for tracking papers. Every paper has four buttons, **Printed**, **Read**, **Notes** and **Researched**, and each one records the date you pressed it. The site runs on GitHub Pages and saves your progress back into this repo, so every device that opens the site sees the same archive.
 
-Papers are organised in three levels: **field → area → topic**. The archive holds about 47,900 works:
+Papers are organised in three levels: **field → area → topic**. The archive holds about 67,400 works:
 
 - **Economics**: 30 areas and 219 topics, in seven groups (table below).
   - **Monopoly & market power** is the original archive: all 6,144 entries from *Monopoly and Market Power: The Extended Bibliography*, plus 41 foundational papers the bibliography leaves out, in 22 topics. Nothing in it has changed.
-  - The other 29 areas hold about 16,700 works in 197 topics. Each topic lists up to 80 of the most-cited papers from about 220 economics journals and handbook series, any other paper in those journals cited 800 times or more, and the **landmarks**: about 1,220 books and classic papers chosen individually, each with a one-line note on what it contributed.
-- **Econophysics**: 8 areas and 33 topics, about 2,000 works.
-- **Mathematics**: 22 areas and 137 topics, about 14,100 works.
-- **Statistics**: 18 areas and 107 topics, about 9,600 works.
+  - The other 29 areas hold about 28,100 works in 197 topics. Each topic lists its 80 most-cited papers from about 220 economics journals and handbook series, then every other paper from those journals cited 250 times or more, and the **landmarks**: about 1,220 books and classic papers chosen individually, each with a one-line note on what it contributed.
+- **Econophysics**: 8 areas and 33 topics, about 2,300 works.
+- **Mathematics**: 22 areas and 137 topics, about 18,700 works.
+- **Statistics**: 18 areas and 107 topics, about 13,100 works.
 
 Econophysics, mathematics and statistics are built the same way as economics, from about 210 journals of their own, papers on these subjects in physics, computer science, medical, psychology and general science journals, and about 4,600 landmarks that reach back to the first printed edition of Euclid's *Elements* (1482). Their areas are listed below, after the economics table.
 
 | Group | Areas (papers and books listed) |
 |---|---|
-| **Theory & methods** | Microeconomic theory (706), Game theory & market design (709), Behavioral & experimental economics (623), Econometrics & quantitative methods (1,112) |
-| **Macroeconomics & international** | Macroeconomics (717), Monetary economics & central banking (527), Economic growth & productivity (528), International trade (702), International finance & open-economy macro (537) |
-| **Finance** | Asset pricing & financial markets (1,144), Corporate finance & governance (855), Banking, intermediation & financial crises (391) |
-| **Firms, markets & innovation** | Monopoly & market power (6,185), Firms, organizations & entrepreneurship (467), Innovation, technology & the digital economy (471) |
-| **Labor, people & public policy** | Labor economics (766), Economics of education (423), Health economics (588), Public economics (677), Inequality, poverty & mobility (356), Population, family & gender (345) |
-| **Development, space & environment** | Development economics (862), Urban, regional & spatial economics (596), Environmental, energy & resource economics (615), Agricultural & food economics (346) |
-| **Institutions, history & ideas** | Political economy & institutions (719), Law & economics (523), Economic history (629), History of economic thought & methodology (574), Culture, media & society (366) |
+| **Theory & methods** | Microeconomic theory (996), Game theory & market design (781), Behavioral & experimental economics (886), Econometrics & quantitative methods (2,001) |
+| **Macroeconomics & international** | Macroeconomics (1,163), Monetary economics & central banking (736), Economic growth & productivity (841), International trade (1,041), International finance & open-economy macro (838) |
+| **Finance** | Asset pricing & financial markets (2,489), Corporate finance & governance (1,787), Banking, intermediation & financial crises (947) |
+| **Firms, markets & innovation** | Monopoly & market power (6,185), Firms, organizations & entrepreneurship (990), Innovation, technology & the digital economy (1,469) |
+| **Labor, people & public policy** | Labor economics (1,432), Economics of education (649), Health economics (774), Public economics (845), Inequality, poverty & mobility (589), Population, family & gender (419) |
+| **Development, space & environment** | Development economics (1,284), Urban, regional & spatial economics (1,000), Environmental, energy & resource economics (2,151), Agricultural & food economics (597) |
+| **Institutions, history & ideas** | Political economy & institutions (909), Law & economics (593), Economic history (643), History of economic thought & methodology (593), Culture, media & society (380) |
 
-About 940 papers from the monopoly bibliography also belong in one of the new topics (Melitz 2003 under trade, for example), and some landmarks belong in two topics. They are listed in both places but are still one paper: tick it in one place and it is ticked in the other.
+About 1,480 papers from the monopoly bibliography also belong in one of the new topics (Melitz 2003 under trade, for example), and some landmarks belong in two topics. They are listed in both places but are still one paper: tick it in one place and it is ticked in the other.
 
 **Econophysics**
 
 | Group | Areas (papers and books listed) |
 |---|---|
-| **Financial markets & models** | Statistical properties of markets (346), Market microstructure & order flow (202), Stochastic models & methods (304) |
-| **Agents, wealth & networks** | Agent-based models (170), Wealth, income & firm dynamics (184), Networks & systemic risk (373) |
-| **Complexity & society** | Complexity economics (244), Sociophysics & collective behavior (271) |
+| **Financial markets & models** | Statistical properties of markets (347), Market microstructure & order flow (203), Stochastic models & methods (308) |
+| **Agents, wealth & networks** | Agent-based models (170), Wealth, income & firm dynamics (184), Networks & systemic risk (626) |
+| **Complexity & society** | Complexity economics (244), Sociophysics & collective behavior (301) |
 
 **Mathematics**
 
 | Group | Areas (papers and books listed) |
 |---|---|
-| **Foundations & history** | Mathematical logic & foundations (579), History & philosophy of mathematics (436) |
-| **Algebra & number theory** | Algebra (780), Number theory (812), Algebraic geometry (704) |
-| **Geometry & topology** | Differential geometry (588), Topology (688), Geometry: classical, convex & discrete (491) |
-| **Analysis** | Real & harmonic analysis (566), Complex analysis (385), Functional analysis & operator theory (468), Partial differential equations (701), Dynamical systems & ergodic theory (594) |
-| **Probability & mathematical physics** | Probability theory (795), Mathematical physics (718) |
-| **Discrete mathematics & computing** | Combinatorics (496), Graph theory (537), Theoretical computer science (698), Information & coding theory (476) |
-| **Applied & computational mathematics** | Numerical analysis & scientific computing (846), Optimization & control (1,054), Applied mathematics & modeling (1,049) |
+| **Foundations & history** | Mathematical logic & foundations (582), History & philosophy of mathematics (437) |
+| **Algebra & number theory** | Algebra (929), Number theory (815), Algebraic geometry (711) |
+| **Geometry & topology** | Differential geometry (648), Topology (709), Geometry: classical, convex & discrete (500) |
+| **Analysis** | Real & harmonic analysis (676), Complex analysis (392), Functional analysis & operator theory (502), Partial differential equations (1,122), Dynamical systems & ergodic theory (835) |
+| **Probability & mathematical physics** | Probability theory (1,037), Mathematical physics (1,123) |
+| **Discrete mathematics & computing** | Combinatorics (499), Graph theory (547), Theoretical computer science (1,223), Information & coding theory (690) |
+| **Applied & computational mathematics** | Numerical analysis & scientific computing (1,662), Optimization & control (1,712), Applied mathematics & modeling (1,693) |
 
 **Statistics**
 
 | Group | Areas (papers and books listed) |
 |---|---|
-| **Inference & foundations** | Statistical inference (615), Bayesian statistics (672), History, philosophy & teaching of statistics (315) |
-| **Models & methods** | Regression & linear models (801), Multivariate analysis (588), Nonparametric & semiparametric statistics (555), High-dimensional statistics (565), Time series analysis (663), Spatial & environmental statistics (573) |
-| **Design, data & causality** | Design of experiments & quality (554), Survey sampling & measurement (420), Causal inference (491), Missing data & measurement error (328) |
-| **Computing & learning** | Statistical computing & graphics (490), Statistical learning & machine learning (783) |
-| **Applied statistics** | Biostatistics (606), Epidemiological statistics & meta-analysis (419), Psychometrics & social-science statistics (591) |
+| **Inference & foundations** | Statistical inference (932), Bayesian statistics (687), History, philosophy & teaching of statistics (318) |
+| **Models & methods** | Regression & linear models (1,135), Multivariate analysis (739), Nonparametric & semiparametric statistics (592), High-dimensional statistics (570), Time series analysis (695), Spatial & environmental statistics (597) |
+| **Design, data & causality** | Design of experiments & quality (574), Survey sampling & measurement (428), Causal inference (526), Missing data & measurement error (411) |
+| **Computing & learning** | Statistical computing & graphics (601), Statistical learning & machine learning (1,050) |
+| **Applied statistics** | Biostatistics (1,255), Epidemiological statistics & meta-analysis (1,324), Psychometrics & social-science statistics (1,024) |
 
 ## Setup (once)
 
@@ -121,7 +121,7 @@ Every click saves to the browser at once, then to GitHub about two seconds later
 **★★** marks a must-read and **★** an influential paper.
 
 - In **Monopoly & market power** the stars come from the bibliography.
-- In every other topic, ★★ goes to the landmarks and to the papers ranked highest by citations: 8 of them in a topic with no landmarks, fewer where there are landmarks, but never fewer than 4. The papers ranked after those, down to the 24th, get ★. The ranking is the paper's citation count divided by the square root of its age, so that a strong recent paper can sit beside the classics, with a small bonus for papers whose title clearly matches the topic.
+- In every other topic, ★★ goes to the landmarks and to the papers ranked highest by citations: 8 of them in a topic with no landmarks, fewer where there are landmarks, but never fewer than 4. The papers ranked after those, down to the 24th, get ★. The rest of the list, which in many topics runs well past 80 papers, carries no star. The ranking is the paper's citation count divided by the square root of its age, so that a strong recent paper can sit beside the classics, with a small bonus for papers whose title clearly matches the topic.
 - A landmark that is a textbook or a survey rather than a first statement of an idea gets ★.
 - In econophysics, mathematics and statistics a topic shows at most 15 two-star landmarks. Where a topic has more, the best-cited 15 keep ★★ and the rest get ★.
 
@@ -192,7 +192,7 @@ How it works:
 
 1. `journals.py` lists the journals and handbook series. `fetch.py` asks OpenAlex for the most-cited papers of each one (about 88,000 records). A second, smaller request per journal asks for papers that have a copy in the journal but that OpenAlex files somewhere else first, such as a working-paper series or a later reprint. Many classics are recorded that way, and `altcheck.py` and `build.py` trace them back to the journal's year, volume and pages. Without an account OpenAlex allows about 1,000 requests a day; a full download takes about 790, and the scripts stop and resume if they run out.
 2. `taxonomy.py` and the `tax_*.py` files define the areas and topics. Each topic has a list of phrases. `classify.py` scores every paper against every topic by the phrases in its title, keywords and abstract, with extra weight for rarer phrases and for journals that specialise in the area, and gives the paper to the topic that scores highest.
-3. `build.py` drops what is not a paper, corrects years that disagree with the journal's volume number, keeps each topic's top 80 and any other paper cited 800 times or more, adds the landmarks, and writes the result. A paper already in `catalog.json` is not copied: the topic points at the existing entry.
+3. `build.py` drops what is not a paper, corrects years that disagree with the journal's volume number, keeps each topic's top 80 and every other paper cited 250 times or more, adds the landmarks, and writes the result. A paper already in `catalog.json` is not copied: the topic points at the existing entry.
 
 A rebuild never removes a paper that is on the live site. `build.py` reads the last committed `data/economics.json` and keeps every paper in it, even one that newer papers have pushed out of its topic's top 80, so a tick can never be left without its paper. The one exception is an entry you add to `not_papers.json` because it is not a paper at all.
 
@@ -220,13 +220,14 @@ To change the result:
 - **Add a journal:** add it to `journals.py`, then run `fetch.py` and `build.py`.
 - **Add a book or a classic paper:** add it to `landmarks.json`, then run `landmarks.py` and `build.py`.
 - **Remove something that is not a paper** (a book review, an erratum): add its id to `not_papers.json`.
+- **Correct many papers at once:** write the corrections as JSON (the format is at the top of `apply_review.py`) and run `python3 tools/economics/apply_review.py corrections.json`. It never removes a paper that is on the live site.
 - **Correct one paper** (authors, year, title, or the topic it belongs in): add it to `fixes.json`. You can also move a single paper on the site with **⋯**; that is saved in `data/library.json` and survives rebuilds.
 
 After a rebuild, raise `DATA_V` in `app.js` by one so that browsers fetch the new file.
 
 What to expect from this part of the archive:
 
-- Every paper from the journal download is a real indexed work with its DOI, but the sorting is automatic. A paper can sit in a topic that is only its second-best home, and OpenAlex occasionally lists an incomplete author list for older papers. The two-star papers of every topic were reviewed one by one for these problems, and the corrections are in `fixes.json` and `not_papers.json`; the rest were not.
+- Every paper from the journal download is a real indexed work with its DOI, but the sorting is automatic. A paper can sit in a topic that is only its second-best home, and OpenAlex occasionally lists an incomplete author list for older papers. The two-star papers of every topic were reviewed one by one for these problems, and every paper listed past a topic's first 80 was checked for its topic. The corrections are in `fixes.json` and `not_papers.json`.
 - The landmark list was chosen entry by entry. Its papers were matched to a Crossref or OpenAlex record wherever one exists, and a typed citation that disagreed with Crossref was corrected. Its books, and the papers with no record (97 of them, mostly old *American Economic Review* articles and book chapters), were not checked against a catalogue, so a publisher, a year or a page number may be off.
 - The choice of landmarks is a judgement, and so is the one-line note on each.
 - About 75 entries that were on the site before the landmarks were added have been removed: they were reviews of books, listed under the book's title with the reviewer and the book's author as joint authors. The books themselves are now in the landmark list.
@@ -247,17 +248,17 @@ How it differs from economics:
 
 - `skeleton.py` defines the 15 groups, 48 areas and 277 topics. Each topic's phrases are in the `phr_*.py` files, and `sci_taxonomy.py` puts the two together. Besides the title, keywords and abstract, the sorting gives a little weight to the subject labels OpenAlex attaches to each paper.
 - `sci_sources.py` lists the journals: 133 in mathematics and 78 in statistics, some in both, in three tiers that decide how deep each download goes. It also asks for papers on these subjects wherever they appear: mathematics in physics, computer science and biology journals, statistics in medical, psychology and general science journals, and econophysics in physics journals, each picked out by OpenAlex's subject labels. Last, it lists the most-cited works in mathematics and in statistics, whatever their source. The whole download is about 580 requests.
-- Each topic keeps up to 80 papers (60 in econophysics), plus any other paper cited more than 700 times in mathematics, 2,500 times in statistics or 600 times in econophysics. The bar is highest in statistics because methods papers used in medicine are cited very heavily.
+- Each topic keeps its 80 most-cited papers (60 in econophysics), then every other paper cited 250 times or more, as in economics.
 - A paper can belong to two fields, such as a probability paper that is also statistics. It is listed in both but is still one paper. A work that is already in `catalog.json` or `economics.json` is not copied: the topic points at the existing entry.
 - `sci_landmarks.json` holds about 4,600 books and classic papers in the same format as the economics list, from the first printed Euclid, Cardano's *Ars magna* and Newton's *Principia* to recent monographs. New entries have IDs `ls0001` and up. The econophysics landmarks that used to be in the economics list keep their `lm` IDs. `econ_also` lists topics in `economics.json` that should show an entry too, and `tools/economics/build.py` adds them.
 - Corrections go in `tools/sciences/fixes.json` and `tools/sciences/not_papers.json`, as for economics. In `fixes.json`, `"not": ["Statistics"]` takes a paper out of a field it was downloaded for.
-- Three helpers in `tools/sciences/` take area codes from `skeleton.py`, comma-separated. `preview.py CODES` shows how the current phrase lists sort those areas' papers, in about ten seconds and without a rebuild. `topic_dump.py CODES` lists what the last build put in each of their topics. `audit.py` checks, before you publish, that every paper on the live site still has its entry and that every cross-listing points at a real one.
+- Three helpers in `tools/sciences/` take area codes from `skeleton.py`, comma-separated. `preview.py CODES` shows how the current phrase lists sort those areas' papers, in about ten seconds and without a rebuild. `topic_dump.py CODES` lists what the last build put in each of their topics. `audit.py` checks, before you publish, that every paper on the live site still has its entry and that every cross-listing points at a real one. `apply_review.py` takes corrections for many papers at once, in the same JSON form as the economics one.
 - `sci_build.py` never removes a paper that is on the live site. That includes the econophysics papers that used to be in `economics.json`, which keep their IDs and ticks.
 
 After a rebuild, raise `SCI_V` in `app.js` by one.
 
 What to expect from this part:
 
-- As in economics, every paper from the download is a real indexed work, but the sorting is automatic. The first 40 papers of every topic and a random sample of the rest were reviewed, and the corrections are in `fixes.json` and `not_papers.json`.
+- As in economics, every paper from the download is a real indexed work, but the sorting is automatic. The first 40 papers of every topic and a random sample of the rest were reviewed, and every paper listed past a topic's first 80 (60 in econophysics) was checked for its topic and field. The corrections are in `fixes.json` and `not_papers.json`.
 - The landmark papers were matched to a Crossref or OpenAlex record wherever one could be found: 3,041 of the 3,511. The books (about 1,080), and the papers with no record, mostly old ones in journals that have no DOIs, were not checked against a catalogue, so a publisher, a year or a page number may be off. Most old books have no link and show **Search Scholar ↗** instead.
 - The choice of landmarks is a judgement, and so is the one-line note on each.

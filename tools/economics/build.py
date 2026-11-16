@@ -45,7 +45,7 @@ from journals import JOURNALS, HANDBOOKS  # noqa: E402
 WORK = os.path.join(ROOT, 'work', 'economics')
 OUT = os.path.join(ROOT, 'data', 'economics.json')
 CAP, MUST, INFLUENTIAL = 80, 8, 16          # papers per topic; how many get two stars / one star
-KEEP_ABOVE = 800                            # a paper cited this often is listed even in a full topic
+KEEP_ABOVE = 250                            # a paper cited this often is listed even in a full topic
 THIS_YEAR = date.today().year
 KEEP_TYPES = {'article', 'review', 'book-chapter', 'conference-paper', 'letter'}
 NOT_A_COPY = {'book-review', 'paratext', 'editorial', 'erratum', 'conference-abstract', 'other', 'dataset',
