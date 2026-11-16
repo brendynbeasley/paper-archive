@@ -1,8 +1,62 @@
 {
  "v": 1,
- "fields": ["Economics", "Econophysics", "Statistics", "Mathematics"],
+ "fields": [
+  "Economics",
+  "Econophysics",
+  "Statistics",
+  "Mathematics"
+ ],
  "topics": [],
  "added": [],
- "edits": {},
- "removed": []
+ "edits": {
+  "mp0002": {
+   "u": 1794180732022,
+   "link": "https://www.condorcet.nl/Dupuit1849.pdf"
+  },
+  "mp0003": {
+   "u": 1794189124327,
+   "link": "https://books.google.com/books?hl=en&lr=&id=nwUHAAAAQAAJ&oi=fnd&pg=PA5&dq=Théorie+mathématique+de+la+richesse+sociale+Bertrand&ots=1eCW-5fC6c&sig=lLsR9ixWBUzHZ1S42Itl5nVhtPA#v=onepage&q&f=false"
+  },
+  "mp0010": {
+   "u": 1794194360528,
+   "link": "https://www-jstor-org.ezp1.lib.umn.edu/stable/23219149?searchText=IL+MASSIMO+DI+UTILITÀ+DATO+DALLA+LIBERA+CONCORRENZA&searchUri=%2Faction%2FdoBasicSearch%3FQuery%3DIL%2BMASSIMO%2BDI%2BUTILIT%25C3%2580%2BDATO%2BDALLA%2BLIBERA%2BCONCORRENZA%26so%3Drel&ab_segments=0%2Fbasic_search_gsv2%2Fcontrol&refreqid=fastly-default%3A356d715d7571fea39ce348b9e67a7906&seq=1"
+  },
+  "mp0011": {
+   "u": 1794194422648,
+   "link": "https://www.jstor.org/stable/1882115?seq=1"
+  },
+  "mp0012": {
+   "u": 1794195369948,
+   "link": "https://www-jstor-org.ezp1.lib.umn.edu/stable/1884894?searchText=Trust+Literature+A+Survey+and+a+Criticism&searchUri=%2Faction%2FdoBasicSearch%3FQuery%3DTrust%2BLiterature%253A%2BA%2BSurvey%2Band%2Ba%2BCriticism%26so%3Drel&ab_segments=0%2Fbasic_search_gsv2%2Fcontrol&refreqid=fastly-default%3A89ac2a005d6653dfd90ad7e3e6375fa8&seq=1"
+  },
+  "mp0013": {
+   "u": 1794195447666,
+   "link": "https://www-jstor-org.ezp1.lib.umn.edu/stable/2221361?searchText=Monopoly+and+Consumers%27+Surplus+A.+C.+Pigou&searchUri=%2Faction%2FdoBasicSearch%3FQuery%3DMonopoly%2Band%2BConsumers%2527%2BSurplus%2BA.%2BC.%2BPigou%26so%3Drel&ab_segments=0%2Fbasic_search_gsv2%2Fcontrol&refreqid=fastly-default%3A0d01a7ecac1832315700e2232a75522d&seq=1"
+  },
+  "mp0014": {
+   "u": 1794195480040,
+   "link": "https://www-jstor-org.ezp1.lib.umn.edu/stable/1882658?searchText=The%20Personality%20of%20Antoine%20Augustin%20Cournot&searchUri=%2Faction%2FdoBasicSearch%3FQuery%3DThe%2BPersonality%2Bof%2BAntoine%2BAugustin%2BCournot%26so%3Drel&ab_segments=0%2Fbasic_search_gsv2%2Fcontrol&refreqid=fastly-default%3Aa18577bd2844fc9c4b64ce6053f4089f"
+  }
+ },
+ "removed": [],
+ "areas": [],
+ "goals": {
+  "dl": 20,
+  "pr": 20,
+  "rd": 20,
+  "nt": 20,
+  "rs": 20,
+  "fl": 20,
+  "ws": 1,
+  "u": 1794808950427
+ },
+ "focus": {
+  "kind": "scope",
+  "f": "Economics",
+  "ar": "Monopoly & market power",
+  "tp": "Classical theory & history of thought",
+  "depth": "all",
+  "order": "oldest",
+  "u": 1794808950427
+ }
 }
