@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Paper Archive</title>
-<meta name="description" content="A public reading archive of economics, mathematics and statistics papers: printed, read, noted, researched and made into flashcards.">
+<meta name="description" content="A public reading archive of economics, mathematics and statistics papers, worked through one topic at a time: downloaded, printed, read, noted, researched and made into flashcards.">
 <meta name="theme-color" content="#f6f3ec" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#16150f" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231d1b16'/%3E%3Crect x='7' y='7' width='8' height='8' rx='2' fill='%238b5cf6'/%3E%3Crect x='17' y='7' width='8' height='8' rx='2' fill='%232563eb'/%3E%3Crect x='7' y='17' width='8' height='8' rx='2' fill='%23f59e0b'/%3E%3Crect x='17' y='17' width='8' height='8' rx='2' fill='%2310b981'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
-<link rel="stylesheet" href="styles.css?v=5">
+<link rel="stylesheet" href="styles.css?v=7">
 <script>/* apply the saved theme before first paint */try{var t=localStorage.getItem('pa-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
 <body>
@@ -74,8 +74,10 @@
     </div>
     <div class="fields" data-pane="edit">
       <div class="timeline" id="pSteps" aria-label="Steps done"></div>
+      <div><button type="button" class="pill" id="pPrep">Get the paper and the Claude prompt</button></div>
       <label>Notes<textarea id="pNotes" rows="3"></textarea></label>
-      <label>Research link <span class="hint">your repo or write-up</span><input id="pResearch" type="url" placeholder="https://github.com/…"></label>
+      <label>Research link <span class="hint">your repo, doc or Claude chat</span><input id="pResearch" type="url" placeholder="https://…"></label>
+      <label>Interactive page <span class="hint">the link to the Learn page Claude made</span><input id="pLearn" type="url" placeholder="https://…"></label>
       <div class="cardsed" id="pCardsWrap">
         <div class="cardsed-head"><b>Flashcards</b><span class="hint" id="pCardsCount"></span></div>
         <ol class="cardlist" id="pCards"></ol>
@@ -125,9 +127,11 @@
   <form method="dialog" id="setForm">
     <h2 id="setDlgTitle">Settings</h2>
     <div class="savestate" id="setStatus"></div>
+    <div class="setfocus"><span>Focus</span><b id="sFocusName"></b><button type="button" class="pill sm" id="sFocus">Change focus</button></div>
     <fieldset class="goalset" id="goalSet">
       <legend>Weekly goals <span class="hint">papers per week, for each step</span></legend>
       <div class="goalinputs">
+        <label><span><i class="k" style="background:var(--dl)"></i>Download</span><input id="gDl" type="number" min="0" max="200" inputmode="numeric"></label>
         <label><span><i class="k" style="background:var(--pr)"></i>Print</span><input id="gPr" type="number" min="0" max="200" inputmode="numeric"></label>
         <label><span><i class="k" style="background:var(--rd)"></i>Read</span><input id="gRd" type="number" min="0" max="200" inputmode="numeric"></label>
         <label><span><i class="k" style="background:var(--nt)"></i>Notes</span><input id="gNt" type="number" min="0" max="200" inputmode="numeric"></label>
@@ -164,14 +168,43 @@
   </form>
 </dialog>
 
-<!-- Learn: no guide yet -->
+<!-- Learn: no interactive page yet -->
 <dialog id="learnDlg" aria-labelledby="learnDlgTitle">
   <form method="dialog">
-    <h2 id="learnDlgTitle">No guide yet</h2>
-    <p class="hint">There's no interactive guide for <b id="learnPaper"></b> yet. Copy this prompt into an AI assistant to make one like Dupuit's Bridge. Once it's saved in the repo, this paper's Learn button opens it.</p>
-    <textarea id="learnPrompt" rows="11" readonly aria-label="Prompt for making a guide"></textarea>
+    <div><div class="eyebrow">Learn</div><h2 id="learnDlgTitle">No interactive page yet</h2><p class="hint" id="learnPaper"></p></div>
+    <p class="hint">Ask Claude for a small interactive page with this prompt (section 7 of the paper's main prompt asks for the same thing), then paste its link here.</p>
+    <textarea id="learnPrompt" rows="8" readonly aria-label="Prompt for making an interactive page"></textarea>
+    <label>Link to the page<input id="learnLink" type="url" placeholder="https://claude.ai/…"></label>
     <p class="formerr" id="learnMsg" hidden></p>
-    <div class="dlgfoot"><span class="grow"></span><button class="pill" value="close">Close</button><button class="pill primary" type="button" id="learnCopy">Copy prompt</button></div>
+    <div class="dlgfoot"><button class="pill" type="button" id="learnCopy">Copy prompt</button><span class="grow"></span><button class="pill" value="close">Close</button><button class="pill primary" type="button" id="learnSave">Save link</button></div>
+  </form>
+</dialog>
+
+<!-- Step 1: get the paper and its prompt -->
+<dialog id="prepDlg" aria-labelledby="prepTitle">
+  <form method="dialog">
+    <div><div class="eyebrow">Step 1 · Download</div><h2 id="prepTitle"></h2><p class="hint" id="prepMeta"></p></div>
+    <ol class="prepsteps">
+      <li>Open the paper and download the PDF.</li>
+      <li>Copy the prompt and paste it into Claude with the PDF attached.</li>
+      <li>Claude sends back a highlighted PDF, the pages to read, a front-page summary, notes, flashcards, a research brief and an interactive page.</li>
+    </ol>
+    <div class="doit-btns" id="prepLinks"></div>
+    <details class="promptbox"><summary>Show the prompt</summary><textarea id="prepPrompt" rows="10" readonly aria-label="Prompt for Claude"></textarea></details>
+    <p class="formerr" id="prepMsg" hidden></p>
+    <div class="dlgfoot"><button class="pill primary" type="button" id="prepCopy">Copy the prompt</button><span class="grow"></span><button class="pill" value="close">Close</button><button class="pill go dl" type="button" id="prepDone">Mark downloaded</button></div>
+  </form>
+</dialog>
+
+<!-- Step 6: flashcards for one paper -->
+<dialog id="cardsDlg" aria-labelledby="cardsTitle">
+  <form method="dialog">
+    <div><div class="eyebrow">Step 6 · Flashcards</div><h2 id="cardsTitle"></h2><p class="hint" id="cardsMeta"></p></div>
+    <ol class="cardlist" id="cardsList"></ol>
+    <label>Paste Claude's flashcards <span class="hint">the lines starting with Q: and A:, up to 10 per paper</span>
+      <textarea id="cardsPaste" rows="6" placeholder="Q: What question does the paper ask?&#10;A: …"></textarea></label>
+    <p class="formerr" id="cardsMsg" hidden></p>
+    <div class="dlgfoot"><button class="pill" type="button" id="cardsAdd">Add these cards</button><span class="grow"></span><button class="pill" value="close">Close</button><button class="pill go fl" type="button" id="cardsDone">Flashcards done</button></div>
   </form>
 </dialog>
 
@@ -194,6 +227,6 @@
 <datalist id="topicList"></datalist>
 <datalist id="subList"></datalist>
 <div id="toast" class="toast" role="status" hidden></div>
-<script src="app.js?v=7"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>

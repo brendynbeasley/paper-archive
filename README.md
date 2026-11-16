@@ -1,6 +1,6 @@
 # Paper Archive
 
-A public reading archive for tracking papers. Every paper goes through five steps, **Printed → Read → Notes → Researched → Flashcards**, and each button records the date you pressed it. You set weekly goals for each step, and **This week** lines up what to do to meet them. The site runs on GitHub Pages and saves every click back into this repo, so any device that opens it, yours or anyone else's, sees the same archive and can keep working on it.
+A public reading archive for tracking papers. You pick a **focus** (a field, an area, a single topic, or the market power reading plan) and work through it one topic at a time. Every paper goes through six steps, **Downloaded → Printed → Read → Notes → Researched → Flashcards**, and each button records the date you pressed it. You set weekly goals for each step, and **This week** lines up what to do to meet them. The site runs on GitHub Pages and saves every click back into this repo, so any device that opens it, yours or anyone else's, sees the same archive and can keep working on it.
 
 Papers are organised in three levels: **field → area → topic**. The archive holds about 67,400 works:
 
@@ -84,8 +84,8 @@ Without the relay the site still works: changes are kept in the browser, and a G
 | `data/economics.json` | Every other area of economics | `tools/economics/build.py` |
 | `data/sciences.json` | Econophysics, mathematics and statistics | `tools/sciences/sci_build.py` |
 | `data/citations.json` | Citation counts for the papers in `catalog.json` | `tools/economics/cites.py` |
-| `data/library.json` | Papers you add, edits (links, notes, research links, flashcards, moves), weekly goals, new fields and topics | The app |
-| `data/progress.json` | The date of each of the five steps, for each paper | The app |
+| `data/library.json` | Papers you add, edits (links, notes, research links, interactive pages, flashcards, moves), your focus, weekly goals, new fields and topics | The app |
+| `data/progress.json` | The date of each of the six steps, for each paper | The app |
 | `sync/worker.js` | The save relay (runs on Cloudflare, not on GitHub Pages) | You, once |
 
 Each change is committed to the repo a second or two after you click. Quick clicks are batched into one commit, and the commit message lists them, for example `Read: A Theory of Oligopoly`. Your git history is therefore a dated log of everything you've done.
@@ -94,17 +94,17 @@ If two devices save at the same moment, the app merges both sets of changes. If 
 
 ## Public by design
 
-Anyone with the link can see everything: what's been printed, read, noted, researched and turned into flashcards, week by week, with the research links and the cards. Anyone can also click the buttons, and that is intended. Every change is a commit, so nothing is ever lost: to undo a change, revert its commit on GitHub, or restore `data/progress.json` or `data/library.json` from an earlier commit. The relay only accepts files that look like the archive's own, so a stray request cannot break the site or touch its code.
+Anyone with the link can see everything: what's been downloaded, printed, read, noted, researched and turned into flashcards, week by week, with the research links and the cards. Anyone can also click the buttons, and that is intended. Every change is a commit, so nothing is ever lost: to undo a change, revert its commit on GitHub, or restore `data/progress.json` or `data/library.json` from an earlier commit. The relay only accepts files that look like the archive's own, so a stray request cannot break the site or touch its code.
 
 ## Finding your way around
 
-- **Overview** is the front page: totals for each step, this week's goals, the next paper to work on, your last 26 weeks of activity, papers you've started but not finished, and what was done most recently. Below that, every field and area is a card showing its papers, topics and must-reads, how many have been started and finished, the date of the last step, and the next must-read to start.
-- **This week** shows the week's goal for each step and how far along it is, a bar for each day, and the plan: exactly which papers to print, read, write notes on, research and make flashcards for this week to meet the goals, with a button on each. The arrows step back to past weeks (what was done) and forward to the next few (what's lined up).
-- **Next up** is one paper at a time, in order (below).
-- **Progress** is the public record: a chart of the last 12 weeks against the goals, progress by field and by area, papers in progress, and every finished paper with its research link and flashcards.
-- **Flashcards** lets you study the cards made for each paper: click or press space to flip, arrow keys to move, and shuffle. Study every field at once or one at a time.
+- **Overview** is the front page: totals for each step, this week's goals, the next paper in your focus, a square for every day since the archive began (at least the last year) with how many papers have reached each step, papers you've started but not finished, and what was done most recently. Below that, every field and area is a card showing its papers, topics and must-reads, how many have been started and finished, the date of the last step, and the next must-read to start. An area turns green once all its must-reads are done.
+- **Next up** is your focus, one topic and one paper at a time (below).
+- **This week** shows your focus, the week's goal for each step and how far along it is, a bar for each day, and the plan: exactly which papers from your focus to download, print, read, write notes on, research and make flashcards for this week to meet the goals, with a button on each. The arrows step back to past weeks (what was done) and forward to the next few (what's lined up).
+- **Progress** is the public record: the all-time graph, a chart of the last 12 weeks against the goals, progress by field and by area, papers in progress, and every finished paper with its research link, interactive page and flashcards.
+- **Flashcards** lets you study the cards made for each paper: click or press space to flip, arrow keys to move, and shuffle. Study this week's cards, your focus's, the current topic's, one field's or every card at once; the list under the cards shows them paper by paper.
 - On a phone these five pages sit in a tab bar at the bottom; the menu at the top left opens the fields.
-- The **sidebar** lists the fields. Click one to open its areas, and an area to open its topics. The box at the top of the sidebar finds an area or topic by name.
+- The **sidebar** lists the fields. Click one to open its areas, and an area to open its topics; a topic that's done shows a ✓. Below the page links it shows your focus and the topic you're on. The box at the top of the sidebar finds an area or topic by name.
 - **Search** (press `/`) looks through every paper's title, authors, year and journal, ignoring accents. The best matches come first.
 - In any list you can filter by progress (not started, in progress, done), by stars, to **Books**, or to papers with a **Free copy**, and sort by list order, most cited, newest, oldest, author or recently ticked.
 - Each view has its own address, so the browser's Back button works and you can bookmark a topic.
@@ -114,23 +114,36 @@ Anyone with the link can see everything: what's been printed, read, noted, resea
 - **Add → One paper** for a single entry.
 - **Add → Paste a list** for many papers at once, one per line: `Title | Authors | Year | Link`.
 - **+ New field**, **+ New area** and **+ New topic** in the sidebar create groups. An area is optional: a topic can sit directly under a field.
-- **⋯** on any paper shows the dates of its five steps and sets or fixes its link, a research link (for example the repo where you did the research), notes and flashcards, or moves it to another field, area or topic.
+- **⋯** on any paper shows the dates of its six steps and sets or fixes its link, a research link (for example the repo where you did the research), the link to its interactive page, notes and flashcards, or moves it to another field, area or topic.
+
+## Your focus
+
+The first time you open **Next up** or **This week**, a short setup asks three things:
+
+1. **What to master:** a whole field, one area, or a single topic in it, or the **Market power reading plan**: the 610 must-reads of the monopoly bibliography in 14 phases, in the order they're best studied (`data/plan.json`).
+2. **How deep, and in what order** (the reading plan has its own): must-reads only, must-reads and influential papers, or every paper; oldest first, most important first, or most cited first. Each choice shows how many papers it is and about how many weeks it takes.
+3. **How much each week:** 3, 5 or 10 papers a week through every step, or your own goal for each step, and whether weeks start on Monday or Sunday.
+
+**Change focus** (on Next up, on This week, or in Settings) runs the setup again, and **Focus on this** on any field, area or topic page starts it with that one picked. The focus is saved with the archive, so every device follows the same one. Changing it never touches what's been done.
 
 ## Next up
 
-**Next up** takes you through papers one at a time. Pick what to follow:
+**Next up** works through your focus one topic at a time. A strip across the top lists the topics: done ones are green with a ✓, the one you're on is outlined, and each shows how many of its papers are done. Click a topic to work on it next. Below the strip is the paper to do now, with its six steps in order. Only the next step can be ticked and only the latest one undone, here and in every list:
 
-- **Market power reading plan:** the 610 must-reads of the monopoly bibliography in 14 phases, in the order they're best studied (`data/plan.json`). Each paper shows how deeply to read it, and the last paper of each phase shows that phase's task.
-- **An area or topic:** any area, or one topic in it, with its must-reads first.
-- **Everything, oldest first:** every paper in the archive, by year.
+1. **Download.** Open the paper or its free copy and save the PDF, then copy the prompt Next up gives you and paste it into an AI assistant with the PDF attached. The prompt asks for everything the next steps need: a copy of the PDF with the important passages highlighted (or a list of them with page numbers), which pages to read closely and which to skip, a five-to-seven-line summary to copy by hand onto the first page, a page or two of bullet notes to choose from, 5 to 10 flashcards, a short research brief, and a small interactive page about the paper.
+2. **Print** the highlighted PDF, or the pages the answer lists.
+3. **Read** the highlights and the marked pages. In the reading plan each paper also says how deeply.
+4. **Notes.** Copy the summary onto the front page and write down the notes worth keeping, then tick.
+5. **Research.** Work through the research brief and paste a link to your write-up.
+6. **Flashcards.** Paste the cards (the lines starting with `Q:` and `A:`) and they're added to the paper, at most 10 per paper so the archive stays small.
 
-For each paper, the steps go in order: **Printed → Read → Notes → Researched → Flashcards**. Only the next step can be ticked and only the latest one can be undone, both here and in the full lists. When the fifth step is done, the next paper comes up. The Researched step takes the link to your research repo; the Flashcards step lets you write the cards (a question and an answer each) right there, or link a deck from Anki, Quizlet or anywhere else.
+The link to the interactive page goes in the box under the steps, and the paper's **Learn** button opens it from then on. When every paper of a topic is done, the topic turns green on Next up, on its card and in the sidebar, and the next topic comes up. A paper listed in two topics of your focus is read once, in the first.
 
-The same path drives **This week**: papers you've started come first, then the next papers on the path you follow here.
+The same order drives **This week**: papers you've started come first, then the next ones in your focus.
 
 ## Weekly goals
 
-**Settings → Weekly goals** sets how many papers a week you want to get through each step, for example 5 printed, 5 read, 5 with notes, 3 researched and 3 with flashcards, and whether weeks start on Monday or Sunday. The goals are saved with the archive, so every device uses the same ones. **This week** turns them into a list: what's left to print, read, note, research and make cards for, paper by paper. A paper printed early in the week shows up again later that week for reading, and so on.
+The setup's last step, or **Settings → Weekly goals**, sets how many papers a week you want to get through each step, for example 5 downloaded, 5 printed, 5 read, 5 with notes, 3 researched and 3 with flashcards. The goals are saved with the archive, so every device uses the same ones. **This week** turns them into a list: what's left to download, print, read, note, research and make cards for, paper by paper, with the flashcards of everything worked on that week one click away. A paper downloaded early in the week shows up again later that week for printing, and so on.
 
 ## Saving
 
@@ -149,9 +162,9 @@ Every click saves to the browser at once, then to the repo a second or two later
 
 ## Learning guides
 
-Every paper has a **Learn** button. A paper with an interactive guide shows it filled in colour, and clicking it opens the guide. So far: *Dupuit's Bridge* (`learn/mp0001.html`), *Dupuit's Tolls* (`learn/mp0002.html`) and *Hadley's Railroad Lesson* (`learn/mp0004.html`), Hadley (1886). On a paper with no guide yet, the button shows a ready-made prompt to paste into an AI assistant to make one.
+Every paper has a **Learn** button. A paper with an interactive page shows it filled in colour, and clicking it opens the page. On a paper with no page yet, the button shows a ready-made prompt to paste into an AI assistant (the paper's main prompt asks for one too) and a box for the link it gives you. Once the link is saved, the button opens it, on every device. A link keeps the archive small; nothing is uploaded.
 
-To add a guide:
+Guides can also live in this repo. So far: *Dupuit's Bridge* (`learn/mp0001.html`), *Dupuit's Tolls* (`learn/mp0002.html`) and *Hadley's Railroad Lesson* (`learn/mp0004.html`), Hadley (1886). To add one:
 
 1. Save the HTML file as `learn/<paper id>.html`. The id is shown in the prompt, for example `mp0001`.
 2. Add it to `data/learn.json`:

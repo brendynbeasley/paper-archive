@@ -5,12 +5,16 @@
  *   data/economics.json  the rest of economics, built by tools/economics/
  *   data/sciences.json   econophysics, mathematics and statistics, built by tools/sciences/
  * Your own data lives in two more files, read from and written back to the repo as commits:
- *   data/library.json    papers you add, edits to any paper (notes, links, flashcards), weekly goals,
- *                        and extra fields, areas and topics
- *   data/progress.json   the date of each of the five steps, per paper
+ *   data/library.json    papers you add, edits to any paper (notes, links, flashcards), your focus,
+ *                        weekly goals, and extra fields, areas and topics
+ *   data/progress.json   the date of each of the six steps, per paper
  * Saving goes through a small relay (SYNC_URL below, code in sync/worker.js) that holds the repo
  * token, so anyone on any device can save without signing in. Without the relay, a GitHub token
  * entered in Settings does the same for that one device; with neither, changes stay in the browser.
+ *
+ * The way of working: pick a focus (a field, an area, a topic, or the market power reading plan),
+ * then go through it one topic at a time, each paper in six steps: download it (with a prompt to paste
+ * into an AI assistant), print it, read it, write notes, research it, make flashcards.
  */
 (() => {
 'use strict';
@@ -18,9 +22,11 @@
 // The save relay's address (a Cloudflare Worker running sync/worker.js). Empty until it is set up.
 const SYNC_URL = '';
 
-const STATUSES = [['pr', 'Printed'], ['rd', 'Read'], ['nt', 'Notes'], ['rs', 'Researched'], ['fl', 'Flashcards']];
+const STATUSES = [['dl', 'Downloaded'], ['pr', 'Printed'], ['rd', 'Read'], ['nt', 'Notes'], ['rs', 'Researched'], ['fl', 'Flashcards']];
 const NSTEP = STATUSES.length;
-const VERB = { pr: 'Print', rd: 'Read', nt: 'Write notes', rs: 'Research', fl: 'Flashcards' };
+const STEP = Object.fromEntries(STATUSES.map(([s], i) => [s, i]));
+const VERB = { dl: 'Download', pr: 'Print', rd: 'Read', nt: 'Write notes', rs: 'Research', fl: 'Flashcards' };
+const GOAL_NAME = Object.assign({}, VERB, { nt: 'Notes' });   // short enough for six goal cards in a row
 const FILES = { progress: 'data/progress.json', library: 'data/library.json' };
 const CFG_KEY = 'pa-config-v1';
 const CACHE_KEY = 'pa-cache-v1';
@@ -28,10 +34,18 @@ const VIEW_KEY = 'pa-view-v1';
 const SEEN_KEY = 'pa-seen-v2';
 const SEEN_LM_KEY = 'pa-seen-v3';   // the note about the landmark books and classics
 const SEEN_SCI_KEY = 'pa-seen-v4';  // the note about mathematics, statistics and econophysics
-const SEEN_V5_KEY = 'pa-seen-v5';   // the note about five steps, weekly goals and saving everywhere
+const SEEN_V5_KEY = 'pa-seen-v5';   // the note about focus, six steps, goals and saving everywhere
 const PAGE = 120;
-const DEFAULT_GOALS = { pr: 5, rd: 5, nt: 5, rs: 5, fl: 5, ws: 1 };   // papers per week per step; weeks start Monday
-const MODES = ['home', 'week', 'next', 'progress', 'cards', 'list'];
+const MAX_CARDS = 10;
+const DEFAULT_GOALS = { dl: 5, pr: 5, rd: 5, nt: 5, rs: 5, fl: 5, ws: 1 };   // papers per week per step; weeks start Monday
+const MODES = ['home', 'week', 'next', 'progress', 'cards', 'setup', 'list'];
+const DEPTHS = { core: ['Must-reads only', '★★'], key: ['Must-reads and influential', '★★ and ★'], all: ['Every paper', 'all'] };
+const ORDERS = {
+  oldest: ['Oldest first', 'Watch the ideas develop, from the first paper to the latest.'],
+  impact: ['Most important first', 'Must-reads first, then by how much each paper mattered.'],
+  cited: ['Most cited first', 'The papers the field cites most come first.'],
+};
+const PACES = { light: ['Light', 3], steady: ['Steady', 5], intense: ['Intense', 10] };
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -66,12 +80,13 @@ const S = {
   summaries: {},
   downloads: {},
   plan: null,
-  view: Object.assign({ mode: 'home', path: 'plan', field: null, area: null, topic: null, status: 'any', stars: '0', sort: 'order', pdf: false, book: false, nscope: '' }, store.get(VIEW_KEY) || {}),
+  view: Object.assign({ mode: 'home', field: null, area: null, topic: null, status: 'any', stars: '0', sort: 'order', pdf: false, book: false }, store.get(VIEW_KEY) || {}),
   shown: PAGE,
   wk: 0,                                 // the week the planner shows: 0 this week, -1 last week, 1 next week
-  study: { scope: 'all', order: null, key: '', i: 0, flip: false },
+  study: { scope: '', order: null, key: '', i: 0, flip: false },
+  setup: null,                           // the focus being chosen on the setup screen
   editCards: [],                         // flashcards being edited in the paper dialog
-  papers: [], rows: [], byId: new Map(), hay: new Map(),
+  papers: [], rows: [], byId: new Map(), byTopic: new Map(), hay: new Map(),
   ready: false, added: 0, ncards: 0,
 };
 
@@ -156,8 +171,7 @@ function mergeLibrary(remote, local) {
   for (const p of [...remote.added, ...local.added]) if (!gone.has(p.id)) added.set(p.id, newer(added.get(p.id), p));
   out.added = [...added.values()];
   for (const id of new Set([...Object.keys(remote.edits), ...Object.keys(local.edits)])) out.edits[id] = newer(remote.edits[id], local.edits[id]);
-  const goals = newer(remote.goals, local.goals);
-  if (goals) out.goals = goals; else delete out.goals;
+  for (const k of ['goals', 'focus']) { const v = newer(remote[k], local[k]); if (v) out[k] = v; else delete out[k]; }
   return out;
 }
 
@@ -294,13 +308,18 @@ function rebuild() {
   const rows = out.map((p) => ({ p, f: p.f, ar: p.ar || '', tp: p.tp, st: p.st || '', o: p.o, main: true }));
   for (const x of S.xrefs) { const p = S.byId.get(x.id); if (p) rows.push({ p, f: x.f, ar: x.ar, tp: x.tp, st: '', o: x.o, main: false }); }
   S.rows = rows;
+  S.byTopic = new Map();
+  for (const r of rows) { const k = `${r.f}::${r.ar}::${r.tp}`; if (!S.byTopic.has(k)) S.byTopic.set(k, []); S.byTopic.get(k).push(r); }
   S.tree = null; S.ev = null; S.nx = null;
   S.ncards = 0;
   for (const p of out) if (p.cards) S.ncards += cardsOf(p).length;
 }
 const prog = (id) => S.progress.p[id] || {};
-const stepsDone = (g) => STATUSES.reduce((k, [s]) => k + (g && g[s] ? 1 : 0), 0);
-const isDone = (id) => stepsDone(S.progress.p[id]) === NSTEP;
+// How far a paper has got: steps go in order, so a paper has reached step k when its furthest
+// dated step is k-1. Earlier steps count as done even without a date of their own (papers ticked
+// before the Download step existed).
+function reach(g) { let k = 0; if (g) STATUSES.forEach(([s], i) => { if (g[s]) k = i + 1; }); return k; }
+const isDone = (id) => reach(S.progress.p[id]) === NSTEP;
 const metaArea = (f, ar) => S.meta.areas.find((a) => a.f === f && a.name === ar);
 const cardsOf = (p) => (Array.isArray(p && p.cards) ? p.cards.filter((c) => c && (c.q || c.a)) : []);
 
@@ -329,7 +348,7 @@ function fieldTree() {
   for (const r of S.rows) {
     const hit = add(r.f, r.ar, r.tp); if (!hit) continue;
     const [F, A, Tp] = hit;
-    const g = S.progress.p[r.p.id], k = stepsDone(g), must = r.p.s === 2;
+    const g = S.progress.p[r.p.id], k = reach(g), must = r.p.s === 2;
     let last = '';
     if (k) for (const [s] of STATUSES) if (g[s] && g[s] > last) last = g[s];
     const nodes = r.main || r.p.f !== r.f ? [F, A, Tp] : [A, Tp];   // a paper counts once per field
@@ -338,9 +357,9 @@ function fieldTree() {
       if (must) X.s2++;
       if (k) {
         X.st++;
-        if (g.rd) X.rd++;
+        if (k > STEP.rd) X.rd++;
         if (k === NSTEP) X.dn++;
-        STATUSES.forEach(([s], i) => { if (g[s]) { X.c[i]++; if (must) X.m[i]++; } });
+        for (let i = 0; i < k; i++) { X.c[i]++; if (must) X.m[i]++; }
         if (last > X.last) X.last = last;
       }
       if (must && k < NSTEP && (!X.next || r.o < X.next.o)) X.next = r;
@@ -379,9 +398,10 @@ function areaColor(f, ar) {
 /* ---------- where you are: view state and the address bar ---------- */
 const enc = encodeURIComponent;
 const query = () => $('search').value.trim();
+const PLAIN_MODES = ['week', 'next', 'progress', 'cards', 'setup'];
 function viewHash(v) {
   if (v.mode === 'home') return '#/';
-  if (['week', 'next', 'progress', 'cards'].includes(v.mode)) return `#/${v.mode}`;
+  if (PLAIN_MODES.includes(v.mode)) return `#/${v.mode}`;
   if (!v.field) return '#/all';
   let h = `#/f/${enc(v.field)}`;
   if (v.area) h += `/a/${enc(v.area)}`;
@@ -392,7 +412,7 @@ function readHash() {
   const parts = location.hash.replace(/^#\/?/, '').split('/').map((x) => { try { return decodeURIComponent(x); } catch { return x; } });
   if (location.hash.length < 2) return null;
   if (parts[0] === '') return { mode: 'home' };
-  if (['week', 'next', 'progress', 'cards'].includes(parts[0])) return { mode: parts[0] };
+  if (PLAIN_MODES.includes(parts[0])) return { mode: parts[0] };
   if (parts[0] === 'all') return { mode: 'list', field: null, area: null, topic: null };
   if (parts[0] === 'q') return { q: parts.slice(1).join('/') };
   if (parts[0] === 'f' && parts[1]) {
@@ -405,7 +425,7 @@ function readHash() {
 }
 function saveView() {
   const v = S.view;
-  store.set(VIEW_KEY, { mode: v.mode, path: v.path, field: v.field, area: v.area, topic: v.topic, status: v.status, stars: v.stars, sort: v.sort, pdf: v.pdf, book: v.book, nscope: v.nscope });
+  store.set(VIEW_KEY, { mode: v.mode === 'setup' ? 'next' : v.mode, field: v.field, area: v.area, topic: v.topic, status: v.status, stars: v.stars, sort: v.sort, pdf: v.pdf, book: v.book });
 }
 // Go somewhere: update the view, the address bar (so Back works) and the page.
 function go(patch, replace) {
@@ -423,6 +443,7 @@ function onHash() {
   if (!v) return;
   if ('q' in v) { $('search').value = v.q; S.shown = PAGE; render(); return; }
   $('search').value = '';
+  if (v.mode === 'setup' && !S.setup) S.setup = newSetup();
   Object.assign(S.view, v); S.shown = PAGE; saveView(); render();
 }
 
@@ -439,19 +460,16 @@ function scopeRows() {
     const words = fold(q).split(/\s+/).filter(Boolean);
     return S.rows.filter((r) => r.main && words.every((w) => hay(r.p).includes(w)));
   }
-  if (V.topic) return S.rows.filter((r) => r.f === V.field && r.ar === (V.area || '') && r.tp === V.topic);
+  if (V.topic) return S.byTopic.get(`${V.field}::${V.area || ''}::${V.topic}`) || [];
   if (V.area) return S.rows.filter((r) => r.f === V.field && r.ar === V.area);
   if (V.field) return S.rows.filter((r) => r.f === V.field && (r.main || r.p.f !== V.field));   // once per paper
   return S.rows.filter((r) => r.main);
 }
 function passFilters(r) {
-  const st = S.view.status, g = prog(r.p.id);
-  const n = stepsDone(g);
+  const st = S.view.status, n = reach(S.progress.p[r.p.id]);
   if (st === 'untouched' && n) return false;
   if (st === 'progress' && (n === 0 || n === NSTEP)) return false;
   if (st === 'complete' && n !== NSTEP) return false;
-  if (st[0] === '-' && g[st.slice(1)]) return false;
-  if (st[0] === '+' && !g[st.slice(1)]) return false;
   if (S.view.stars !== '0' && (r.p.s || 0) !== +S.view.stars) return false;  // exact star level
   if (S.view.pdf && !r.p.pdf) return false;
   if (S.view.book && r.p.k !== 'book') return false;
@@ -478,6 +496,7 @@ function sorted(list) {
 
 /* ---------- small pieces shared by the views ---------- */
 const ICONS = {
+  dl: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 17v2.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V17"/></svg>',
   pr: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>',
   rd: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg>',
   nt: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
@@ -489,6 +508,7 @@ const ICONS = {
   prog: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
   cards: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="7" width="14" height="13" rx="2"/><path d="M7 7V5.5A1.5 1.5 0 0 1 8.5 4h11A1.5 1.5 0 0 1 21 5.5v10a1.5 1.5 0 0 1-1.5 1.5H16.5"/></svg>',
   all: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
+  target: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg>',
 };
 const MORE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>';
 const LEARN_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 9 12 4 2 9l10 5 10-5z"/><path d="M6 11v5c3 2.5 9 2.5 12 0v-5"/><path d="M22 9v6"/></svg>';
@@ -500,18 +520,23 @@ const openWord = (p) => (p.k === 'book' ? 'Publisher’s page' : p.k ? 'Open' : 
 function linkLabel(u, p) {
   try { const h = new URL(u).hostname.replace(/^www\./, ''); return h === 'doi.org' ? openWord(p || {}) : h; } catch { return openWord(p || {}); }
 }
+// "Deaton, A., & Muellbauer, J." -> "Deaton & Muellbauer"; three or more -> "Banks et al.".
 function shortAuthors(a) {
   if (!a) return '';
-  const first = a.split(/,|&/)[0].trim();
-  const n = a.split(/\.,|&/).filter((x) => x.trim()).length;
-  return first + (/et al/.test(a) || n > 2 ? ' et al.' : n === 2 ? ' & ' + a.split('&').pop().split(',')[0].trim() : '');
+  const surname = (s) => s.split(',')[0].trim();
+  if (/et al/.test(a)) return `${surname(a)} et al.`;
+  const names = a.split('&').flatMap((x) => x.split(/\.,\s*/)).map((x) => x.trim())
+    .filter((x) => x && !/^(Jr|Sr|I{1,3}|IV)\.?$/.test(x));
+  if (names.length <= 1) return surname(a);
+  return names.length === 2 ? `${surname(names[0])} & ${surname(names[1])}` : `${surname(a)} et al.`;
 }
 const KINDS = { book: 'Book', report: 'Report', talk: 'Speech' };
 const journal = (v) => { const m = /\*([^*]+)\*/.exec(v || ''); return m ? m[1] : ''; };
 function learnBtn(p, bare) {
+  if (p.learn) return `<a class="learn has" href="${esc(p.learn)}" target="_blank" rel="noopener" title="Open the interactive page for this paper">${LEARN_ICON}<span>Learn</span></a>`;
   const g = S.guides[p.id];
   if (g) return `<a class="learn has" href="${esc(g.file)}" target="_blank" rel="noopener" title="Open the interactive guide: ${esc(g.title)}">${LEARN_ICON}<span>Learn</span></a>`;
-  return `<button type="button" class="learn${bare ? ' bare' : ''}" data-learn="1" title="No interactive guide yet: get a prompt to make one" aria-label="Learn">${LEARN_ICON}<span>Learn</span></button>`;
+  return `<button type="button" class="learn${bare ? ' bare' : ''}" data-learn="1" title="No interactive page yet: get a prompt for one, then paste its link" aria-label="Learn">${LEARN_ICON}<span>Learn</span></button>`;
 }
 function sumBtn(p) {
   if (!S.summaries[p.id]) return '';
@@ -534,7 +559,7 @@ function segHtml(counts, total, cls) {
 }
 function stepCounts(rows) {
   const c = new Array(NSTEP).fill(0);
-  for (const r of rows) { const g = S.progress.p[r.p.id]; if (g) STATUSES.forEach(([s], i) => { if (g[s]) c[i]++; }); }
+  for (const r of rows) { const k = reach(S.progress.p[r.p.id]); for (let i = 0; i < k; i++) c[i]++; }
   return c;
 }
 function statline(rows) {
@@ -542,19 +567,20 @@ function statline(rows) {
   const stats = STATUSES.map(([s, label], i) => `<span><i class="k" style="background:var(--${s})"></i><b>${fmt(c[i])}</b> ${label.toLowerCase()}</span>`).join('');
   return `${segHtml(c, total)}<div class="statline"><span><b>${fmt(c[NSTEP - 1])}</b> of ${fmt(total)} finished</span>${stats}</div>`;
 }
+const nowId = () => { const nx = nextInfo(); return nx.i >= 0 ? nx.order[nx.i].id : null; };
 
 function paperRow(r, opt) {
-  const p = r.p, g = prog(p.id);
+  const p = r.p, g = prog(p.id), k = reach(g);
   const link = p.link || scholar(p);
-  const { next } = stepState(p.id);
   const btns = STATUSES.map(([s, label], idx) => {
-    const on = g[s];
-    const locked = !on && idx !== next;
-    const tip = on ? `${label} on ${on}` : locked ? `${STATUSES[next][1]} comes first` : `Mark as ${label.toLowerCase()}`;
+    const on = idx < k, locked = idx > k;
+    const tip = on ? (g[s] ? `${label} on ${g[s]}` : label) : locked ? `${STATUSES[k][1]} comes first`
+      : s === 'dl' ? 'Get the paper and the prompt for Claude' : s === 'fl' ? 'Add the flashcards' : `Mark as ${label.toLowerCase()}`;
     return `<button type="button" class="st ${s}${locked ? ' locked' : ''}" data-st="${s}" aria-pressed="${on ? 'true' : 'false'}" aria-label="${label}" title="${tip}">${ICONS[s]}</button>`;
   }).join('');
   const j = journal(p.v);
   const meta = [
+    p.id === opt.now ? '<span class="nowbadge">Next up</span>' : '',
     p.a ? `<span class="au">${mark(shortAuthors(p.a), opt.words)}</span>` : '',
     p.y ? `<span>${esc(p.y)}</span>` : '',
     j ? `<span><i>${mark(j, opt.words)}</i></span>` : p.k ? `<span class="kind">${KINDS[p.k] || 'Report'}</span>` : '',
@@ -565,20 +591,168 @@ function paperRow(r, opt) {
   const links = `<a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? linkLabel(p.link, p) : 'Search Scholar'} ↗</a>`
     + (p.pdf ? `<a class="plink pdf" href="${esc(p.pdf)}" target="_blank" rel="noopener" title="A free-to-read copy found by OpenAlex: an author’s page, a repository or an open-access journal">Free copy ↗</a>` : '')
     + (p.research ? `<a class="plink res" href="${esc(p.research)}" target="_blank" rel="noopener" title="Your research on this paper">Research ↗</a>` : '')
-    + (nc || p.deck ? `<button type="button" class="plink fc" data-cards="1" title="Flashcards for this paper">${nc ? plural(nc, 'card') : 'Deck'}</button>` : '')
+    + (nc || p.deck ? `<button type="button" class="plink fc" data-cardsdlg="1" title="Flashcards for this paper">${nc ? plural(nc, 'card') : 'Deck'}</button>` : '')
     + (p.c ? `<span class="cites" title="Citations counted by OpenAlex">cited ${fmt(p.c)}×</span>` : '');
   const notes = (p.n ? `<div class="pnote" title="${esc(p.n.replace(/\*/g, ''))}">${md(p.n)}</div>` : '')
     + (p.notes ? `<div class="pnote mine" title="${esc(p.notes)}"><b>Your notes:</b> ${esc(p.notes)}</div>` : '');
-  return `<article class="paper${isDone(p.id) ? ' done' : ''}" data-id="${esc(p.id)}">
+  return `<article class="paper${isDone(p.id) ? ' done' : ''}${p.id === opt.now ? ' isnow' : ''}" data-id="${esc(p.id)}">
     <div class="pmain"><a class="ptitle" href="${esc(link)}" target="_blank" rel="noopener" title="${p.link ? openWord(p) : 'Search Google Scholar'}">${mark(p.t, opt.words)}</a>
     <div class="pmeta">${meta}</div>${notes}<div class="pmeta">${where}${links}</div></div>
     <div class="btns">${btns}${sumBtn(p)}${learnBtn(p, true)}</div>
     <button type="button" class="more-btn" data-edit="1" aria-label="Details and edit" title="Details and edit">${MORE_ICON}</button></article>`;
 }
 
+/* ---------- the focus: what you're working through, one topic at a time ---------- */
+const getFocus = () => (S.library.focus && (S.library.focus.kind === 'plan' || S.library.focus.f) ? S.library.focus : null);
+function focusName(F) {
+  if (!F) return '';
+  return F.kind === 'plan' ? (S.plan && S.plan.name) || 'Market power reading plan' : F.tp || F.ar || F.f;
+}
+function focusSub(F) {
+  if (!F) return '';
+  if (F.kind === 'plan') return S.plan ? `${fmt(S.plan.order.length)} must-reads in ${S.plan.phases.length} phases, in study order` : 'The market power must-reads, in study order';
+  const where = F.tp ? `${F.ar ? F.ar + ' · ' : ''}${F.f}` : F.ar ? F.f : 'every area, one at a time';
+  return `${where} · ${DEPTHS[F.depth || 'core'][0].toLowerCase()} · ${ORDERS[F.order || 'oldest'][0].toLowerCase()}`;
+}
+const takes = (depth) => (r) => depth === 'all' || (depth === 'key' ? (r.p.s || 0) >= 1 : r.p.s === 2);
+function orderRows(rows, order) {
+  const yr = (r) => parseInt(r.p.y, 10) || 9999;
+  if (order === 'cited') return rows.sort((a, b) => (b.p.c || 0) - (a.p.c || 0) || a.o - b.o);
+  if (order === 'impact') return rows.sort((a, b) => (b.p.s || 0) - (a.p.s || 0) || a.o - b.o);
+  return rows.sort((a, b) => yr(a) - yr(b) || (b.p.s || 0) - (a.p.s || 0) || a.o - b.o);
+}
+// The focus as topics, each with its papers in reading order. A paper listed in two topics is
+// read once, in the first. A topic with none of the chosen stars keeps all its papers.
+function focusTopics(F) {
+  if (!F) return [];
+  if (F.kind === 'plan') {
+    if (!S.plan) return [];
+    const by = new Map();
+    for (const o of S.plan.order) {
+      if (!S.byId.has(o.id)) continue;
+      const key = `phase:${o.ph}`, ph = S.plan.phases[o.ph];
+      if (!by.has(key)) by.set(key, { key, label: `Phase ${o.ph}: ${ph.title}`, short: ph.title, ph: o.ph, items: [] });
+      by.get(key).items.push({ id: o.id, d: o.d });
+    }
+    return [...by.values()];
+  }
+  const Fn = fieldTree().get(F.f);
+  if (!Fn) return [];
+  const list = [];
+  if (F.tp) list.push([F.ar || '', F.tp]);
+  else if (F.ar) { const A = Fn.areas.get(F.ar); if (A) for (const tp of A.topics.keys()) list.push([F.ar, tp]); }
+  else for (const [ar, A] of Fn.areas) for (const tp of A.topics.keys()) list.push([ar, tp]);
+  const seen = new Set(), out = [];
+  for (const [ar, tp] of list) {
+    const rows = (S.byTopic.get(`${F.f}::${ar}::${tp}`) || []).filter((r) => !seen.has(r.p.id));
+    let chosen = rows.filter(takes(F.depth || 'core'));
+    if (!chosen.length) chosen = rows.slice();
+    orderRows(chosen, F.order || 'oldest');
+    chosen.forEach((r) => seen.add(r.p.id));
+    if (chosen.length) out.push({ key: `${F.f}::${ar}::${tp}`, label: tp, short: tp, area: ar, f: F.f, items: chosen.map((r) => ({ id: r.p.id })) });
+  }
+  return out;
+}
+// Where you are in the focus: its topics (done or not), every paper in order, and the next one.
+function nextInfo() {
+  if (S.nx) return S.nx;
+  const F = getFocus();
+  let topics = S.byId.size ? focusTopics(F) : [];
+  for (const t of topics) { t.total = t.items.length; t.done = t.items.filter((o) => isDone(o.id)).length; t.complete = t.done === t.total; }
+  if (F && F.cur) {   // a topic picked to work on next goes first
+    const k = topics.findIndex((t) => t.key === F.cur && !t.complete);
+    if (k > 0) topics = [topics[k], ...topics.slice(0, k), ...topics.slice(k + 1)];
+  }
+  const order = [];
+  for (const t of topics) for (const o of t.items) order.push(Object.assign({ t }, o));
+  let doneCount = 0, i = -1;
+  order.forEach((o, k) => { if (isDone(o.id)) doneCount++; else if (i < 0) i = k; });
+  S.nx = { F, topics, order, i, ti: i >= 0 ? topics.indexOf(order[i].t) : -1, total: order.length, doneCount };
+  return S.nx;
+}
+const focusTopicMap = () => new Map(nextInfo().topics.map((t) => [t.key, t]));
+function setFocus(F, message) {
+  S.library.focus = Object.assign({}, F, { u: Date.now() });
+  changed('library', message || `Focus: ${focusName(F)}`);
+}
+
+/* ---------- the prompt for each paper ---------- */
+function citeOf(p) {
+  return `${p.a || ''} (${p.y || 'n.d.'}). "${p.t}." ${(p.v || '').replace(/\*/g, '')}`.replace(/\s+/g, ' ').trim();
+}
+// One prompt per paper, pasted into an AI assistant with the PDF attached: it returns everything the next
+// five steps need.
+function paperPrompt(p) {
+  return `I'm studying this paper and have attached its PDF:
+${citeOf(p)}${p.link ? `\nLink: ${p.link}` : ''}
+
+Work through it and give me the following, under these seven headings.
+
+1. HIGHLIGHTED PDF
+If you can create files, return a copy of the PDF with the important passages highlighted: yellow for the main claims and results, green for definitions and assumptions, blue for the method, pink for numbers or facts worth remembering. Highlight sparingly, so I can skim the paper by its highlights alone. If you can't edit the PDF, list each passage instead, with its page number and colour, so I can highlight it by hand.
+
+2. WHAT TO READ
+Which pages to read closely, which to skim and which to skip, as one short list with page numbers.
+
+3. FRONT-PAGE SUMMARY
+Five to seven plain lines I will copy by hand onto the first page: the question, how the paper answers it, the main result, and why it mattered.
+
+4. NOTES
+One to two pages of bullet points I can choose from: the setup and assumptions, the method, the data if any, the key results with page numbers, the intuition, the limitations, and how it connects to earlier and later work. Mark the five most important bullets with ★.
+
+5. FLASHCARDS
+Between 5 and 10 flashcards, written exactly like this, one line each, so I can paste them straight into my archive:
+Q: <question>
+A: <answer>
+Keep each answer under 40 words. Cover the question the paper asks, its main result, the key mechanism or method, one assumption, and one number or fact worth remembering.
+
+6. RESEARCH
+A short research brief: what the paper built on, how it was received, the main papers that extended or challenged it (authors and year), what is still debated, and one small question or exercise I could do to test my understanding. Use web search if you can, and say which claims you could not check.
+
+7. INTERACTIVE PAGE
+A small single-file interactive HTML page (under 60 KB, no outside files) that teaches the paper: the question, one interactive diagram or simulator of the core mechanism, the key equation with every term explained, and a five-question quiz. If you can publish it as a shareable link, do that and give me the link.`;
+}
+function learnPrompt(p) {
+  return `Make a small single-file interactive HTML page (under 60 KB, no outside files) that teaches this paper:
+${citeOf(p)}${p.link ? `\nLink: ${p.link}` : ''}
+
+Include: the question the paper asks and why it mattered; one interactive diagram or simulator of its core mechanism; the key equation with every term explained; and a five-question quiz with answers. Mark anything you're unsure of. If you can publish it as a shareable link, do that and give me the link.`;
+}
+// Flashcards pasted from the assistant's answer: "Q: … / A: …" pairs (also "Question:", "1. Q:", bold markers,
+// or "question | answer" on one line). At most MAX_CARDS.
+function parseCards(text) {
+  const cards = [];
+  let cur = null;
+  for (const raw of String(text || '').split(/\r?\n/)) {
+    const line = raw.replace(/\*\*/g, '').replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').trim();
+    if (!line) continue;
+    let m;
+    if ((m = /^Q(?:uestion)?\s*\d*\s*[:.)-]\s*(.*)$/i.exec(line))) { cur = { q: m[1].trim(), a: '' }; cards.push(cur); continue; }
+    if ((m = /^A(?:nswer)?\s*\d*\s*[:.)-]\s*(.*)$/i.exec(line)) && cur) { cur.a = (cur.a ? cur.a + ' ' : '') + m[1].trim(); continue; }
+    if (!cur && line.includes('|')) { const [q, a] = line.split('|').map((x) => x.trim()); if (q) cards.push({ q, a: a || '' }); continue; }
+    if (cur) { if (cur.a) cur.a += ' ' + line; else cur.q += ' ' + line; }
+  }
+  return cards.filter((c) => c.q || c.a).map((c) => ({ q: c.q.slice(0, 400), a: c.a.slice(0, 600) }));
+}
+// Copy to the clipboard; where the clipboard API is refused, fall back to the older copy command.
+function copyText(text, onOk, onFail) {
+  const legacy = () => {
+    const t = document.createElement('textarea');
+    t.value = text; t.readOnly = true; t.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+    (document.querySelector('dialog[open]') || document.body).appendChild(t);
+    t.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch { /* not allowed here */ }
+    t.remove();
+    (ok ? onOk : onFail)();
+  };
+  try { navigator.clipboard.writeText(text).then(onOk, legacy); } catch { legacy(); }
+}
+
 /* ---------- weeks, goals and the plan ---------- */
 const goals = () => Object.assign({}, DEFAULT_GOALS, S.library.goals || {});
 const goalTotal = (G) => STATUSES.reduce((t, [s]) => t + (+G[s] || 0), 0);
+const pace = (G) => Math.max(1, Math.min(...STATUSES.map(([s]) => +G[s] || 0)));   // papers a week through every step
 function weekStart(day) {
   const ws = goals().ws === 0 ? 0 : 1, d = parseDay(day);
   d.setDate(d.getDate() - ((d.getDay() - ws + 7) % 7));
@@ -594,7 +768,7 @@ function rangeLabel(a, b) {
 function events() {
   if (S.ev) return S.ev;
   const list = [];
-  for (const [id, g] of Object.entries(S.progress.p)) for (const [s] of STATUSES) if (g[s]) list.push({ id, s, d: g[s], u: g.u || 0, k: STATUSES.findIndex(([x]) => x === s) });
+  for (const [id, g] of Object.entries(S.progress.p)) for (const [s, , ] of STATUSES) if (g[s]) list.push({ id, s, d: g[s], u: g.u || 0, k: STEP[s] });
   list.sort((a, b) => (a.d < b.d ? 1 : a.d > b.d ? -1 : b.u - a.u || b.k - a.k));
   S.ev = list;
   return list;
@@ -609,27 +783,29 @@ function countIn(from, to) {
 function inProgress(oldestFirst) {
   const out = [];
   for (const [id, g] of Object.entries(S.progress.p)) {
-    const k = stepsDone(g);
-    if (k > 0 && k < NSTEP && S.byId.has(id)) out.push([id, oldestFirst ? g.pr || '' : g.u || 0]);
+    const k = reach(g);
+    const first = STATUSES.map(([s]) => g[s]).filter(Boolean).sort()[0] || '';
+    if (k > 0 && k < NSTEP && S.byId.has(id)) out.push([id, oldestFirst ? first : g.u || 0]);
   }
   out.sort((a, b) => (oldestFirst ? (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0) : b[1] - a[1]));
   return out.map((x) => x[0]);
 }
 const finished = () => Object.keys(S.progress.p).filter((id) => isDone(id) && S.byId.has(id));
-// What to do in each of the next few weeks to meet the goals: papers already started come first,
-// then the path you follow in Next up. Steps run in order, so a paper printed early in a week can
-// be read later that week. This week only plans what is still left after what's done.
+// What to do in each of the next few weeks to meet the goals, all from your focus: papers already
+// started come first, then the next ones in order. Steps run in order, so a paper downloaded early in
+// a week can be printed later that week. This week only plans what is still left after what's done.
 function weekPlan(weeks) {
   const G = goals(), ws = weekStart(today());
   const done = countIn(ws, addDays(ws, 6));
-  const order = inProgress(true), seen = new Set(order);
-  const nx = nextInfo(), want = goalTotal(G) * weeks + 5;
+  const nx = nextInfo(), inFocus = new Set(nx.order.map((o) => o.id));
+  const order = inProgress(true).filter((id) => inFocus.has(id)), seen = new Set(order);
+  const want = goalTotal(G) * weeks + 5;
   let fresh = 0;
   for (let k = Math.max(0, nx.i); k < nx.order.length && fresh < want; k++) {
     const id = nx.order[k].id;
-    if (!seen.has(id) && stepsDone(prog(id)) === 0) { order.push(id); seen.add(id); fresh++; }
+    if (!seen.has(id) && reach(prog(id)) === 0) { order.push(id); seen.add(id); fresh++; }
   }
-  const nextOf = new Map(order.map((id) => [id, stepState(id).next]));
+  const nextOf = new Map(order.map((id) => [id, reach(prog(id))]));
   const out = [];
   for (let w = 0; w < weeks; w++) {
     const plan = {};
@@ -645,13 +821,19 @@ function weekPlan(weeks) {
   }
   return out;
 }
-function setGoals(next) {
-  const G = goals(), clean = {};
+function cleanGoals(next) {
+  const clean = {};
   for (const [s] of STATUSES) clean[s] = Math.max(0, Math.min(200, parseInt(next[s], 10) || 0));
   clean.ws = +next.ws === 0 ? 0 : 1;
-  if (STATUSES.every(([s]) => clean[s] === G[s]) && clean.ws === G.ws) return;
+  return clean;
+}
+function setGoals(next, quiet) {
+  const G = goals(), clean = cleanGoals(next);
+  if (STATUSES.every(([s]) => clean[s] === G[s]) && clean.ws === G.ws) return false;
   S.library.goals = Object.assign(clean, { u: Date.now() });
-  changed('library', `Weekly goals: ${STATUSES.map(([s]) => `${clean[s]} ${VERB[s].toLowerCase()}`).join(', ')}`);
+  const msg = `Weekly goals: ${STATUSES.map(([s]) => `${clean[s]} ${VERB[s].toLowerCase()}`).join(', ')}`;
+  if (quiet) { S.dirty.library++; S.messages.push(msg); } else changed('library', msg);
+  return true;
 }
 
 /* ---------- sidebar and tab bar ---------- */
@@ -678,16 +860,20 @@ function renderNav() {
   const nx = nextInfo(), G = goals(), ws = weekStart(today()), wdone = countIn(ws, addDays(ws, 6));
   const wsum = STATUSES.reduce((t, [s]) => t + Math.min(wdone[s], +G[s] || 0), 0);
   const nprog = inProgress().length + finished().length;
-  const item = (mode, icon, label, ct, color) => `<button class="nav" style="--c:${color}" data-mode="${mode}"${V.mode === mode && !searching ? ' aria-current="true"' : ''}><span class="ic">${icon}</span><span class="nm">${label}</span><span class="ct">${ct}</span></button>`;
+  const item = (mode, icon, label, ct, color) => `<button class="nav" style="--c:${color}" data-mode="${mode}"${(V.mode === mode || (mode === 'next' && V.mode === 'setup')) && !searching ? ' aria-current="true"' : ''}><span class="ic">${icon}</span><span class="nm">${label}</span><span class="ct">${ct}</span></button>`;
   h += item('home', ICONS.home, 'Overview', '', 'var(--ink)');
+  h += item('next', ICONS.next, 'Next up', nx.total ? `${fmt(nx.doneCount)}/${fmt(nx.total)}` : 'set up', 'var(--rd)');
   h += item('week', ICONS.week, 'This week', goalTotal(G) ? `${wsum}/${goalTotal(G)}` : '', 'var(--rs)');
-  h += item('next', ICONS.next, 'Next up', nx.total ? `${fmt(nx.doneCount)}/${fmt(nx.total)}` : '', 'var(--rd)');
   h += item('progress', ICONS.prog, 'Progress', nprog ? fmt(nprog) : '', 'var(--pr)');
   h += item('cards', ICONS.cards, 'Flashcards', S.ncards ? fmt(S.ncards) : '', 'var(--fl)');
   h += `<button class="nav" style="--c:var(--ink)" ${data(null, null, null)}${cur(null, null, null)}><span class="ic">${ICONS.all}</span><span class="nm">All papers</span><span class="ct">${fmt(S.papers.length)}</span></button>`;
+  if (nx.F) h += `<div class="navfocus"><span class="eyebrow">Focus</span><button type="button" class="navfocusbtn" data-mode="next"><b>${esc(focusName(nx.F))}</b><small>${nx.ti >= 0 ? esc(nx.topics[nx.ti].short) : 'all done'}</small></button></div>`;
   h += '<div class="navlabel">Fields</div>';
-  const topicBtns = (f, ar, A) => [...A.topics].map(([t, c]) =>
-    `<button class="tnav" ${data(f, ar, t)}${cur(f, ar, t)}><span class="nm">${esc(t)}</span><span class="ct">${count(c)}</span></button>`).join('');
+  const ft = V.mode === 'list' && V.field ? focusTopicMap() : null;
+  const topicBtns = (f, ar, A) => [...A.topics].map(([t, c]) => {
+    const done = topicDone(c, ft && ft.get(`${f}::${ar}::${t}`));
+    return `<button class="tnav${done ? ' done' : ''}" ${data(f, ar, t)}${cur(f, ar, t)}${done ? ' title="Done"' : ''}><span class="nm">${esc(t)}</span><span class="ct">${count(c)}</span></button>`;
+  }).join('');
   for (const f of fieldOrder(tree)) {
     const F = tree.get(f), fc = fieldColor(f);
     h += `<button class="nav" style="--c:${fc}" ${data(f, null, null)}${cur(f, null, null)} aria-expanded="${V.field === f}"><span class="sw"></span><span class="nm">${esc(f)}</span><span class="ct">${F.n ? count(F) : 'empty'}</span></button>`;
@@ -716,8 +902,8 @@ function renderNav() {
   $('navTree').innerHTML = h;
 }
 function renderTabbar() {
-  const m = query() ? '' : S.view.mode;
-  $('tabbar').innerHTML = [['home', 'home', 'Overview'], ['week', 'week', 'Week'], ['next', 'next', 'Next up'], ['progress', 'prog', 'Progress'], ['cards', 'cards', 'Cards']]
+  const m = query() ? '' : S.view.mode === 'setup' ? 'next' : S.view.mode;
+  $('tabbar').innerHTML = [['home', 'home', 'Overview'], ['next', 'next', 'Next up'], ['week', 'week', 'Week'], ['progress', 'prog', 'Progress'], ['cards', 'cards', 'Cards']]
     .map(([k, ic, l]) => `<button type="button" data-mode="${k}"${m === k ? ' aria-current="page"' : ''}>${ICONS[ic]}<span>${l}</span></button>`).join('');
 }
 
@@ -736,6 +922,8 @@ function render() {
   renderNav(); renderTabbar();
   const q = query(), m = S.view.mode;
   if (q || m === 'list') renderList();
+  else if (m === 'setup') renderSetup();
+  else if ((m === 'next' || m === 'week') && !getFocus()) { if (!S.setup) S.setup = newSetup(); renderSetup(true); }
   else if (m === 'home') renderHome();
   else if (m === 'week') renderWeek();
   else if (m === 'next') renderNext();
@@ -743,7 +931,7 @@ function render() {
   else if (m === 'cards') renderCards();
   else renderList();
   renderLists(); renderBanner();
-  const names = { home: 'Paper Archive', week: 'This week · Paper Archive', next: 'Next up · Paper Archive', progress: 'Progress · Paper Archive', cards: 'Flashcards · Paper Archive' };
+  const names = { home: 'Paper Archive', week: 'This week · Paper Archive', next: 'Next up · Paper Archive', progress: 'Progress · Paper Archive', cards: 'Flashcards · Paper Archive', setup: 'Your focus · Paper Archive' };
   document.title = q ? `“${q}” · Paper Archive` : m === 'list' ? `${S.view.topic || S.view.area || S.view.field || 'All papers'} · Paper Archive` : names[m] || 'Paper Archive';
   if (refocus) { const el = $('view').querySelector(refocus); if (el) el.focus({ preventScroll: true }); }
 }
@@ -756,15 +944,22 @@ function renderBanner() {
 }
 const setAccent = (c) => document.documentElement.style.setProperty('--fc', c);
 
+// The button for doing step s on a paper: Download opens the paper and the prompt, Flashcards opens
+// the cards, the rest tick straight away.
+function stepButton(s, sm) {
+  const cls = `pill go${sm ? ' sm' : ''} ${s}`;
+  if (s === 'dl') return `<button type="button" class="${cls}" data-prep="1">${ICONS.dl}<span>${sm ? 'Get paper' : 'Get the paper and the prompt'}</span></button>`;
+  if (s === 'fl') return `<button type="button" class="${cls}" data-cardsdlg="1">${ICONS.fl}<span>${sm ? 'Add cards' : 'Add the flashcards'}</span></button>`;
+  return `<button type="button" class="${cls}" data-step="${s}" title="${markLabel(s)}">${ICONS[s]}<span>${sm ? STATUSES[STEP[s]][1] : markLabel(s)}</span></button>`;
+}
+const markLabel = (s) => (s === 'nt' ? 'Mark notes as written' : `Mark as ${STATUSES[STEP[s]][1].toLowerCase()}`);
 // A task: one paper and the step to do on it, with a button when that step is the paper's next one.
 function taskRow(id, s, opt = {}) {
   const p = S.byId.get(id); if (!p) return '';
-  const i = STATUSES.findIndex(([k]) => k === s);
-  const { next } = stepState(id);
+  const i = STEP[s], next = reach(prog(id));
   const link = p.link || scholar(p);
   const btn = i < next ? `<span class="tdone">✓ ${STATUSES[i][1]}</span>`
-    : i === next ? `<button type="button" class="pill go sm ${s}" data-step="${s}">${ICONS[s]}<span>${STATUSES[i][1]}</span></button>`
-      : `<span class="twait">after ${STATUSES[next][1].toLowerCase()}</span>`;
+    : i === next ? stepButton(s, true) : `<span class="twait">after ${VERB[STATUSES[next][0]].toLowerCase()}</span>`;
   return `<li class="task" data-id="${esc(id)}"><span class="tstep ${s}" title="${VERB[s]}">${ICONS[s]}</span>
     <div class="tmain"><a class="ttitle" href="${esc(link)}" target="_blank" rel="noopener">${esc(p.t)}</a>
     <small>${esc(shortAuthors(p.a))}${p.y ? ' · ' + esc(p.y) : ''}${p.s ? ` · <span class="s">${'★'.repeat(p.s)}</span>` : ''}${opt.where !== false ? ` · <button type="button" class="where" data-gof="${esc(p.f)}" data-goa="${esc(p.ar || '')}" data-got="${esc(p.tp)}">${esc(p.tp)}</button>` : ''}</small></div>${btn}</li>`;
@@ -776,7 +971,7 @@ function eventRow(e) {
 }
 function goalBar(s, d, g) {
   const pct = g ? Math.min(100, (100 * d) / g) : d ? 100 : 0;
-  return `<div class="gb ${s}${g && d >= g ? ' met' : ''}"><div class="gbt"><span class="gbl">${ICONS[s]}${VERB[s]}</span><span class="gbn"><b>${d}</b>/${g}</span></div><div class="gbar"><i style="width:${pct}%"></i></div></div>`;
+  return `<div class="gb ${s}${g && d >= g ? ' met' : ''}"><div class="gbt"><span class="gbl">${ICONS[s]}${GOAL_NAME[s]}</span><span class="gbn"><b>${d}</b>/${g}</span></div><div class="gbar"><i style="width:${pct}%"></i></div></div>`;
 }
 function weekPanel() {
   const G = goals(), ws = weekStart(today()), we = addDays(ws, 6), done = countIn(ws, we);
@@ -786,7 +981,7 @@ function weekPanel() {
     <div class="goalmini">${STATUSES.map(([s]) => goalBar(s, done[s], +G[s] || 0)).join('')}</div></section>`;
 }
 function howto() {
-  const what = ['Print it', 'Read it, as deeply as it deserves', 'Write notes on it by hand', 'Research it, link the write-up', 'Make flashcards of what matters'];
+  const what = ['Get the paper and a prompt for Claude', 'Print it, with Claude’s highlights', 'Read it, as deeply as it deserves', 'Write notes on it by hand', 'Research it, link the write-up', 'Paste in Claude’s flashcards'];
   return `<ol class="howto compact">${STATUSES.map(([s, label], n) => `<li><span class="st ${s}" aria-pressed="true">${ICONS[s]}</span><span><b>${label}</b> ${what[n]}</span></li>`).join('')}</ol>`;
 }
 
@@ -795,19 +990,31 @@ function areaCard(f, ar, A) {
   const m = metaArea(f, ar);
   const must = A.s2, base = must ? A.m : A.c, of = must || A.n;
   const nx = A.next ? A.next.p : null;
+  const mustDone = must && A.m[NSTEP - 1] >= must;
   const progTxt = A.st
     ? `<b>${fmt(A.st)}</b> started · <b>${fmt(A.dn)}</b> finished${A.last ? ` · last ${esc(dayLabel(A.last))}` : ''}`
     : 'Not started yet';
-  return `<button type="button" class="card" style="--c:${areaColor(f, ar)}" data-f="${esc(f)}" data-a="${esc(ar)}" data-t="" aria-label="${esc(ar)}: ${fmt(A.n)} papers in ${A.topics.size} topics">
+  return `<button type="button" class="card${mustDone ? ' complete' : ''}" style="--c:${areaColor(f, ar)}" data-f="${esc(f)}" data-a="${esc(ar)}" data-t="" aria-label="${esc(ar)}: ${fmt(A.n)} papers in ${A.topics.size} topics">
     <h3>${esc(ar)}</h3>${m && m.blurb ? `<p>${esc(m.blurb)}</p>` : ''}
     <div class="cardstats"><span><b>${fmt(A.n)}</b> papers</span><span><b>${A.topics.size}</b> topics</span>${must ? `<span><b>${fmt(must)}</b> must-reads</span>` : ''}</div>
-    <div class="cardprog">${segHtml(base, of, 'thin')}<div class="cardprogtxt">${must ? `Must-reads <b>${fmt(A.m[NSTEP - 1])}/${fmt(must)}</b> done · ` : ''}${progTxt}</div></div>
-    ${nx ? `<div class="cardnext"><span>Next must-read</span><b>${esc(nx.t)}</b></div>` : ''}</button>`;
+    <div class="cardprog">${segHtml(base, of, 'thin')}<div class="cardprogtxt">${mustDone ? '<b class="okc">✓ Must-reads done</b> · ' : must ? `Must-reads <b>${fmt(A.m[NSTEP - 1])}/${fmt(must)}</b> done · ` : ''}${progTxt}</div></div>
+    ${nx && !mustDone ? `<div class="cardnext"><span>Next must-read</span><b>${esc(nx.t)}</b></div>` : ''}</button>`;
 }
-function topicCard(f, ar, t, c) {
+// A topic is done (and turns green) when every paper in it is, when your focus's papers in it are,
+// or, outside your focus, when its must-reads are.
+function topicDone(c, fx) { return !!(c.n && (c.dn >= c.n || (fx ? fx.complete : c.s2 && c.m[NSTEP - 1] >= c.s2))); }
+function topicCard(f, ar, t, c, ft) {
+  const inFocus = ft && ft.get(`${f}::${ar}::${t}`);
   const base = c.s2 ? c.m : c.c, of = c.s2 || c.n;
-  const sub = c.st ? `${fmt(c.st)} started · ${fmt(c.dn)} finished${c.last ? ` · last ${esc(dayLabel(c.last))}` : ''}` : c.next ? `Start with: ${esc(c.next.p.t)}` : '';
-  return `<button type="button" class="tcard" data-f="${esc(f)}" data-a="${esc(ar)}" data-t="${esc(t)}" aria-label="${esc(t)}: ${fmt(c.n)} papers">
+  const mustDone = c.s2 && c.m[NSTEP - 1] >= c.s2, allDone = c.n && c.dn >= c.n;
+  const complete = topicDone(c, inFocus);
+  let sub;
+  if (allDone) sub = '<b class="okc">✓ Every paper done</b>';
+  else if (inFocus && inFocus.complete) sub = `<b class="okc">✓ Done in your focus</b> · ${fmt(c.dn)} of ${fmt(c.n)} papers`;
+  else if (inFocus) sub = `Your focus: <b>${inFocus.done}/${inFocus.total}</b> done${c.last ? ` · last ${esc(dayLabel(c.last))}` : ''}`;
+  else if (mustDone) sub = `<b class="okc">✓ Must-reads done</b> · ${fmt(c.dn)} of ${fmt(c.n)} papers`;
+  else sub = c.st ? `${fmt(c.st)} started · ${fmt(c.dn)} finished${c.last ? ` · last ${esc(dayLabel(c.last))}` : ''}` : c.next ? `Start with: ${esc(c.next.p.t)}` : '';
+  return `<button type="button" class="tcard${complete ? ' complete' : ''}${inFocus ? ' infocus' : ''}" data-f="${esc(f)}" data-a="${esc(ar)}" data-t="${esc(t)}" aria-label="${esc(t)}: ${fmt(c.n)} papers">
     <b>${esc(t)}</b><span class="tn">${fmt(c.n)}${c.s2 ? ` · ${c.s2} ★★` : ''}</span>
     ${segHtml(base, of, 'thin')}${sub ? `<span class="tsub">${sub}</span>` : ''}</button>`;
 }
@@ -828,7 +1035,7 @@ function fieldSections(f) {
   }
   if (loose.length) h += `<section class="sec" style="--c:${fieldColor(f)}">${groups.size ? '<div class="sechead"><h2>Your areas</h2></div>' : ''}<div class="cards">${loose.map(([ar, A]) => areaCard(f, ar, A)).join('')}</div></section>`;
   const top = F.areas.get('');
-  if (top && top.topics.size) h += `<section class="sec"><div class="tgrid" style="--fc:${fieldColor(f)}">${[...top.topics].map(([t, c]) => topicCard(f, '', t, c)).join('')}</div></section>`;
+  if (top && top.topics.size) { const ft = focusTopicMap(); h += `<section class="sec"><div class="tgrid" style="--fc:${fieldColor(f)}">${[...top.topics].map(([t, c]) => topicCard(f, '', t, c, ft)).join('')}</div></section>`; }
   return h;
 }
 
@@ -895,17 +1102,20 @@ function progressGraph() {
 const scrollGraphs = () => $('view').querySelectorAll('.hscroll').forEach((el) => { el.scrollLeft = el.scrollWidth; });
 function newsHtml() {
   const seen = (k) => store.get(k);
-  if (!seen(SEEN_V5_KEY)) return `<div class="news"><span><b>New:</b> a fifth step, <b>Flashcards</b>; weekly goals with a <b>This week</b> planner; a <b>Progress</b> page; and ${SHARED ? 'saving that works on every device, no sign-in needed' : 'everything you tick saved in this browser until shared saving is switched on'}.</span><button type="button" class="pill dark" data-seen="1">Got it</button></div>`;
+  if (!seen(SEEN_V5_KEY)) return `<div class="news"><span><b>New:</b> pick a <b>focus</b> and work through it one topic at a time; six steps per paper, starting with <b>Download</b>, which gives you the paper and a prompt for Claude; weekly goals; and ${SHARED ? 'saving that works on every device, no sign-in needed' : 'everything you tick kept in this browser until shared saving is switched on'}.</span><button type="button" class="pill dark" data-seen="1">Got it</button></div>`;
   if (!seen(SEEN_SCI_KEY) && S.sciAdded) return `<div class="news"><span><b>New:</b> Mathematics, Statistics and Econophysics now have their own areas and topics: ${fmt(S.sciAdded)} papers and books, including ${fmt(S.sciLandmarks)} classic books and papers going back centuries. Your ticks are untouched.</span><button type="button" class="pill dark" data-seen="1">Got it</button></div>`;
   return '';
 }
 function nextCard() {
-  const { order, i, total, doneCount } = nextInfo();
-  if (i < 0) return '<p class="blurb">Every paper on this path has all five steps ticked.</p>';
-  const p = S.byId.get(order[i].id), { next } = stepState(p.id), nk = STATUSES[next];
-  return `<div class="cont" data-id="${esc(p.id)}"><h3><a href="${esc(p.link || scholar(p))}" target="_blank" rel="noopener">${esc(p.t)}</a></h3>
-    <div class="meta">${esc(shortAuthors(p.a))}${p.y ? ' · ' + esc(p.y) : ''} · paper ${fmt(i + 1)} of ${fmt(total)}, ${fmt(doneCount)} finished</div>
-    <div class="row">${nk ? `<button type="button" class="pill go ${nk[0]}" data-step="${nk[0]}">${ICONS[nk[0]]} Mark as ${nk[1].toLowerCase()}</button>` : ''}<button type="button" class="linkbtn" data-mode="next">Open Next up</button></div></div>`;
+  const nx = nextInfo();
+  if (!nx.F) return `<div class="cont"><h3>Pick what to focus on</h3><div class="meta">Choose a field, an area or a topic, how deep to go and how much each week. Next up then takes you through it one topic at a time.</div>
+    <div class="row"><button type="button" class="pill go rd" data-setup="1">${ICONS.target} Set up your focus</button></div></div>`;
+  if (nx.i < 0) return `<div class="cont"><h3>${esc(focusName(nx.F))}: all done</h3><div class="meta">Every paper in your focus has all six steps. Pick the next thing to master.</div><div class="row"><button type="button" class="pill" data-setup="1">Choose a new focus</button></div></div>`;
+  const o = nx.order[nx.i], p = S.byId.get(o.id), nk = STATUSES[reach(prog(p.id))];
+  return `<div class="cont" data-id="${esc(p.id)}"><div class="contfocus">${esc(focusName(nx.F))} › <b>${esc(o.t.short)}</b> · ${o.t.done} of ${o.t.total} done</div>
+    <h3><a href="${esc(p.link || scholar(p))}" target="_blank" rel="noopener">${esc(p.t)}</a></h3>
+    <div class="meta">${esc(shortAuthors(p.a))}${p.y ? ' · ' + esc(p.y) : ''} · paper ${fmt(nx.i + 1)} of ${fmt(nx.total)}, ${fmt(nx.doneCount)} finished</div>
+    <div class="row">${nk ? stepButton(nk[0]) : ''}<button type="button" class="linkbtn" data-mode="next">Open Next up</button></div></div>`;
 }
 function renderHome() {
   setAccent('#4a47a8');
@@ -919,11 +1129,11 @@ function renderHome() {
     <div class="statgrid">${STATUSES.map(([s, label], n) => `<div class="stat"><b>${fmt(c[n])}</b><span><i class="k" style="background:var(--${s})"></i>${label}</span></div>`).join('')}<div class="stat"><b>${fmt(c[NSTEP - 1])}</b><span>Finished, of ${fmt(all.length)}</span></div></div></section>`;
   h += weekPanel();
   h += `<div class="duo"><div class="panel"><div class="eyebrow">Next up</div>${nextCard()}</div>
-    <div class="panel"><div class="eyebrow">Five steps per paper, in order</div>${howto()}</div></div>`;
+    <div class="panel"><div class="eyebrow">Six steps per paper, in order</div>${howto()}</div></div>`;
   h += progressGraph();
   const cont = inProgress().slice(0, 6), recent = events().filter((e) => S.byId.has(e.id)).slice(0, 8);
   if (cont.length || recent.length) {
-    h += `<div class="duo"><div class="panel"><div class="eyebrow">Continue where you left off</div>${cont.length ? `<ol class="tasks">${cont.map((id) => taskRow(id, STATUSES[stepState(id).next][0])).join('')}</ol>` : '<p class="blurb small">Nothing half-done. Start the next paper from Next up.</p>'}</div>
+    h += `<div class="duo"><div class="panel"><div class="eyebrow">Continue where you left off</div>${cont.length ? `<ol class="tasks">${cont.map((id) => taskRow(id, STATUSES[reach(prog(id))][0])).join('')}</ol>` : '<p class="blurb small">Nothing half-done. Start the next paper from Next up.</p>'}</div>
       <div class="panel"><div class="eyebrow">Recently done</div><ol class="evlist">${recent.map(eventRow).join('')}</ol><button type="button" class="linkbtn" data-mode="progress">See all progress</button></div></div>`;
   }
   for (const f of fieldOrder(tree)) {
@@ -934,6 +1144,117 @@ function renderHome() {
   }
   $('view').innerHTML = h;
   scrollGraphs();
+}
+
+/* ---------- setting up your focus: a short guided screen ---------- */
+function newSetup(preset) {
+  const F = getFocus() || {}, G = goals();
+  const g = {}; STATUSES.forEach(([s]) => { g[s] = G[s]; });
+  const same = STATUSES.every(([s]) => g[s] === g.dl);
+  const paceKey = same ? Object.keys(PACES).find((k) => PACES[k][1] === g.dl) || 'custom' : 'custom';
+  return Object.assign({ step: 1, kind: F.kind || '', f: F.f || '', ar: F.ar || '', tp: F.tp || '', depth: F.depth || 'core', order: F.order || 'oldest', g, ws: G.ws === 0 ? 0 : 1, pace: paceKey, back: S.view.mode === 'setup' ? 'next' : S.view.mode }, preset || {});
+}
+function openSetup(preset) {
+  S.setup = newSetup(preset);
+  go({ mode: 'setup' });
+}
+const setupFocus = (st, depth) => ({ kind: st.kind, f: st.f, ar: st.ar, tp: st.tp, depth: depth || st.depth, order: st.order });
+const countFocus = (F) => focusTopics(F).reduce((t, x) => t + x.items.length, 0);
+const setupGoals = (st) => (st.pace === 'custom' ? st.g : Object.fromEntries(STATUSES.map(([s]) => [s, PACES[st.pace][1]])));
+// The plan in a few lines: what, how many papers, how long, and the first paper.
+function setupSummary(st) {
+  const F = setupFocus(st), topics = focusTopics(F), n = topics.reduce((t, x) => t + x.items.length, 0);
+  const p = pace(setupGoals(st)), first = topics.length ? S.byId.get(topics[0].items[0].id) : null;
+  return `<div class="eyebrow">Your plan</div>
+    <b>${esc(focusName(F))}</b>
+    <p>${esc(focusSub(F))}</p>
+    <p><b>${fmt(n)}</b> papers in <b>${plural(topics.length, st.kind === 'plan' ? 'phase' : 'topic')}</b> · about <b>${plural(Math.ceil(n / p), 'week')}</b> at ${p} a week through all six steps</p>
+    ${first ? `<p class="setupfirst">First up: <b>${esc(topics[0].short)}</b> → ${esc(first.t)}${first.y ? ` (${esc(first.y)})` : ''}</p>` : ''}`;
+}
+function renderSetup(firstRun) {
+  setAccent('#1f5fd6');
+  const st = S.setup, tree = fieldTree();
+  const steps = st.kind === 'plan' ? [1, 3] : [1, 2, 3];
+  const pos = steps.indexOf(st.step) + 1;
+  const dots = `<div class="setupsteps">${steps.map((n) => `<i class="${n === st.step ? 'on' : steps.indexOf(n) < steps.indexOf(st.step) ? 'past' : ''}"></i>`).join('')}<span>Step ${pos} of ${steps.length}</span></div>`;
+  const has = st.kind === 'plan' || !!st.f;
+  let body = '', canNext = has;
+  if (st.step === 1) {
+    const planN = S.plan ? S.plan.order.length : 0;
+    body += `${firstRun ? '<p class="setupintro">Before Next up and This week can plan anything, pick what you want to work through.</p>' : ''}
+      <h1>What do you want to master?</h1>
+      <p class="blurb">Pick a field, one area or a single topic. You'll go through it one topic at a time, and each topic turns green when it's done.</p>
+      <div class="pickgrid">${fieldOrder(tree).filter((f) => tree.get(f).n).map((f) => {
+        const F = tree.get(f);
+        return `<button type="button" class="pickcard${st.kind === 'scope' && st.f === f ? ' sel' : ''}" style="--c:${fieldColor(f)}" data-sf="${esc(f)}"><b>${esc(f)}</b><small>${fmt(F.n)} papers · ${[...F.areas.keys()].filter(Boolean).length} areas</small></button>`;
+      }).join('')}
+      ${planN ? `<button type="button" class="pickcard plan${st.kind === 'plan' ? ' sel' : ''}" style="--c:#c98a00" data-sk="plan"><b>★ ${esc(focusName({ kind: 'plan' }))}</b><small>${esc(focusSub({ kind: 'plan' }))}</small></button>` : ''}</div>`;
+    if (st.kind === 'scope' && st.f) {
+      const Fn = tree.get(st.f);
+      // Once an area is picked, the other areas fold away so its topics come straight after it.
+      const areas = [...Fn.areas].filter(([ar, A]) => ar && A.n && (!st.ar || ar === st.ar));
+      body += `<h2 class="setuph">Which part of ${esc(st.f)}?</h2><div class="pickgrid areas">
+        ${st.ar ? '' : `<button type="button" class="pickcard sel" style="--c:${fieldColor(st.f)}" data-sa=""><b>All of ${esc(st.f)}</b><small>every area, one topic at a time</small></button>`}
+        ${areas.map(([ar, A]) => `<button type="button" class="pickcard${st.ar === ar ? ' sel' : ''}" style="--c:${areaColor(st.f, ar)}" data-sa="${esc(ar)}"><b>${esc(ar)}</b><small>${A.topics.size} topics · ${fmt(A.s2)} must-reads${A.st ? ` · ${fmt(A.dn)} finished` : ''}</small></button>`).join('')}</div>
+        ${st.ar ? `<div><button type="button" class="linkbtn" data-sa="">Show every area in ${esc(st.f)}</button></div>` : ''}`;
+      if (st.ar) {
+        const A = Fn.areas.get(st.ar);
+        body += `<h2 class="setuph">Which topics?</h2><div class="pickchips">
+          <button type="button" class="chip" data-stp="" aria-pressed="${!st.tp}">Every topic in ${esc(st.ar)}, one at a time</button>
+          ${[...A.topics].filter(([, c]) => c.n).map(([t, c]) => `<button type="button" class="chip" data-stp="${esc(t)}" aria-pressed="${st.tp === t}">${esc(t)} <small>${c.s2} ★★</small></button>`).join('')}</div>`;
+      }
+    }
+  } else if (st.step === 2) {
+    const counts = Object.keys(DEPTHS).map((d) => countFocus(setupFocus(st, d)));
+    const p = pace({ ...st.g });
+    body += `<h1>How deep, and in what order?</h1>
+      <p class="blurb">${esc(st.tp || st.ar || st.f)}${st.tp ? '' : ': you finish one topic before starting the next.'}</p>
+      <div class="optlabel">How deep</div><div class="optgrid">${Object.entries(DEPTHS).map(([d, [name, stars]], k) => `<button type="button" class="optcard${st.depth === d ? ' sel' : ''}" data-sdepth="${d}"><b>${name}</b><span class="optnum">${fmt(counts[k])} papers</span><small>${d === 'all' ? 'Every paper listed' : `The papers marked ${stars}`} · about ${plural(Math.ceil(counts[k] / p), 'week')} at ${p} a week</small></button>`).join('')}</div>
+      <div class="optlabel">In what order</div><div class="optgrid">${Object.entries(ORDERS).map(([o, [name, about]]) => `<button type="button" class="optcard${st.order === o ? ' sel' : ''}" data-sorder="${o}"><b>${name}</b><small>${about}</small></button>`).join('')}</div>`;
+  } else {
+    body += `<h1>How much each week?</h1>
+      <p class="blurb">Goals are papers per week, for each of the six steps. This week turns them into a to-do list.</p>
+      <div class="optgrid">${Object.entries(PACES).map(([k, [name, v]]) => `<button type="button" class="optcard${st.pace === k ? ' sel' : ''}" data-space="${k}"><b>${name}</b><span class="optnum">${v} a week</span><small>${v} papers through every step each week</small></button>`).join('')}
+        <button type="button" class="optcard${st.pace === 'custom' ? ' sel' : ''}" data-space="custom"><b>Custom</b><span class="optnum">your mix</span><small>A different goal for each step</small></button></div>
+      ${st.pace === 'custom' ? `<div class="goalinputs setupgoals">${STATUSES.map(([s]) => `<label><span><i class="k" style="background:var(--${s})"></i>${VERB[s]}</span><input type="number" min="0" max="200" inputmode="numeric" data-sg="${s}" value="${st.g[s]}"></label>`).join('')}</div>` : ''}
+      <label class="inline setupws">Weeks start on <select id="setupWs"><option value="1"${st.ws === 1 ? ' selected' : ''}>Monday</option><option value="0"${st.ws === 0 ? ' selected' : ''}>Sunday</option></select></label>
+      <aside class="setupsum">${setupSummary(st)}</aside>`;
+  }
+  const backBtn = pos > 1 ? '<button type="button" class="pill" data-sback="1">← Back</button>' : getFocus() ? '<button type="button" class="pill" data-scancel="1">Cancel</button>' : '';
+  const nextBtn = st.step === 3 ? '<button type="button" class="pill go rd" data-sstart="1">Start →</button>'
+    : `<button type="button" class="pill primary" data-snext="1"${canNext ? '' : ' disabled'}>Continue →</button>`;
+  const picked = st.kind === 'plan' ? focusName({ kind: 'plan' }) : st.tp || st.ar || (st.f ? `All of ${st.f}` : '');
+  $('view').innerHTML = `<section class="setup">${dots}${body}<div class="setupfoot">${backBtn}<span class="setupsel">${picked ? esc(picked) : 'Pick something to focus on'}</span>${nextBtn}</div></section>`;
+}
+// After picking, bring what comes next into view: a field's areas, or an area's topics.
+function setupScroll() {
+  const hs = $('view').querySelectorAll('.setuph');
+  if (hs.length) hs[hs.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function setupClick(d) {
+  const st = S.setup; if (!st) return false;
+  if (d.sk) { Object.assign(st, { kind: 'plan', f: '', ar: '', tp: '' }); render(); return true; }
+  if (d.sf !== undefined) { if (st.f !== d.sf || st.kind !== 'scope') Object.assign(st, { kind: 'scope', f: d.sf, ar: '', tp: '' }); render(); setupScroll(); return true; }
+  if (d.sa !== undefined) { st.ar = d.sa; st.tp = ''; render(); setupScroll(); return true; }
+  if (d.stp !== undefined) { st.tp = d.stp; render(); return true; }
+  if (d.sdepth) { st.depth = d.sdepth; render(); return true; }
+  if (d.sorder) { st.order = d.sorder; render(); return true; }
+  if (d.space) { st.pace = d.space; render(); return true; }
+  if (d.snext) { st.step = st.step === 1 && st.kind === 'plan' ? 3 : st.step + 1; render(); window.scrollTo({ top: 0 }); return true; }
+  if (d.sback) { st.step = st.step === 3 && st.kind === 'plan' ? 1 : st.step - 1; render(); window.scrollTo({ top: 0 }); return true; }
+  if (d.scancel) { const back = st.back && st.back !== 'setup' ? st.back : 'next'; S.setup = null; go({ mode: back }); return true; }
+  if (d.sstart) {
+    setGoals(Object.assign({}, setupGoals(st), { ws: st.ws }), true);
+    const F = setupFocus(st), back = st.back === 'week' ? 'week' : 'next';
+    S.setup = null;
+    S.library.focus = Object.assign(F, { u: Date.now() });
+    [SEEN_KEY, SEEN_LM_KEY, SEEN_SCI_KEY, SEEN_V5_KEY].forEach((k) => store.set(k, 1));   // the news banners are old news now
+    changed('library', `Focus: ${focusName(F)}`);
+    go({ mode: back });
+    toast(`Focus set: ${focusName(F)}`);
+    return true;
+  }
+  return false;
 }
 
 /* ---------- This week: goals, the plan, and what's done ---------- */
@@ -957,34 +1278,40 @@ function doneByDay(evs) {
 function goalCard(s, d, g, off) {
   const pct = g ? Math.min(100, (100 * d) / g) : d ? 100 : 0, left = Math.max(0, g - d);
   const note = !g ? 'No goal set' : d >= g ? 'Goal met ✓' : off < 0 ? `${left} short` : `${left} to go`;
-  return `<div class="goal ${s}${g && d >= g ? ' met' : ''}"><div class="goaltop"><span class="tstep ${s}">${ICONS[s]}</span><span class="goalname">${VERB[s]}</span></div>
+  return `<div class="goal ${s}${g && d >= g ? ' met' : ''}"><div class="goaltop"><span class="tstep ${s}">${ICONS[s]}</span><span class="goalname">${GOAL_NAME[s]}</span></div>
     <div class="goalnum"><b>${d}</b><span>/ ${g}</span></div><div class="gbar"><i style="width:${pct}%"></i></div><small>${note}</small></div>`;
 }
+function focusBar(F) {
+  return `<div class="focusbar"><span class="focusic">${ICONS.target}</span><span class="focustxt"><span class="eyebrow">Your focus</span><b>${esc(focusName(F))}</b><small>${esc(focusSub(F))}</small></span><button type="button" class="pill sm" data-setup="1">Change focus</button></div>`;
+}
+// Ids of papers with a step ticked in the given days.
+function idsIn(from, to) { return new Set(events().filter((e) => e.d >= from && e.d <= to && S.byId.has(e.id)).map((e) => e.id)); }
 function renderWeek() {
   setAccent('#0b8f63');
-  const G = goals(), off = S.wk || 0, t = today();
+  const G = goals(), off = S.wk || 0, t = today(), F = getFocus();
   const ws = addDays(weekStart(t), 7 * off), we = addDays(ws, 6);
   const done = countIn(ws, we);
   const evs = events().filter((e) => e.d >= ws && e.d <= we && S.byId.has(e.id));
   const label = off === 0 ? 'This week' : off === -1 ? 'Last week' : off === 1 ? 'Next week' : off < 0 ? `${-off} weeks ago` : `In ${off} weeks`;
   const total = goalTotal(G), sum = STATUSES.reduce((x, [s]) => x + Math.min(done[s], +G[s] || 0), 0);
   const daysLeft = off === 0 ? Math.round((parseDay(we) - parseDay(t)) / 864e5) + 1 : 0;
-  const blurb = off > 0 ? 'What the plan has lined up for this week, if this week’s goals are met.'
-    : off === 0 ? `${sum} of ${total} goal steps done, ${plural(daysLeft, 'day')} left. Goals are per week, for each step.`
+  const blurb = off > 0 ? 'What your focus has lined up for this week, if this week’s goals are met.'
+    : off === 0 ? `${sum} of ${total} goal steps done, ${plural(daysLeft, 'day')} left.`
       : `${sum} of ${total} goal steps were done that week.`;
+  const weekCards = [...idsIn(ws, we)].reduce((n, id) => n + cardsOf(S.byId.get(id)).length, 0);
   let h = `<section class="head weekhead"><div class="crumb">${label}</div>
     <div class="weeknav"><button type="button" class="iconbtn wkbtn" data-wk="-1" aria-label="Previous week">‹</button><h1>${esc(rangeLabel(ws, we))}</h1><button type="button" class="iconbtn wkbtn" data-wk="1" aria-label="Next week">›</button>${off ? '<button type="button" class="pill sm" data-wk="0">Back to this week</button>' : ''}</div>
     <p class="blurb">${blurb}</p></section>
+    ${focusBar(F)}
     <div class="goals">${STATUSES.map(([s]) => goalCard(s, done[s], +G[s] || 0, off)).join('')}</div>
-    <div class="goaledit"><button type="button" class="linkbtn" data-goals="1">Change weekly goals</button></div>`;
+    <div class="goaledit"><button type="button" class="linkbtn" data-goals="1">Change weekly goals</button>${weekCards ? `<button type="button" class="pill sm fcpill" data-studyscope="week">${ICONS.fl} Study this week’s ${plural(weekCards, 'flashcard')}</button>` : ''}</div>`;
   if (off <= 0) h += dayStrip(ws, evs);
   if (off >= 0 && off <= 3) {
     const plan = weekPlan(off + 1)[off];
     const any = STATUSES.some(([s]) => plan[s].length);
     h += `<h2 class="nexth">${off === 0 ? 'To do this week' : 'Planned'}</h2>`;
     h += any ? `<div class="todo">${STATUSES.filter(([s]) => plan[s].length).map(([s]) => `<section class="todogroup"><h3><span class="tstep ${s}">${ICONS[s]}</span>${VERB[s]}<small>${plan[s].length}${off === 0 ? ' left' : ''}</small></h3><ol class="tasks">${plan[s].map((id) => taskRow(id, s)).join('')}</ol></section>`).join('')}</div>`
-      : `<div class="empty"><p>${off === 0 ? 'Every goal for this week is met. Nice work.' : 'Nothing planned. Set some weekly goals.'}</p></div>`;
-    h += pathBar('The plan follows');
+      : `<div class="empty"><p>${off === 0 ? 'Every goal for this week is met. Nice work.' : 'Nothing planned: your focus may be finished. Pick a new one.'}</p></div>`;
   } else if (off > 3) {
     h += '<div class="empty"><p>The plan looks three weeks ahead.</p></div>';
   }
@@ -1018,8 +1345,8 @@ function renderProgress() {
   fin.sort((a, b) => (prog(b).fl || '').localeCompare(prog(a).fl || ''));
   const finRows = fin.slice(0, 200).map((id) => {
     const p = S.byId.get(id), nc = cardsOf(p).length;
-    return `<li class="fin" data-id="${esc(id)}"><span class="evd">${esc(dayLabel(prog(id).fl))}</span><span class="evt"><a class="ttitle" href="${esc(p.link || scholar(p))}" target="_blank" rel="noopener">${esc(p.t)}</a><small>${esc(shortAuthors(p.a))}${p.y ? ' · ' + esc(p.y) : ''} · ${esc(p.tp)}</small></span>
-      <span class="finlinks">${p.research ? `<a class="plink res" href="${esc(p.research)}" target="_blank" rel="noopener">Research ↗</a>` : ''}${nc || p.deck ? `<button type="button" class="plink fc" data-cards="1">${nc ? plural(nc, 'card') : 'Deck'}</button>` : ''}</span></li>`;
+    return `<li class="fin" data-id="${esc(id)}"><span class="evd">${esc(prog(id).fl ? dayLabel(prog(id).fl) : '')}</span><span class="evt"><a class="ttitle" href="${esc(p.link || scholar(p))}" target="_blank" rel="noopener">${esc(p.t)}</a><small>${esc(shortAuthors(p.a))}${p.y ? ' · ' + esc(p.y) : ''} · ${esc(p.tp)}</small></span>
+      <span class="finlinks">${p.research ? `<a class="plink res" href="${esc(p.research)}" target="_blank" rel="noopener">Research ↗</a>` : ''}${p.learn ? `<a class="plink" href="${esc(p.learn)}" target="_blank" rel="noopener">Learn ↗</a>` : ''}${nc || p.deck ? `<button type="button" class="plink fc" data-cardsdlg="1">${nc ? plural(nc, 'card') : 'Deck'}</button>` : ''}</span></li>`;
   }).join('');
   $('view').innerHTML = `<section class="head"><div class="crumb">Progress</div><h1>What’s been done</h1>
       <p class="blurb">Every step ticked in this archive, by week, by field and by paper. The archive is public: anyone with the link sees this page.</p>
@@ -1029,20 +1356,35 @@ function renderProgress() {
     <h2 class="nexth">The last 12 weeks</h2><div class="panel">${chart}<div class="legend chartlegend">${STATUSES.map(([s, l]) => `<span><i style="background:var(--${s})"></i>${l}</span>`).join('')}</div></div>
     <h2 class="nexth">By field</h2><div class="ptable">${head(cols)}${fieldRows}</div>
     ${areaRows ? `<h2 class="nexth">Areas you’ve worked in</h2><div class="ptable">${head(cols)}${areaRows}</div>` : ''}
-    <h2 class="nexth">In progress <small>${fmt(open.length)}</small></h2>${open.length ? `<div class="panel"><ol class="tasks">${open.slice(0, 100).map((id) => taskRow(id, STATUSES[stepState(id).next][0])).join('')}</ol></div>` : '<div class="empty"><p>Nothing half-done.</p></div>'}
-    <h2 class="nexth">Finished papers <small>${fmt(fin.length)}</small></h2>${fin.length ? `<div class="panel"><ol class="evlist finlist">${finRows}</ol></div>` : '<div class="empty"><p>No paper has all five steps yet. The first one will show up here, with its research and flashcards.</p></div>'}`;
+    <h2 class="nexth">In progress <small>${fmt(open.length)}</small></h2>${open.length ? `<div class="panel"><ol class="tasks">${open.slice(0, 100).map((id) => taskRow(id, STATUSES[reach(prog(id))][0])).join('')}</ol></div>` : '<div class="empty"><p>Nothing half-done.</p></div>'}
+    <h2 class="nexth">Finished papers <small>${fmt(fin.length)}</small></h2>${fin.length ? `<div class="panel"><ol class="evlist finlist">${finRows}</ol></div>` : '<div class="empty"><p>No paper has all six steps yet. The first one will show up here, with its research and flashcards.</p></div>'}`;
   scrollGraphs();
 }
 
-/* ---------- Flashcards: study the cards made for each paper ---------- */
+/* ---------- Flashcards: study the cards, this week's, your focus's, a topic's or every one ---------- */
+function cardScopes() {
+  const nx = nextInfo(), out = [];
+  const ws = weekStart(today());
+  out.push(['week', 'This week', idsIn(ws, addDays(ws, 6))]);
+  if (nx.F) out.push(['focus', `Your focus: ${focusName(nx.F)}`, new Set(nx.order.map((o) => o.id))]);
+  if (nx.ti >= 0) out.push(['topic', `This topic: ${nx.topics[nx.ti].short}`, new Set(nx.topics[nx.ti].items.map((o) => o.id))]);
+  out.push(['all', 'Every paper', null]);
+  for (const f of fieldOrder(fieldTree())) out.push([`f:${f}`, f, new Set(S.papers.filter((p) => p.f === f).map((p) => p.id))]);
+  return out;
+}
 function renderCards() {
   setAccent('#d6336c');
-  const decks = S.papers.filter((p) => cardsOf(p).length || p.deck);
-  const st = S.study;
-  const fields = [...new Set(decks.filter((p) => cardsOf(p).length).map((p) => p.f))].sort();
-  if (st.scope !== 'all' && !fields.includes(st.scope)) st.scope = 'all';
+  const st = S.study, scopes = cardScopes();
+  const withCards = S.papers.filter((p) => cardsOf(p).length);
+  const inScope = (ids) => withCards.filter((p) => !ids || ids.has(p.id));
+  if (!st.scope || !scopes.some(([k]) => k === st.scope)) {
+    const fs = scopes.find(([k]) => k === 'focus');
+    st.scope = fs && inScope(fs[2]).length ? 'focus' : 'all';
+  }
+  const [, scopeName, ids] = scopes.find(([k]) => k === st.scope);
+  const papers = inScope(ids).sort((a, b) => (prog(b.id).fl || '').localeCompare(prog(a.id).fl || '') || a.o - b.o);
   const pool = [];
-  for (const p of decks) if (st.scope === 'all' || p.f === st.scope) cardsOf(p).forEach((c, i) => pool.push({ id: p.id, i, c }));
+  for (const p of papers) cardsOf(p).forEach((c, i) => pool.push({ id: p.id, i, c }));
   const key = `${st.scope}|${pool.map((x) => `${x.id}:${x.i}`).join(',')}`;
   if (st.key !== key) { st.key = key; st.order = pool.map((_, k) => k); st.i = 0; st.flip = false; }
   let study;
@@ -1058,18 +1400,18 @@ function renderCards() {
         <div class="fbtns"><button type="button" class="pill" data-cprev="1">← Previous</button><button type="button" class="pill primary" data-flip="1">${st.flip ? 'Hide answer' : 'Show answer'}</button><button type="button" class="pill" data-cnext="1">Next →</button><button type="button" class="linkbtn" data-shuffle="1">Shuffle</button></div>
       </div>`;
   } else {
-    study = `<div class="empty"><p>No flashcards yet. When a paper reaches step 5, add its cards in Next up, or from any paper’s ⋯ menu.</p></div>`;
+    study = `<div class="empty"><p>${withCards.length ? `No flashcards in “${esc(scopeName)}” yet.` : 'No flashcards yet. At step 6 of each paper, paste in the cards Claude wrote for it.'}</p></div>`;
   }
-  const scope = fields.length > 1 ? `<label class="sortwrap">Study <select id="cScope"><option value="all">every field</option>${fields.map((f) => `<option value="${esc(f)}"${st.scope === f ? ' selected' : ''}>${esc(f)}</option>`).join('')}</select></label>` : '';
-  const deckRows = decks.sort((a, b) => (prog(b.id).fl || '').localeCompare(prog(a.id).fl || '') || a.o - b.o).map((p) => {
+  const opts = scopes.map(([k, name, idset]) => { const n = inScope(idset).reduce((t, p) => t + cardsOf(p).length, 0); return `<option value="${esc(k)}"${st.scope === k ? ' selected' : ''}>${esc(name)} (${n})</option>`; }).join('');
+  const deckRows = papers.map((p) => {
     const nc = cardsOf(p).length;
     return `<li class="fin" data-id="${esc(p.id)}"><span class="evd">${nc}</span><span class="evt"><b>${esc(p.t)}</b><small>${esc(shortAuthors(p.a))}${p.y ? ' · ' + esc(p.y) : ''} · ${esc(p.tp)}</small></span>
-      <span class="finlinks">${p.deck ? `<a class="plink fc" href="${esc(p.deck)}" target="_blank" rel="noopener">Deck ↗</a>` : ''}<button type="button" class="plink alt" data-cards="1">Edit cards</button></span></li>`;
+      <span class="finlinks">${p.deck ? `<a class="plink fc" href="${esc(p.deck)}" target="_blank" rel="noopener">Deck ↗</a>` : ''}<button type="button" class="plink alt" data-cardsdlg="1">See cards</button></span></li>`;
   }).join('');
-  $('view').innerHTML = `<section class="head"><div class="crumb">Flashcards</div><h1>${S.ncards ? `${plural(S.ncards, 'card')} from ${plural(decks.length, 'paper')}` : 'Flashcards'}</h1>
-      <p class="blurb">Step 5 for every paper: the question it asks, its key result, its method and one fact worth remembering.</p></section>
-    <div class="chips">${scope}</div>${study}
-    ${decks.length ? `<h2 class="nexth">Decks by paper</h2><div class="panel"><ol class="evlist finlist">${deckRows}</ol></div>` : ''}`;
+  $('view').innerHTML = `<section class="head"><div class="crumb">Flashcards</div><h1>${S.ncards ? `${plural(S.ncards, 'card')} from ${plural(withCards.length, 'paper')}` : 'Flashcards'}</h1>
+      <p class="blurb">Step 6 for every paper: Claude writes 5 to 10 cards from the prompt, and you paste them in. Study them all at once, or just this week’s, your focus’s or one topic’s.</p></section>
+    <div class="chips"><label class="sortwrap studyscope">Study <select id="cScope">${opts}</select></label></div>${study}
+    ${papers.length ? `<h2 class="nexth">By paper <small>${esc(scopeName)}</small></h2><div class="panel"><ol class="evlist finlist">${deckRows}</ol></div>` : ''}`;
 }
 
 /* ---------- lists: all papers, a field, an area, a topic, or search results ---------- */
@@ -1088,10 +1430,14 @@ function renderList() {
   else if (ar) { crumb = `<button type="button" data-f="${esc(f)}" data-a="" data-t="">${esc(f)}</button>${m && m.group ? `<span aria-hidden="true">›</span><span class="tag">${esc(m.group)}</span>` : ''}`; title = esc(ar); blurb = m ? m.blurb : ''; }
   else { crumb = 'Field'; title = esc(f); }
   const dl = tp && S.downloads[tp];
+  const Fo = getFocus();
+  const isFocus = Fo && Fo.kind === 'scope' && f && Fo.f === f && (Fo.ar || '') === (ar || '') && (Fo.tp || '') === (tp || '');
+  const focusBtn = !q && f && scope.length ? (isFocus ? `<button type="button" class="pill sm focuson" data-mode="next">${ICONS.target} Your focus · open Next up</button>`
+    : `<button type="button" class="pill sm" data-focushere="1">${ICONS.target} Focus on this ${tp ? 'topic' : ar ? 'area' : 'field'}</button>`) : '';
   let h = `<section class="head"><div class="crumb">${crumb}</div><h1>${title}</h1>${blurb ? `<p class="blurb">${esc(blurb)}</p>` : ''}
-    ${statline(scope)}${dl ? `<div class="headtools"><a class="dllink" href="${esc(dl)}" target="_blank" rel="noopener">Download checklist ↗</a></div>` : ''}</section>`;
+    ${statline(scope)}<div class="headtools">${focusBtn}${dl ? `<a class="dllink" href="${esc(dl)}" target="_blank" rel="noopener">Download checklist ↗</a>` : ''}</div></section>`;
   if (!q && f && !ar && !tp) h += fieldSections(f) + (scope.length ? `<div class="sechead plain sec"><h2>All papers in ${esc(f)}</h2></div>` : '');
-  if (!q && A && !tp && A.topics.size) h += `<div class="tgrid">${[...A.topics].map(([t, c]) => topicCard(f, ar, t, c)).join('')}</div><div class="sechead plain sec"><h2>Papers</h2></div>`;
+  if (!q && A && !tp && A.topics.size) { const ft = focusTopicMap(); h += `<div class="tgrid">${[...A.topics].map(([t, c]) => topicCard(f, ar, t, c, ft)).join('')}</div><div class="sechead plain sec"><h2>Papers</h2></div>`; }
   const chip = (val, label) => `<button type="button" class="chip" data-filter="${val}" aria-pressed="${V.status === val}">${label}</button>`;
   const hasPdf = scope.some((r) => r.p.pdf), hasBook = scope.some((r) => r.p.k === 'book');
   const opt = (val, label) => `<option value="${val}"${V.sort === val ? ' selected' : ''}>${label}</option>`;
@@ -1117,7 +1463,7 @@ function renderList() {
   const counts = new Map();
   if (grouping) for (const r of list) { const k = gkey(r); counts.set(k, (counts.get(k) || 0) + 1); }
   const words = q ? fold(q).split(/\s+/).filter(Boolean) : null;
-  const rowOpt = { words, where: !!q || (!tp && !grouping) };
+  const rowOpt = { words, where: !!q || (!tp && !grouping), now: nowId() };
   let rowsHtml = '', last = null;
   for (const r of page) {
     if (grouping) {
@@ -1148,137 +1494,101 @@ function renderLists() {
   $('subList').innerHTML = t ? opts(new Set(S.rows.filter((r) => r.f === f && r.ar === ar && r.tp === t && r.st).map((r) => r.st))) : '';
 }
 
-/* ---------- Next up: one paper at a time, in order ---------- */
+/* ---------- Next up: your focus, one topic and one paper at a time ---------- */
 const STEP_HELP = {
-  pr: 'Print it out.',
+  dl: 'Get the paper, then give it to Claude with the prompt below. Claude sends back everything the next steps need: a highlighted PDF, which pages to read, a summary for the front page, notes, 5 to 10 flashcards, a research brief and an interactive page.',
+  pr: 'Print the highlighted PDF Claude made, or the original with the pages Claude listed.',
   rd: null, // filled from the paper's depth
-  nt: 'Write your notes on it: the question, the method, the main finding, why it mattered, and which paper it links to.',
-  rs: 'Research it with an AI assistant (the Learn button has a ready-made prompt), push the work to a repo, and paste the link below.',
-  fl: 'Make flashcards: the question the paper asks, its key result, its method, and one fact worth remembering. Add them here, or link a deck.',
+  nt: 'Copy Claude’s front-page summary onto page 1, then write down the notes you want to keep.',
+  rs: 'Work through Claude’s research brief, then paste a link to your write-up: a doc, a repo or the Claude chat.',
+  fl: 'Paste the flashcards Claude wrote: the lines starting with Q: and A:. Up to 10 for each paper.',
 };
-function scopeParts() {
-  const [f, ar, tp] = (S.view.nscope || '').split('::');
-  return { f: f || '', ar: ar || '', tp: tp || '' };
-}
-function defaultScope() {
-  const V = S.view, tree = fieldTree();
-  if (V.field && (V.area || V.topic)) return `${V.field}::${V.area || ''}::${V.topic || ''}`;
-  for (const f of fieldOrder(tree)) for (const [ar, A] of tree.get(f).areas) if (A.n) return `${f}::${ar}::`;
-  return '';
-}
-// Three paths: the market-power reading plan, any area or topic (must-reads first), or everything by year.
-function pathOrder() {
-  if (S.view.path === 'plan' && S.plan) return S.plan.order.filter((o) => S.byId.has(o.id));
-  if (S.view.path === 'scope') {
-    const { f, ar, tp } = scopeParts();
-    return S.rows.filter((r) => r.f === f && r.ar === ar && (!tp || r.tp === tp))
-      .sort((a, b) => (b.p.s || 0) - (a.p.s || 0) || a.o - b.o).map((r) => ({ id: r.p.id, ph: null, d: null }));
-  }
-  const yr = (p) => parseInt(p.y, 10) || 9999;
-  return [...S.papers].sort((a, b) => yr(a) - yr(b) || a.o - b.o).map((p) => ({ id: p.id, ph: null, d: null }));
-}
-function nextInfo() {
-  if (S.nx) return S.nx;
-  const order = S.byId.size ? pathOrder() : [];
-  let doneCount = 0, i = -1;
-  order.forEach((o, k) => { if (isDone(o.id)) doneCount++; else if (i < 0) i = k; });
-  S.nx = { order, i, total: order.length, doneCount };
-  return S.nx;
-}
-function pathBar(lead) {
-  const V = S.view, scopeOn = V.path === 'scope', sc = scopeParts(), tree = fieldTree();
-  let pickers = '';
-  if (scopeOn) {
-    let areaOpts = '';
-    for (const f of fieldOrder(tree)) {
-      const opts = [...tree.get(f).areas].filter(([, A]) => A.n).map(([ar]) => `<option value="${esc(`${f}::${ar}`)}"${sc.f === f && sc.ar === ar ? ' selected' : ''}>${esc(ar || `${f}: topics`)}</option>`).join('');
-      if (opts) areaOpts += `<optgroup label="${esc(f)}">${opts}</optgroup>`;
-    }
-    const A = tree.get(sc.f) && tree.get(sc.f).areas.get(sc.ar);
-    const topicOpts = A ? [...A.topics].filter(([, c]) => c.n).map(([t]) => `<option value="${esc(t)}"${sc.tp === t ? ' selected' : ''}>${esc(t)}</option>`).join('') : '';
-    pickers = `<select id="nxArea" aria-label="Area to follow">${areaOpts}</select><select id="nxTopic" aria-label="Topic to follow"><option value="">Every topic in it</option>${topicOpts}</select>`;
-  }
-  return `<div class="pathbar" role="group" aria-label="Which order to follow">
-      <span>${lead || 'Follow'}</span>
-      <button type="button" class="chip" data-path="plan" aria-pressed="${V.path === 'plan'}">Market power reading plan · ${S.plan ? S.plan.order.length : 0}</button>
-      <button type="button" class="chip" data-path="scope" aria-pressed="${scopeOn}">An area or topic, must-reads first</button>
-      <button type="button" class="chip" data-path="year" aria-pressed="${V.path === 'year'}">Everything, oldest first · ${fmt(S.papers.length)}</button>
-      ${pickers}
-    </div>`;
-}
-function cardEditor(p) {
+function cardList(p, attr) {
   const cards = cardsOf(p);
-  return `<div class="fcedit">
-      ${cards.length ? `<ol class="cardlist">${cards.map((c, i) => `<li><div><b>${esc(c.q)}</b><span>${esc(c.a)}</span></div><button type="button" class="linkbtn danger" data-delcard="${i}">Remove</button></li>`).join('')}</ol>` : ''}
-      <div class="row2"><label class="rsin">Question<textarea id="fcQ" rows="2" placeholder="What does the paper ask?"></textarea></label><label class="rsin">Answer<textarea id="fcA" rows="2"></textarea></label></div>
-      <div class="doit-btns"><button type="button" class="pill" data-addcard="1">+ Add card</button><span class="hint">${cards.length ? plural(cards.length, 'card') + ' so far' : 'Add as many as you like.'}</span></div>
-      <label class="rsin">Deck link <span class="hint">optional: Anki, Quizlet or any page</span><input id="flDeck" type="url" placeholder="https://…" value="${esc(p.deck || '')}"></label>
-    </div>`;
+  return cards.length ? `<ol class="cardlist">${cards.map((c, i) => `<li><div><b>${esc(c.q)}</b><span>${esc(c.a)}</span></div><button type="button" class="linkbtn danger" ${attr}="${i}">Remove</button></li>`).join('')}</ol>` : '';
 }
 function renderNext() {
-  const { order, i, total, doneCount } = nextInfo();
-  const V = S.view, planOn = V.path === 'plan' && S.plan, scopeOn = V.path === 'scope';
-  const sc = scopeParts();
-  setAccent(scopeOn && sc.f ? areaColor(sc.f, sc.ar) : '#1f5fd6');
-  const pathName = planOn ? 'Reading plan' : scopeOn ? esc(sc.tp || sc.ar || sc.f) : 'Oldest first';
-  if (i < 0) {
-    $('view').innerHTML = `<section class="head"><div class="crumb">Next up · ${pathName}</div><h1>${total ? 'All done' : 'Nothing on this path'}</h1><p class="blurb">${total ? 'Every paper on this path has all five steps ticked.' : 'Pick another path below.'}</p></section>${pathBar()}`;
+  const nx = nextInfo(), F = nx.F;
+  setAccent(F && F.kind === 'scope' ? (F.ar ? areaColor(F.f, F.ar) : fieldColor(F.f)) : '#1f5fd6');
+  // The topics as a strip of chips: green when done, outlined for the one you're on. A whole field
+  // has hundreds of topics, so it shows the current area's.
+  let chips = nx.topics.map((t, k) => [t, k]), stripHead = '';
+  if (F.kind === 'scope' && !F.ar && !F.tp && nx.ti >= 0) {
+    const area = nx.topics[nx.ti].area, areas = [...new Set(nx.topics.map((t) => t.area))];
+    chips = chips.filter(([t]) => t.area === area);
+    const aDone = areas.filter((a) => nx.topics.every((t) => t.area !== a || t.complete)).length;
+    stripHead = `<div class="striphead"><b>${esc(area || F.f)}</b> · area ${areas.indexOf(area) + 1} of ${areas.length}${aDone ? ` · ${aDone} done` : ''}</div>`;
+  }
+  const strip = chips.length > 1 ? `${stripHead}<div class="topicstrip" role="list">${chips.map(([t, k]) => `<button type="button" role="listitem" class="tchip${t.complete ? ' done' : k === nx.ti ? ' cur' : ''}" data-tcur="${esc(t.key)}" title="${esc(t.label)}: ${t.done} of ${t.total} done${t.complete ? '' : k === nx.ti ? ' (working on it)' : ' · click to work on it next'}"><span class="tci">${t.complete ? '✓' : k + 1}</span><b>${esc(t.short)}</b><small>${t.done}/${t.total}</small></button>`).join('')}</div>` : '';
+  const head = `<section class="head"><div class="crumb">Next up · your focus</div>
+      <div class="focusline"><h1>${esc(focusName(F))}</h1><button type="button" class="pill sm" data-setup="1">Change focus</button></div>
+      <p class="blurb">${esc(focusSub(F))}</p>
+      <div class="seg"><i style="width:${(100 * nx.doneCount) / (nx.total || 1)}%;background:var(--fl)"></i></div>
+      <div class="statline"><span>Paper <b>${fmt(Math.max(0, nx.i) + 1)}</b> of ${fmt(nx.total)}</span><span><b>${fmt(nx.doneCount)}</b> finished</span><span><b>${nx.topics.filter((t) => t.complete).length}</b> of ${plural(nx.topics.length, F.kind === 'plan' ? 'phase' : 'topic')} done</span></div>
+    </section>`;
+  if (nx.i < 0) {
+    $('view').innerHTML = `${head}${strip}<div class="empty bigdone"><p><b>${nx.total ? 'Your focus is complete.' : 'Nothing in this focus.'}</b> ${nx.total ? 'Every paper in it has all six steps.' : ''}</p><button type="button" class="pill go rd" data-setup="1">${ICONS.target} Choose what’s next</button></div>`;
     return;
   }
-  const cur = order[i], p = S.byId.get(cur.id);
-  const phase = planOn && cur.ph != null ? S.plan.phases[cur.ph] : null;
-  const { g, next } = stepState(p.id);
-  const depth = planOn && cur.d ? S.plan.depth[cur.d] : null;
-  const help = Object.assign({}, STEP_HELP, { rd: depth ? `Read it. ${depth}.` : 'Read it.' });
+  const cur = nx.order[nx.i], t = cur.t, p = S.byId.get(cur.id);
+  const g = prog(p.id), next = reach(g);
+  const posInTopic = t.items.findIndex((o) => o.id === cur.id) + 1;
+  const depth = F.kind === 'plan' && cur.d ? S.plan.depth[cur.d] : null;
+  const help = Object.assign({}, STEP_HELP, { rd: `Read the highlights and the pages Claude marked${depth ? `. ${depth}` : ''}.` });
   const link = p.link || scholar(p);
-  const phaseEnd = planOn && (i === order.length - 1 || order[i + 1].ph !== cur.ph);
   const steps = STATUSES.map(([k, label], n) => {
-    const on = g[k], isNext = n === next;
+    const on = n < next, isNext = n === next;
     return `<li class="step ${k}${on ? ' done' : ''}${isNext ? ' now' : ''}">
       <span class="dotn">${on ? '✓' : n + 1}</span>
-      <span class="sl"><b>${label}</b><small>${on ? esc(dayLabel(on)) : isNext ? 'Next' : ''}</small></span></li>`;
+      <span class="sl"><b>${label}</b><small>${on ? (g[k] ? esc(dayLabel(g[k])) : 'done') : isNext ? 'Next' : ''}</small></span></li>`;
   }).join('');
   const nk = STATUSES[next];
-  const doIt = nk ? `<div class="doit">
-      <p>${esc(help[nk[0]])}</p>
-      ${nk[0] === 'rs' ? `<label class="rsin">Research link<input id="rsLink" type="url" placeholder="https://github.com/…" value="${esc(p.research || '')}"></label>` : ''}
-      ${nk[0] === 'fl' ? cardEditor(p) : ''}
-      <div class="doit-btns">
-        <button type="button" class="pill go ${nk[0]}" data-step="${nk[0]}">${ICONS[nk[0]]} ${nk[0] === 'fl' ? 'Flashcards done' : `Mark as ${nk[1].toLowerCase()}`}</button>
-        ${next > 0 ? `<button type="button" class="linkbtn" data-undo="1">Undo ${STATUSES[next - 1][1].toLowerCase()}</button>` : ''}
-      </div></div>` : '';
-  const who = (q) => `${esc(((q.a || '').split(/,|&/)[0] || '').trim())}${q.y ? ' · ' + esc(q.y) : ''}`;
-  const upcoming = order.slice(i + 1, i + 9).map((o, n) => {
+  let doIt = '';
+  if (nk) {
+    const s = nk[0];
+    let extra = '', main = `<button type="button" class="pill go ${s}" data-step="${s}">${ICONS[s]} ${markLabel(s)}</button>`;
+    if (s === 'dl') {
+      extra = `<div class="doit-btns">${p.pdf ? `<a class="pill" href="${esc(p.pdf)}" target="_blank" rel="noopener">Free PDF ↗</a>` : ''}<a class="pill" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? openWord(p) : 'Search Scholar'} ↗</a><button type="button" class="pill primary" data-copyprompt="1">Copy the prompt for Claude</button></div>
+        <details class="promptbox"><summary>Show the prompt</summary><textarea readonly rows="10" aria-label="Prompt for Claude">${esc(paperPrompt(p))}</textarea></details>`;
+      main = `<button type="button" class="pill go dl" data-step="dl">${ICONS.dl} Mark as downloaded</button>`;
+    } else if (s === 'rs') {
+      extra = `<label class="rsin">Link to your research<input id="rsLink" type="url" placeholder="https://…" value="${esc(p.research || '')}"></label>`;
+    } else if (s === 'fl') {
+      const n = cardsOf(p).length;
+      extra = `<div class="fcedit">${cardList(p, 'data-delcard')}
+          <label class="rsin">Paste Claude’s flashcards<textarea id="fcPaste" rows="6" placeholder="Q: What question does the paper ask?&#10;A: …"></textarea></label>
+          <div class="doit-btns"><button type="button" class="pill" data-pastecards="1">Add these cards</button><span class="hint">${n ? `${n} of ${MAX_CARDS} cards` : `Up to ${MAX_CARDS} cards`}</span></div></div>`;
+      main = `<button type="button" class="pill go fl" data-step="fl">${ICONS.fl} Flashcards done</button>`;
+    }
+    doIt = `<div class="doit"><p>${esc(help[s])}</p>${extra}<div class="doit-btns">${main}${next > 0 && g[STATUSES[next - 1][0]] ? `<button type="button" class="linkbtn" data-undo="1">Undo ${STATUSES[next - 1][1].toLowerCase()}</button>` : ''}</div></div>`;
+  }
+  const learnRow = `<div class="learnrow">${LEARN_ICON}<span>Interactive page</span>${p.learn ? `<a class="plink" href="${esc(p.learn)}" target="_blank" rel="noopener">Open ↗</a><button type="button" class="linkbtn" data-learn="1">Change</button>`
+    : `<input id="learnInline" type="url" placeholder="Paste the link Claude gave you (section 7 of the prompt)"><button type="button" class="pill sm" data-learnsave="1">Save</button>`}</div>`;
+  const later = t.items.slice(posInTopic).filter((o) => !isDone(o.id)).slice(0, 8).map((o, n) => {
     const q = S.byId.get(o.id);
-    const newPhase = planOn && o.ph !== (n === 0 ? cur.ph : order[i + n].ph);
-    return `${newPhase ? `<li class="phasemark">Phase ${o.ph}: ${esc(S.plan.phases[o.ph].title)}</li>` : ''}
-      <li class="up"><span class="upn">${i + n + 2}</span><span class="upt"><b>${esc(q.t)}</b><small>${who(q)}${o.d ? ' · ' + { deep: 'Deep', std: 'Standard', skim: 'Skim' }[o.d] : ''}${q.s ? ' · ' + '★'.repeat(q.s) : ''}</small></span>
-      <span class="upd">${STATUSES.map(([k]) => `<i class="${prog(q.id)[k] ? 'on ' + k : ''}"></i>`).join('')}</span></li>`;
+    return `<li class="up"><span class="upn">${posInTopic + n + 1}</span><span class="upt"><b>${esc(q.t)}</b><small>${esc(shortAuthors(q.a))}${q.y ? ' · ' + esc(q.y) : ''}${o.d ? ' · ' + { deep: 'Deep', std: 'Standard', skim: 'Skim' }[o.d] : ''}${q.s ? ' · ' + '★'.repeat(q.s) : ''}</small></span>
+      <span class="upd">${STATUSES.map(([k], i) => `<i class="${reach(prog(q.id)) > i ? 'on ' + k : ''}"></i>`).join('')}</span></li>`;
   }).join('');
-  const recent = order.slice(0, i).filter((o) => isDone(o.id)).slice(-3).reverse().map((o) => {
-    const q = S.byId.get(o.id);
-    return `<li class="up donep"><span class="upn">✓</span><span class="upt"><b>${esc(q.t)}</b><small>${who(q)}</small></span></li>`;
-  }).join('');
-  $('view').innerHTML = `
-    <section class="head">
-      <div class="crumb">Next up · ${pathName}</div>
-      <h1>${phase ? `Phase ${cur.ph}: ${esc(phase.title)}` : scopeOn ? esc(sc.tp || sc.ar || sc.f) : 'Oldest papers first'}</h1>
-      ${phase ? `<p class="blurb">${esc(phase.about)}</p>` : ''}
-      <div class="seg"><i style="width:${(100 * doneCount) / (total || 1)}%;background:var(--fl)"></i></div>
-      <div class="statline"><span>Paper <b>${fmt(i + 1)}</b> of ${fmt(total)}</span><span><b>${fmt(doneCount)}</b> finished</span></div>
-    </section>
-    ${pathBar()}
+  const nextTopic = nx.topics.slice(nx.ti + 1).find((x) => !x.complete);
+  const topicCards = t.items.reduce((n, o) => n + cardsOf(S.byId.get(o.id)).length, 0);
+  const phaseEnd = F.kind === 'plan' && posInTopic === t.items.length && S.plan.phases[t.ph] && S.plan.phases[t.ph].task;
+  $('view').innerHTML = `${head}${strip}
     <article class="now" data-id="${esc(p.id)}">
-      <div class="now-top"><span class="nowtag">#${i + 1}${depth ? ' · ' + esc(depth.split(' · ')[0]) : ''}${scopeOn || !planOn ? ` · ${esc(p.tp)}` : ''}</span>${p.s ? `<span class="s">${'★'.repeat(p.s)}</span>` : ''}</div>
+      <div class="now-top"><span class="nowtag">${esc(t.short)} · ${posInTopic} of ${t.total}${depth ? ' · ' + esc(depth.split(' · ')[0]) : ''}</span>${p.s ? `<span class="s">${'★'.repeat(p.s)}</span>` : ''}</div>
       <a class="nowtitle" href="${esc(link)}" target="_blank" rel="noopener">${esc(p.t)}</a>
       <div class="nowmeta">${esc(p.a || '')}${p.y ? ' · ' + esc(p.y) : ''}${p.v ? ' · ' + md(p.v) : ''}</div>
-      <div class="nowlinks"><a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? openWord(p) : 'Search Scholar'} ↗</a>${p.pdf ? `<a class="plink pdf" href="${esc(p.pdf)}" target="_blank" rel="noopener">Free copy ↗</a>` : ''}${p.research ? `<a class="plink res" href="${esc(p.research)}" target="_blank" rel="noopener">Research ↗</a>` : ''}${sumBtn(p)}${learnBtn(p)}</div>
+      ${p.n ? `<p class="nownote">${md(p.n)}</p>` : ''}
+      <div class="nowlinks">${next === 0 ? '' : `<a class="plink${p.link ? '' : ' alt'}" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? openWord(p) : 'Search Scholar'} ↗</a>${p.pdf ? `<a class="plink pdf" href="${esc(p.pdf)}" target="_blank" rel="noopener">Free copy ↗</a>` : ''}`}${p.research ? `<a class="plink res" href="${esc(p.research)}" target="_blank" rel="noopener">Research ↗</a>` : ''}${cardsOf(p).length ? `<button type="button" class="plink fc" data-cardsdlg="1">${plural(cardsOf(p).length, 'card')}</button>` : ''}${sumBtn(p)}${learnBtn(p)}</div>
       <ol class="steps">${steps}</ol>
       ${doIt}
-      ${phaseEnd && phase ? `<div class="phasetask"><b>End of phase ${cur.ph}.</b> Before moving on: ${esc(phase.task)}</div>` : ''}
+      ${learnRow}
+      ${phaseEnd ? `<div class="phasetask"><b>End of this phase.</b> Before moving on: ${esc(S.plan.phases[t.ph].task)}</div>` : ''}
     </article>
-    ${upcoming ? `<h2 class="nexth">Coming up</h2><ol class="uplist">${upcoming}</ol>` : ''}
-    ${recent ? `<h2 class="nexth">Recently finished</h2><ol class="uplist">${recent}</ol>` : ''}`;
+    <div class="nextfoot">${topicCards ? `<button type="button" class="pill sm fcpill" data-studyscope="topic">${ICONS.fl} Study this topic’s ${plural(topicCards, 'flashcard')}</button>` : ''}<button type="button" class="pill sm" data-mode="week">${ICONS.week} This week’s plan</button></div>
+    ${later ? `<h2 class="nexth">Still to do in ${esc(t.short)}</h2><ol class="uplist">${later}</ol>` : ''}
+    ${nextTopic ? `<p class="thentopic">Then: <b>${esc(nextTopic.label)}</b> · ${plural(nextTopic.total - nextTopic.done, 'paper')} to go</p>` : ''}`;
+  const chip = $('view').querySelector('.tchip.cur');
+  if (chip) chip.parentElement.scrollLeft = Math.max(0, chip.offsetLeft - 12);
 }
 // Quietly set fields on a paper (the next change saves them): in its edit, or in the added entry.
 function setPaperFields(p, fields, message) {
@@ -1291,35 +1601,29 @@ function setPaperFields(p, fields, message) {
 function setResearch(p, url) { setPaperFields(p, { research: url }, `Research link: ${p.t.slice(0, 80)}`); }
 
 /* ---------- actions ---------- */
-// Steps go in order: Printed -> Read -> Notes -> Researched -> Flashcards.
+// Steps go in order: Downloaded -> Printed -> Read -> Notes -> Researched -> Flashcards.
 // You can tick only the next step, and undo only the latest one.
-function stepState(id) {
-  const g = prog(id);
-  let next = STATUSES.findIndex(([k]) => !g[k]);
-  if (next < 0) next = NSTEP;
-  let last = -1; STATUSES.forEach(([k], i) => { if (g[k]) last = i; });
-  return { g, next, last };
-}
+function stepState(id) { const g = prog(id), k = reach(g); return { g, next: k, last: k - 1 }; }
 function toggle(id, s) {
-  const p = S.byId.get(id); if (!p) return;
-  const { next, last } = stepState(id);
-  const i = STATUSES.findIndex(([k]) => k === s);
-  const g = Object.assign({}, prog(id));
-  const label = STATUSES[i][1];
-  if (!g[s] && i !== next) return toast(`${STATUSES[next][1]} comes first. Steps go in order.`);
-  if (g[s] && i !== last) return toast(`Undo ${STATUSES[last][1].toLowerCase()} first. Steps go in order.`);
-  if (g[s]) delete g[s]; else g[s] = today();
+  const p = S.byId.get(id); if (!p) return false;
+  const g = Object.assign({}, prog(id)), k = reach(g), i = STEP[s], label = STATUSES[i][1];
+  if (i === k) g[s] = today();
+  else if (i === k - 1 && g[s]) delete g[s];
+  else if (i < k) { toast(`Undo ${STATUSES[k - 1][1].toLowerCase()} first. Steps go in order.`); return false; }
+  else { toast(`${STATUSES[k][1]} comes first. Steps go in order.`); return false; }
   g.u = Date.now();
   S.progress.p[id] = g;
   changed('progress', `${g[s] ? label : 'Undo ' + label.toLowerCase()}: ${p.t.slice(0, 80)}`);
-  if (g[s] && i === NSTEP - 1) toast('Paper finished: all five steps done.');
-}
-function addCard(p, q, a) {
-  if (!q && !a) return false;
-  setPaperFields(p, { cards: [...cardsOf(p), { q, a }] }, `Flashcard: ${p.t.slice(0, 80)}`);
-  S.dirty.library--;
-  changed('library');
+  if (g[s] && i === NSTEP - 1) toast('Paper finished: all six steps done.');
   return true;
+}
+// Add pasted cards to a paper, up to MAX_CARDS in all. Returns [added, skipped].
+function addCards(p, cards, quiet) {
+  const have = cardsOf(p), room = Math.max(0, MAX_CARDS - have.length), take = cards.slice(0, room);
+  if (!take.length) return [0, cards.length];
+  setPaperFields(p, { cards: [...have, ...take] }, `${plural(take.length, 'flashcard')}: ${p.t.slice(0, 80)}`);
+  if (!quiet) { S.dirty.library--; changed('library'); }
+  return [take.length, cards.length - take.length];
 }
 function removeCard(p, i) {
   const cards = cardsOf(p); cards.splice(i, 1);
@@ -1328,11 +1632,57 @@ function removeCard(p, i) {
   changed('library');
 }
 
+/* ---------- the Download sheet and the Flashcards sheet ---------- */
+let prepId = null, cardsId = null;
+function openPrep(id) {
+  const p = S.byId.get(id); if (!p) return;
+  prepId = id;
+  const link = p.link || scholar(p);
+  $('prepTitle').textContent = p.t;
+  $('prepMeta').textContent = [shortAuthors(p.a), p.y, journal(p.v)].filter(Boolean).join(' · ');
+  $('prepLinks').innerHTML = `${p.pdf ? `<a class="pill" href="${esc(p.pdf)}" target="_blank" rel="noopener">Free PDF ↗</a>` : ''}<a class="pill" href="${esc(link)}" target="_blank" rel="noopener">${p.link ? openWord(p) : 'Search Google Scholar'} ↗</a>`;
+  $('prepPrompt').value = paperPrompt(p);
+  $('prepMsg').hidden = true;
+  updatePrepBtn();
+  $('prepDlg').showModal();
+}
+function updatePrepBtn() {
+  const k = reach(prog(prepId)), b = $('prepDone');
+  b.hidden = k > 1;
+  b.textContent = k === 0 ? 'Mark downloaded' : 'Undo downloaded';
+}
+function renderCardsDlg() {
+  const p = S.byId.get(cardsId); if (!p) return;
+  const cards = cardsOf(p), k = reach(prog(p.id));
+  $('cardsList').innerHTML = cards.map((c, i) => `<li><div><b>${esc(c.q)}</b><span>${esc(c.a)}</span></div><button type="button" class="linkbtn danger" data-cdel="${i}">Remove</button></li>`).join('');
+  $('cardsMeta').textContent = `${cards.length ? plural(cards.length, 'card') : 'No cards yet'} · up to ${MAX_CARDS} per paper`;
+  const b = $('cardsDone');
+  b.hidden = k < NSTEP - 1;
+  b.textContent = k === NSTEP ? 'Undo flashcards' : 'Flashcards done';
+}
+function openCards(id) {
+  const p = S.byId.get(id); if (!p) return;
+  cardsId = id;
+  $('cardsTitle').textContent = p.t;
+  $('cardsPaste').value = '';
+  $('cardsMsg').hidden = true;
+  renderCardsDlg();
+  $('cardsDlg').showModal();
+}
+function pasteInto(p, text, msgEl) {
+  const parsed = parseCards(text);
+  if (!parsed.length) { if (msgEl) { msgEl.hidden = false; msgEl.className = 'formerr'; msgEl.textContent = 'No cards found. Paste the lines that start with Q: and A:.'; } return false; }
+  const [added, skipped] = addCards(p, parsed);
+  if (msgEl) { msgEl.hidden = false; msgEl.className = added ? 'formerr ok' : 'formerr'; msgEl.textContent = added ? `Added ${plural(added, 'card')}${skipped ? `; ${skipped} left out (${MAX_CARDS} per paper)` : ''}.` : `This paper already has ${MAX_CARDS} cards. Remove some first.`; }
+  else toast(added ? `Added ${plural(added, 'card')}${skipped ? `, ${skipped} left out (${MAX_CARDS} max)` : ''}` : `Already ${MAX_CARDS} cards: remove some first`);
+  return added > 0;
+}
+
 let editing = null, addTab = 'one';
 function renderCardEditorDlg() {
   const cards = S.editCards;
   $('pCards').innerHTML = cards.map((c, i) => `<li><div><b>${esc(c.q)}</b><span>${esc(c.a)}</span></div><button type="button" class="linkbtn danger" data-delc="${i}">Remove</button></li>`).join('');
-  $('pCardsCount').textContent = cards.length ? plural(cards.length, 'card') : 'none yet';
+  $('pCardsCount').textContent = cards.length ? `${cards.length} of ${MAX_CARDS}` : 'none yet';
 }
 function openPaper(id, focus) {
   editing = id || null;
@@ -1345,10 +1695,11 @@ function openPaper(id, focus) {
   $('pVenue').value = p ? (p.v || '').replace(/\*/g, '') : ''; $('pLink').value = p ? p.link || '' : '';
   $('pField').value = p ? p.f : S.view.field || ''; $('pArea').value = p ? p.ar || '' : S.view.area || ''; $('pTopic').value = p ? p.tp : S.view.topic || '';
   $('pSub').value = p ? p.st || '' : ''; $('pResearch').value = p ? p.research || '' : ''; $('pNotes').value = p ? p.notes || '' : '';
+  $('pLearn').value = p ? p.learn || '' : '';
   $('pBulk').value = '';
   if (p) {
-    const g = prog(p.id);
-    $('pSteps').innerHTML = STATUSES.map(([s, l]) => `<span class="tl ${s}${g[s] ? ' on' : ''}"><i>${ICONS[s]}</i><b>${l}</b><small>${g[s] ? esc(dayLabel(g[s], { month: 'short', day: 'numeric', year: 'numeric' })) : 'not yet'}</small></span>`).join('');
+    const g = prog(p.id), k = reach(g);
+    $('pSteps').innerHTML = STATUSES.map(([s, l], i) => `<span class="tl ${s}${i < k ? ' on' : ''}"><i>${ICONS[s]}</i><b>${l}</b><small>${g[s] ? esc(dayLabel(g[s], { month: 'short', day: 'numeric', year: 'numeric' })) : i < k ? 'done' : 'not yet'}</small></span>`).join('');
     S.editCards = cardsOf(p).map((c) => ({ q: c.q || '', a: c.a || '' }));
     $('pDeck').value = p.deck || ''; $('pQ').value = ''; $('pA').value = '';
     renderCardEditorDlg();
@@ -1380,9 +1731,9 @@ function savePaper() {
   if (editing) {
     const p = S.byId.get(editing);
     const pending = { q: $('pQ').value.trim(), a: $('pA').value.trim() };
-    if (pending.q || pending.a) S.editCards.push(pending);   // a card typed but not added still counts
-    const fields = { t: $('pTitle').value.trim() || p.t, a: $('pAuthors').value.trim(), y: $('pYear').value.trim(), v: $('pVenue').value.trim(), link: cleanUrl($('pLink').value), f, ar, tp, st, research: cleanUrl($('pResearch').value), notes: $('pNotes').value.trim(), u: Date.now() };
-    const cards = S.editCards.filter((c) => c.q || c.a), deck = cleanUrl($('pDeck').value);
+    if ((pending.q || pending.a) && S.editCards.length < MAX_CARDS) S.editCards.push(pending);   // a card typed but not added still counts
+    const fields = { t: $('pTitle').value.trim() || p.t, a: $('pAuthors').value.trim(), y: $('pYear').value.trim(), v: $('pVenue').value.trim(), link: cleanUrl($('pLink').value), f, ar, tp, st, research: cleanUrl($('pResearch').value), learn: cleanUrl($('pLearn').value), notes: $('pNotes').value.trim(), u: Date.now() };
+    const cards = S.editCards.filter((c) => c.q || c.a).slice(0, MAX_CARDS), deck = cleanUrl($('pDeck').value);
     if (p.added) {
       const i = lib.added.findIndex((x) => x.id === editing);
       lib.added[i] = Object.assign({}, lib.added[i], fields, { cards, deck });
@@ -1464,7 +1815,7 @@ function saveGroup() {
   changed('library', t ? `New topic: ${[f, ar, t].filter(Boolean).join(' › ')}` : ar ? `New area: ${f} › ${ar}` : `New field: ${f}`);
 }
 
-const GOAL_INPUTS = { pr: 'gPr', rd: 'gRd', nt: 'gNt', rs: 'gRs', fl: 'gFl' };
+const GOAL_INPUTS = { dl: 'gDl', pr: 'gPr', rd: 'gRd', nt: 'gNt', rs: 'gRs', fl: 'gFl' };
 function openSettings(focus) {
   $('sOwner').value = S.cfg.owner; $('sRepo').value = S.cfg.repo; $('sBranch').value = S.cfg.branch || 'main';
   $('sToken').value = S.cfg.token ? '••••••••' : '';
@@ -1472,12 +1823,14 @@ function openSettings(focus) {
   const G = goals();
   for (const [s, el] of Object.entries(GOAL_INPUTS)) $(el).value = G[s];
   $('gWs').value = String(G.ws === 0 ? 0 : 1);
+  const F = getFocus();
+  $('sFocusName').textContent = F ? focusName(F) : 'not set yet';
   $('setStatus').innerHTML = SHARED
     ? '<b class="okc">Saving is on for everyone.</b> Every tick and edit is saved to the archive within a couple of seconds and shows on every device. Anyone with the link can view and edit.'
     : canWrite() ? `<b class="okc">Saving with your GitHub token on this device.</b> Changes go to ${esc(S.cfg.owner)}/${esc(S.cfg.repo)} and show on every device.`
       : '<b>Changes are saved in this browser for now.</b> Saving for every device switches on once the archive’s save relay is connected (the README explains the one-time setup). Until then, a GitHub token under Advanced saves from this device.';
   $('setDlg').showModal();
-  if (focus === 'goals') { $('gPr').focus(); $('gPr').select(); }
+  if (focus === 'goals') { $('gDl').focus(); $('gDl').select(); }
 }
 function readSettings() {
   const tok = $('sToken').value.trim();
@@ -1519,7 +1872,7 @@ function exportBackup() {
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 
-/* ---------- summaries and learning guides ---------- */
+/* ---------- summaries and interactive pages ---------- */
 function pagesStr(read) {
   const parts = read.map(([a, b]) => (a === b ? `${a}` : `${a}–${b}`));
   const n = read.reduce((t, [a, b]) => t + b - a + 1, 0);
@@ -1543,36 +1896,24 @@ function openSummary(id) {
 function copySummaryLines() {
   const s = S.summaries[$('sumDlg').dataset.id]; if (!s) return;
   const m = $('sumMsg');
-  const ok = () => { m.hidden = false; m.className = 'formerr ok'; m.textContent = 'Copied the four lines.'; };
-  try { navigator.clipboard.writeText(s.write.join('\n')).then(ok, () => {}); } catch { /* clipboard unavailable */ }
+  copyText(s.write.join('\n'), () => { m.hidden = false; m.className = 'formerr ok'; m.textContent = 'Copied the four lines.'; }, () => {});
 }
-function learnPrompt(p) {
-  const cite = `${p.a || ''} (${p.y || 'n.d.'}). "${p.t}." ${(p.v || '').replace(/\*/g, '')}`.trim();
-  return `Make an interactive learning page for this paper, in the same style as Dupuit's Bridge (learn/mp0001.html in the brendynbeasley/paper-archive repo):
-
-${cite}${p.link ? `\nLink: ${p.link}` : ''}
-
-Build it as a single self-contained HTML file with:
-- the question the paper asks and why it mattered at the time
-- its argument broken into short parts, each with an interactive simulator or diagram
-- the key equations, with every term explained
-- flashcards, a quiz and a timeline of what came after
-- page references to the original wherever possible; mark anything you're unsure of
-
-Save it as learn/${p.id}.html, add it to data/learn.json under "${p.id}", then commit and push.`;
-}
+let learnId = null;
 function openLearn(id) {
   const p = S.byId.get(id); if (!p) return;
+  learnId = id;
+  $('learnDlgTitle').textContent = p.learn ? 'Interactive page' : 'No interactive page yet';
   $('learnPaper').textContent = p.t;
   $('learnPrompt').value = learnPrompt(p);
+  $('learnLink').value = p.learn || '';
   $('learnMsg').hidden = true;
   $('learnDlg').showModal();
 }
-function copyLearn() {
-  const t = $('learnPrompt'), m = $('learnMsg');
-  const done = () => { m.hidden = false; m.className = 'formerr ok'; m.textContent = 'Copied. Paste it into an AI assistant.'; };
-  const fail = () => { t.focus(); t.select(); m.hidden = false; m.className = 'formerr'; m.textContent = 'Select the text above and copy it.'; };
-  try { navigator.clipboard.writeText(t.value).then(done, fail); } catch { fail(); }
+function saveLearn(p, url) {
+  url = cleanUrl(url);
+  setPaperFields(p, { learn: url }, `${url ? 'Interactive page' : 'Remove interactive page'}: ${p.t.slice(0, 80)}`);
+  S.dirty.library--;
+  changed('library');
 }
 
 /* ---------- theme: auto (follow device) -> light -> dark ---------- */
@@ -1598,7 +1939,7 @@ function cycleTheme() {
 }
 
 let toastTimer;
-function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2400); }
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600); }
 
 let lastPull = 0;
 async function refresh(force) {
@@ -1626,9 +1967,22 @@ function studyMove(step) {
 }
 function viewClick(e) {
   const el = e.target.closest('button');
-  if (!el || !$('view').contains(el)) return;
+  if (!el || !$('view').contains(el) || el.disabled) return;
   const d = el.dataset, row = el.closest('[data-id]');
+  if (S.view.mode === 'setup' || (S.setup && $('view').querySelector('.setup'))) { if (setupClick(d)) return; }
   if (d.seen) { [SEEN_KEY, SEEN_LM_KEY, SEEN_SCI_KEY, SEEN_V5_KEY].forEach((k) => store.set(k, 1)); render(); return; }
+  if (d.setup) return openSetup();
+  if (d.focushere) { const V = S.view; return openSetup({ kind: 'scope', f: V.field, ar: V.area || '', tp: V.topic || '', step: 2 }); }
+  if (d.tcur) {
+    const F = getFocus(), t = nextInfo().topics.find((x) => x.key === d.tcur);
+    if (!F || !t) return;
+    if (t.complete) { toast(`${t.short} is done`); return; }
+    if (nextInfo().topics[nextInfo().ti] === t) return;
+    setFocus(Object.assign({}, F, { cur: t.key }), `Work on next: ${t.label}`);
+    window.scrollTo({ top: 0 });
+    return toast(`Working on ${t.short} next`);
+  }
+  if (d.studyscope) { S.study.scope = d.studyscope; S.study.key = ''; return go({ mode: 'cards' }); }
   if (d.mode) return go({ mode: d.mode });
   if (d.wk !== undefined) { S.wk = d.wk === '0' ? 0 : (S.wk || 0) + +d.wk; render(); window.scrollTo({ top: 0 }); return; }
   if (d.goals) return openSettings('goals');
@@ -1646,36 +2000,41 @@ function viewClick(e) {
     for (let k = o.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [o[k], o[j]] = [o[j], o[k]]; }
     S.study.i = 0; S.study.flip = false; render(); toast('Shuffled'); return;
   }
-  if (d.path) {
-    S.view.path = d.path;
-    if (d.path === 'scope' && !scopeParts().f) S.view.nscope = defaultScope();
-    saveView(); render(); return;
-  }
   if (d.gof !== undefined) return go(scopeOf({ f: d.gof, a: d.goa, t: d.got }));
   if (row) {
     const id = row.dataset.id, pp = S.byId.get(id);
     if (d.learn) return openLearn(id);
     if (d.sum) return openSummary(id);
-    if (d.st) return toggle(id, d.st);
+    if (d.prep) return openPrep(id);
+    if (d.cardsdlg) return openCards(id);
+    if (d.st) {
+      if (d.st === 'dl') return openPrep(id);
+      if (d.st === 'fl') return openCards(id);
+      return toggle(id, d.st);
+    }
     if (d.edit) return openPaper(id);
-    if (d.cards) return openPaper(id, 'cards');
-    if (d.addcard) {
-      const q = ($('fcQ') || {}).value || '', a = ($('fcA') || {}).value || '';
-      if (!addCard(pp, q.trim(), a.trim())) return toast('Write a question or an answer first.');
-      const qq = $('fcQ'); if (qq) qq.focus();
-      return toast('Card added');
+    if (d.copyprompt) {
+      return copyText(paperPrompt(pp), () => toast('Prompt copied. Paste it into Claude with the PDF.'), () => { const tx = row.querySelector('.promptbox textarea'); if (tx) { row.querySelector('.promptbox').open = true; tx.focus(); tx.select(); } toast('Select the prompt and copy it.'); });
+    }
+    if (d.pastecards) {
+      const box = $('fcPaste');
+      if (pasteInto(pp, box ? box.value : '')) { /* re-rendered */ }
+      return;
     }
     if (d.delcard !== undefined) return removeCard(pp, +d.delcard);
+    if (d.learnsave) {
+      const v = ($('learnInline') || {}).value || '';
+      if (!v.trim()) return toast('Paste the link to the page first.');
+      saveLearn(pp, v); return toast('Interactive page linked');
+    }
     if (d.step) {
       if (d.step === 'rs') {
         const url = cleanUrl(($('rsLink') || {}).value || '');
         if (url && url !== (pp.research || '')) setResearch(pp, url);
       }
       if (d.step === 'fl') {
-        const q = (($('fcQ') || {}).value || '').trim(), a = (($('fcA') || {}).value || '').trim();
-        const deck = cleanUrl(($('flDeck') || {}).value || '');
-        if (q || a) setPaperFields(pp, { cards: [...cardsOf(pp), { q, a }] }, `Flashcard: ${pp.t.slice(0, 80)}`);
-        if (deck && deck !== (pp.deck || '')) setPaperFields(S.byId.get(id), { deck }, `Flashcard deck: ${pp.t.slice(0, 80)}`);
+        const box = $('fcPaste');
+        if (box && box.value.trim()) addCards(pp, parseCards(box.value), true);
       }
       toggle(id, d.step);
       if (S.view.mode === 'next') window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1704,9 +2063,16 @@ function bind() {
   $('view').addEventListener('change', (e) => {
     const t = e.target;
     if (t.id === 'fSort') { S.view.sort = t.value; refilter(); }
-    else if (t.id === 'nxArea') { S.view.nscope = `${t.value}::`; saveView(); render(); }
-    else if (t.id === 'nxTopic') { const sc = scopeParts(); S.view.nscope = `${sc.f}::${sc.ar}::${t.value}`; saveView(); render(); }
     else if (t.id === 'cScope') { S.study.scope = t.value; render(); }
+    else if (t.id === 'setupWs' && S.setup) { S.setup.ws = +t.value; render(); }
+  });
+  $('view').addEventListener('input', (e) => {
+    const t = e.target;
+    if (t.dataset.sg && S.setup) {
+      S.setup.g[t.dataset.sg] = Math.max(0, Math.min(200, parseInt(t.value, 10) || 0));
+      const sum = $('view').querySelector('.setupsum');
+      if (sum) sum.innerHTML = setupSummary(S.setup);
+    }
   });
   let st;
   $('search').addEventListener('input', () => {
@@ -1744,6 +2110,7 @@ function bind() {
   $('pAddCard').addEventListener('click', () => {
     const q = $('pQ').value.trim(), a = $('pA').value.trim();
     if (!q && !a) return;
+    if (S.editCards.length >= MAX_CARDS) return toast(`${MAX_CARDS} cards per paper at most`);
     S.editCards.push({ q, a }); $('pQ').value = ''; $('pA').value = ''; $('pQ').focus();
     renderCardEditorDlg();
   });
@@ -1751,16 +2118,55 @@ function bind() {
     const b = e.target.closest('[data-delc]'); if (!b) return;
     S.editCards.splice(+b.dataset.delc, 1); renderCardEditorDlg();
   });
+  $('pPrep').addEventListener('click', () => { const id = editing; $('paperDlg').close(); openPrep(id); });
   $('paperForm').addEventListener('submit', (e) => {
     if (e.submitter && e.submitter.value === 'cancel') return;
     if (!savePaper()) e.preventDefault();
   });
   $('pDelete').addEventListener('click', deletePaper);
   $('groupForm').addEventListener('submit', (e) => { if (!e.submitter || e.submitter.value !== 'cancel') saveGroup(); });
+  // The Download sheet
+  $('prepCopy').addEventListener('click', () => {
+    const t = $('prepPrompt'), m = $('prepMsg');
+    copyText(t.value, () => { m.hidden = false; m.className = 'formerr ok'; m.textContent = 'Copied. Paste it into Claude with the PDF attached.'; },
+      () => { t.closest('details').open = true; t.focus(); t.select(); m.hidden = false; m.className = 'formerr'; m.textContent = 'Select the prompt above and copy it.'; });
+  });
+  $('prepDone').addEventListener('click', () => {
+    const k = reach(prog(prepId));
+    if (k === 0 || k === 1) { toggle(prepId, 'dl'); updatePrepBtn(); if (k === 0) { $('prepDlg').close(); toast('Downloaded. Next: print what Claude highlighted.'); } }
+  });
+  // The Flashcards sheet
+  $('cardsAdd').addEventListener('click', () => {
+    const p = S.byId.get(cardsId); if (!p) return;
+    if (pasteInto(p, $('cardsPaste').value, $('cardsMsg'))) $('cardsPaste').value = '';
+    renderCardsDlg();
+  });
+  $('cardsList').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-cdel]'); if (!b) return;
+    removeCard(S.byId.get(cardsId), +b.dataset.cdel); renderCardsDlg();
+  });
+  $('cardsDone').addEventListener('click', () => {
+    const p = S.byId.get(cardsId); if (!p) return;
+    if ($('cardsPaste').value.trim()) { pasteInto(p, $('cardsPaste').value, $('cardsMsg')); $('cardsPaste').value = ''; }
+    const k = reach(prog(cardsId));
+    if (k === NSTEP - 1 || k === NSTEP) { toggle(cardsId, 'fl'); if (k === NSTEP - 1) $('cardsDlg').close(); else renderCardsDlg(); }
+  });
+  // The Learn sheet
+  $('learnCopy').addEventListener('click', () => {
+    const t = $('learnPrompt'), m = $('learnMsg');
+    copyText(t.value, () => { m.hidden = false; m.className = 'formerr ok'; m.textContent = 'Copied. Paste it into Claude.'; },
+      () => { t.focus(); t.select(); m.hidden = false; m.className = 'formerr'; m.textContent = 'Select the text above and copy it.'; });
+  });
+  $('learnSave').addEventListener('click', () => {
+    const p = S.byId.get(learnId); if (!p) return;
+    saveLearn(p, $('learnLink').value);
+    $('learnDlg').close();
+    toast($('learnLink').value.trim() ? 'Interactive page linked' : 'Link removed');
+  });
   $('settingsBtn').addEventListener('click', () => openSettings());
+  $('sFocus').addEventListener('click', () => { $('setDlg').close(); openSetup(); });
   applyTheme(document.documentElement.getAttribute('data-theme'));
   $('themeBtn').addEventListener('click', cycleTheme);
-  $('learnCopy').addEventListener('click', copyLearn);
   $('sumCopy').addEventListener('click', copySummaryLines);
   $('setForm').addEventListener('submit', (e) => { if (e.submitter && e.submitter.value === 'save') applySettings(); });
   $('sTest').addEventListener('click', testSettings);
@@ -1778,14 +2184,14 @@ function bind() {
   $('saveBannerBtn').addEventListener('click', () => openSettings());
   window.addEventListener('online', () => refresh(true));
   // Pick up what other devices saved, every minute while the page is open.
-  setInterval(() => { if (document.visibilityState === 'visible' && !document.querySelector('dialog[open]')) refresh(false); }, 60000);
+  setInterval(() => { if (document.visibilityState === 'visible' && !document.querySelector('dialog[open]') && S.view.mode !== 'setup') refresh(false); }, 60000);
 }
 
 /* ---------- start ---------- */
 const DATA_V = '5';      // bump when data/economics.json is rebuilt, so browsers fetch the new copy
 const SCI_V = '2';       // the same for data/sciences.json
 async function start() {
-  if (!$('view') || !$('navTree') || !$('tabbar')) {
+  if (!$('view') || !$('navTree') || !$('tabbar') || !$('prepDlg')) {
     // This script arrived before the page that goes with it (an old copy of index.html is cached).
     let tried = false;
     try { tried = !!sessionStorage.getItem('pa-reloaded'); sessionStorage.setItem('pa-reloaded', '1'); } catch { /* ignore */ }
@@ -1832,6 +2238,7 @@ async function start() {
   else if (fromHash) Object.assign(V, fromHash);
   else V.mode = 'home';
   if (!MODES.includes(V.mode)) V.mode = 'home';
+  if (V.mode === 'setup') S.setup = newSetup();
   if (V.field && !fieldTree().has(V.field)) Object.assign(V, { field: null, area: null, topic: null });
   // Views saved before areas existed: work out the area from the topic.
   if (V.topic && V.area == null) {

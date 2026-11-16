@@ -3,8 +3,8 @@
  * The site is static (GitHub Pages), and writing to the repo needs a GitHub token. Rather than
  * asking for a token on every device, this relay holds one token as a secret and lets the site
  * read and write exactly two files, nothing else:
- *   data/progress.json   the dates of each paper's five steps
- *   data/library.json    papers you add, edits, notes, flashcards, weekly goals
+ *   data/progress.json   the dates of each paper's six steps
+ *   data/library.json    papers you add, edits, notes, flashcards, your focus, weekly goals
  * Anyone who opens the site can save, from any device, with no sign-in.
  *
  * The site calls it like the GitHub contents API, minus the token:
@@ -48,7 +48,7 @@ function decodeBase64Utf8(b64) {
 
 const isObj = (x) => x && typeof x === 'object' && !Array.isArray(x);
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
-const STEPS = new Set(['pr', 'rd', 'nt', 'rs', 'fl']);
+const STEP = /^[a-z]{2}$/;   // a step's two-letter key (dl, pr, rd, nt, rs, fl), so a new step needs no redeploy
 
 // The file must still look like what the site writes, so a stray request cannot replace it with
 // something the site cannot read.
@@ -60,7 +60,7 @@ export function validFile(path, data) {
       if (id.length > 64 || !isObj(g)) return false;
       for (const [k, v] of Object.entries(g)) {
         if (k === 'u') { if (typeof v !== 'number') return false; }
-        else if (!STEPS.has(k) || typeof v !== 'string' || !DAY.test(v)) return false;
+        else if (!STEP.test(k) || typeof v !== 'string' || !DAY.test(v)) return false;
       }
     }
     return true;
