@@ -1,11 +1,11 @@
-"""Hand-picked landmark books and classic papers.
+"""Landmark books and classic papers.
 
 Usage: python3 tools/economics/landmarks.py            look every landmark up, write landmarks_found.json
        python3 tools/economics/landmarks.py check      only check landmarks.json for mistakes
 
 The journal sweep (fetch.py) cannot see books, papers in journals that are not on its list, or
 classics that OpenAlex files oddly (Friedman's 1968 address has no journal attached at all).
-landmarks.json fills those gaps by hand. Each entry has
+landmarks.json fills those gaps one entry at a time. Each entry has
 
   k     a permanent id, "lm" and four digits. Never reuse or renumber one.
   a y t authors, year of first publication, title
@@ -145,10 +145,7 @@ def check(lms, topic_names):
 def topic_names():
     import taxonomy as T
     names = {f"{a['name']} > {tp}" for a in T.AREAS for tp, _ in a['topics']}
-    extra = os.path.join(ROOT, 'work', 'economics', 'extra_fields.json')
-    if os.path.exists(extra):
-        names |= {f"{t.get('ar') or t['f']} > {t['tp']}" for t in json.load(open(extra, encoding='utf-8'))['topics']}
-    return names
+    return names           # econophysics landmarks moved to tools/sciences/sci_landmarks.json
 
 
 def resolve(refresh=False):

@@ -35,12 +35,13 @@ def norm_phrase(p):
 
 
 class Classifier:
-    def __init__(self):
+    def __init__(self, tax=None):
+        self.T = tax or T                # the economics taxonomy unless another is given
         self.topics = []                 # (area code, area name, topic name)
         self.phrases = []                # (topic idx, words, factor, home_only)
         self.exact = defaultdict(list)   # first word -> phrase ids
         self.prefix = defaultdict(list)  # first 3 letters -> phrase ids (wildcard first word)
-        for area, name, plist in T.topics():
+        for area, name, plist in self.T.topics():
             ti = len(self.topics)
             self.topics.append((area['code'], area['name'], name))
             seen = set()
@@ -53,14 +54,14 @@ class Classifier:
                 n = len(words)
                 factor = 1.0 if n == 1 else 1.4 if n == 2 else 1.7
                 pid = len(self.phrases)
-                self.phrases.append((ti, words, factor, T.is_home_only(area['code'], p)))
+                self.phrases.append((ti, words, factor, self.T.is_home_only(area['code'], p)))
                 w0, pre0 = words[0]
                 (self.prefix[w0[:3]] if pre0 else self.exact[w0]).append(pid)
         self.area_topics = defaultdict(list)
         for i, (code, _, _) in enumerate(self.topics):
             self.area_topics[code].append(i)
         self.default = {code: next(i for i in self.area_topics[code] if self.topics[i][2] == name)
-                        for code, name in T.DEFAULT_TOPIC.items()}
+                        for code, name in self.T.DEFAULT_TOPIC.items()}
         self.rarity = [1.0] * len(self.phrases)
 
     def fit(self, papers):
@@ -108,17 +109,22 @@ class Classifier:
             keep.add(pid)
         return keep
 
-    def score(self, paper, home_code, forced_area=None):
-        """Return (best topic idx or None, score, runner-up idx, runner-up score)."""
+    def score(self, paper, home_code, forced_area=None, allowed=None):
+        """Return (best topic idx or None, score, runner-up idx, runner-up score). `allowed`, if
+        given, is the set of area codes the paper may go to."""
         title = self.longest(self.find(norm(paper['t'])))
         kws = self.longest(self.find(' | '.join(norm(k) for k in paper.get('kw') or [])))
         abst = self.longest(self.find(norm(paper.get('ab') or '')))
-        home_areas = T.HOME.get(home_code, set())
+        w_tn = getattr(self.T, 'W_TOPICS', 0)        # OpenAlex topic names, when the taxonomy wants them
+        tnames = self.longest(self.find(' | '.join(norm(k) for k in paper.get('tn') or []))) if w_tn else set()
+        home_areas = self.T.HOME.get(home_code, set())
         per = defaultdict(dict)                      # topic -> phrase id -> best weight
-        for hits, w in ((abst, W_ABS), (kws, W_KW), (title, W_TITLE)):
+        for hits, w in ((tnames, w_tn), (abst, W_ABS), (kws, W_KW), (title, W_TITLE)):
             for pid in hits:
                 ti, _, factor, home_only = self.phrases[pid]
                 code = self.topics[ti][0]
+                if allowed is not None and code not in allowed:
+                    continue
                 if home_only and code not in home_areas and code != forced_area:
                     continue
                 if forced_area and code != forced_area:

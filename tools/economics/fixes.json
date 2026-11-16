@@ -178,6 +178,9 @@
  "W1944585346": {
   "tp": "Public economics > Tax evasion, avoidance & enforcement"
  },
+ "W1944604366": {
+  "t": "The Global Supply and Demand for Agricultural Land in 2050: A Perfect Storm in the Making?"
+ },
  "W1960343571": {
   "t": "The Maddison Project: collaborative research on historical national accounts"
  },
@@ -215,6 +218,9 @@
   "a": "Eggertsson, G. B., & Woodford, M.",
   "t": "The Zero Bound on Interest Rates and Optimal Monetary Policy",
   "tp": "Monetary economics & central banking > Zero lower bound & unconventional policy"
+ },
+ "W1975066405": {
+  "a": "Hülsmann, J. G."
  },
  "W1975395389": {
   "tp": "Econometrics & quantitative methods > Time series: unit roots, cointegration & VARs"
@@ -270,11 +276,17 @@
  "W1992109042": {
   "a": "Sachs, J. D., & Warner, A. M."
  },
+ "W1992623025": {
+  "a": "Güth, W."
+ },
  "W1995410581": {
   "tp": "Econometrics & quantitative methods > Instrumental variables & identification"
  },
  "W1996760592": {
   "tp": "Development economics > Governance & public service delivery"
+ },
+ "W1997006933": {
+  "t": "Three brief proofs of Arrow's Impossibility Theorem"
  },
  "W1998095887": {
   "tp": "Labor economics > Job search, unemployment & unemployment insurance"
@@ -320,6 +332,9 @@
  },
  "W2018579465": {
   "tp": "Inequality, poverty & mobility > Income & wealth inequality"
+ },
+ "W2019446221": {
+  "t": "Data envelopment analysis: The evolution of the state of the art (1978–1995)"
  },
  "W2019459021": {
   "tp": "Econometrics & quantitative methods > Time series: unit roots, cointegration & VARs"
@@ -417,6 +432,9 @@
  "W2042611711": {
   "tp": "Econometrics & quantitative methods > Estimation & inference theory"
  },
+ "W2042728069": {
+  "t": "Global Entrepreneurship Monitor: Data Collection Design and Implementation 1998–2003"
+ },
  "W2043146257": {
   "a": "Stanley, H. E., Afanasyev, V., Amaral, L. A. N., et al."
  },
@@ -438,6 +456,9 @@
  },
  "W2048849456": {
   "tp": "International trade > Multinationals, FDI & global value chains"
+ },
+ "W2050850707": {
+  "a": "Löthgren, M., & Zethraeus, N."
  },
  "W2052357007": {
   "tp": "Econometrics & quantitative methods > Estimation & inference theory"
@@ -473,6 +494,9 @@
  "W2057675067": {
   "y": "1991"
  },
+ "W2058774911": {
+  "t": "The Factor Proportions Theory: The N-factor Case"
+ },
  "W2059191774": {
   "tp": "Game theory & market design > Equilibrium concepts & foundations"
  },
@@ -493,6 +517,9 @@
  },
  "W2069228454": {
   "a": "Preis, T., Reith, D., & Stanley, H. E."
+ },
+ "W2069512878": {
+  "a": "Hébert, R. F., & Link, A. N."
  },
  "W2070506372": {
   "tp": "Economic growth & productivity > Productivity, misallocation & firm dynamics"
@@ -515,6 +542,9 @@
  "W2076737894": {
   "tp": "International trade > Multinationals, FDI & global value chains",
   "y": "2014"
+ },
+ "W2078202336": {
+  "t": "Income distribution and tax structure: Empirical test of the Meltzer–Richard hypothesis"
  },
  "W2078234023": {
   "tp": "Game theory & market design > Auctions"
@@ -577,6 +607,9 @@
  "W2091732022": {
   "tp": "International trade > Comparative advantage & classical trade theory"
  },
+ "W2092027953": {
+  "t": "Why Are the Unemployed So Unhappy? Evidence from Panel Data"
+ },
  "W2094765387": {
   "tp": "Firms, organizations & entrepreneurship > Entrepreneurship & small business"
  },
@@ -633,6 +666,9 @@
  },
  "W2103685628": {
   "tp": "Environmental, energy & resource economics > Environmental policy instruments"
+ },
+ "W2106078692": {
+  "a": "Ács, Z. J., & Varga, A."
  },
  "W2106580408": {
   "tp": "Microeconomic theory > Contracts, moral hazard & incentives"
@@ -739,6 +775,9 @@
  "W2122621376": {
   "tp": "Public economics > Fiscal federalism & local public finance"
  },
+ "W2123750402": {
+  "a": "Adserà, A."
+ },
  "W2123908125": {
   "a": "Baumol, W. J."
  },
@@ -802,6 +841,9 @@
  "W2134183765": {
   "tp": "Asset pricing & financial markets > Behavioral finance & investor behavior"
  },
+ "W2134219310": {
+  "t": "The environmental–social interface of sustainable development: capabilities, social capital, institutions"
+ },
  "W2135282243": {
   "a": "Plerou, V., Gopikrishnan, P., Rosenow, B., Amaral, L. A. N., & Stanley, H. E."
  },
@@ -810,6 +852,9 @@
  },
  "W2136096971": {
   "tp": "Game theory & market design > Mechanism design & implementation"
+ },
+ "W2137159685": {
+  "a": "Alós-Ferrer, C., & Ania, A. B."
  },
  "W2137296414": {
   "tp": "Microeconomic theory > Risk, uncertainty & decision theory"
@@ -916,6 +961,9 @@
  },
  "W2159191507": {
   "a": "Collier, P., & Hoeffler, A."
+ },
+ "W2159606735": {
+  "t": "Efficient Use of Information and Social Value of Information"
  },
  "W2159805452": {
   "a": "Caliendo, M., & Kopeinig, S."
@@ -1520,6 +1568,10 @@
  },
  "W4245391281": {
   "a": "Stanley, H. E., Amaral, L. A. N., Canning, D., et al."
+ },
+ "W4249642514": {
+  "a": "Färe, R., Grosskopf, S., Lindgren, B., & Roos, P.",
+  "t": "Productivity changes in Swedish pharamacies 1980–1989: A non-parametric Malmquist approach"
  },
  "W4251446432": {
   "tp": "Behavioral & experimental economics > Field experiments & behavior in the wild"

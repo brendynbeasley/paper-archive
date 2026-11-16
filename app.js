@@ -18,7 +18,8 @@ const CFG_KEY = 'pa-config-v1';
 const CACHE_KEY = 'pa-cache-v1';
 const VIEW_KEY = 'pa-view-v1';
 const SEEN_KEY = 'pa-seen-v2';
-const SEEN_LM_KEY = 'pa-seen-v3';   // the note about the hand-picked landmarks
+const SEEN_LM_KEY = 'pa-seen-v3';   // the note about the landmark books and classics
+const SEEN_SCI_KEY = 'pa-seen-v4';  // the note about mathematics, statistics and econophysics
 const PAGE = 120;
 
 const $ = (id) => document.getElementById(id);
@@ -168,7 +169,7 @@ async function pull() {
 }
 // The second catalog stores each topic once and its papers as short rows; unpack it into the
 // same shape as catalog.json. A bare id in a topic is an extra listing of an existing paper.
-// A row may end with a one-line note and a kind ("book", "report" or "talk"): the hand-picked landmarks.
+// A row may end with a one-line note and a kind ("book", "report" or "talk"): the landmarks.
 function unpackCatalog(extra, start) {
   const papers = [], xrefs = [];
   let o = start;
@@ -310,6 +311,12 @@ const GROUP_COLORS = {
   'Theory & methods': '#5a55c8', 'Macroeconomics & international': '#0f8a80', Finance: '#2b77c9',
   'Firms, markets & innovation': '#9a4bb0', 'Labor, people & public policy': '#c9621e',
   'Development, space & environment': '#3f8f3a', 'Institutions, history & ideas': '#b24a52',
+  'Financial markets & models': '#d9582a', 'Agents, wealth & networks': '#a35d1e', 'Complexity & society': '#c2417a',
+  'Foundations & history': '#7a5ac8', 'Algebra & number theory': '#cf3a6b', 'Geometry & topology': '#2f7fb8',
+  Analysis: '#1f8f74', 'Probability & mathematical physics': '#a2559e', 'Discrete mathematics & computing': '#c26a1e',
+  'Applied & computational mathematics': '#4f8a2e',
+  'Inference & foundations': '#0e9a86', 'Models & methods': '#3a6fc4', 'Design, data & causality': '#8a56b8',
+  'Computing & learning': '#c25b2a', 'Applied statistics': '#b8476b',
 };
 const SPARE = ['#2b7de9', '#b07a00', '#8a3ffc', '#1f9d55', '#d6457a', '#0891b2'];
 function fieldColor(f) {
@@ -663,10 +670,12 @@ function renderHome() {
   for (const F of tree.values()) for (const [ar, A] of F.areas) { if (ar && A.n) areas++; topics += [...A.topics.values()].filter((c) => c.n).length; }
   const c = stepCounts(all), days = activity();
   const { order, i, total, doneCount } = nextInfo();
-  const news = !store.get(SEEN_KEY)
+  const news = !store.get(SEEN_SCI_KEY) && S.sciAdded
+    ? `<div class="news"><span><b>New:</b> Mathematics, Statistics and Econophysics now have their own areas and topics: ${fmt(S.sciAdded)} papers and books, including ${fmt(S.sciLandmarks)} classic books and papers going back centuries. Your ticks are untouched.</span><button type="button" class="pill dark" data-seen="1">Got it</button></div>`
+    : !store.get(SEEN_KEY)
     ? `<div class="news"><span><b>New:</b> the archive now covers all of economics. ${fmt(S.added)} papers and books were added in ${Math.max(0, S.meta.areas.length - 1)} new areas, and your earlier papers and ticks are untouched.</span><button type="button" class="pill dark" data-seen="1">Got it</button></div>`
     : !store.get(SEEN_LM_KEY) && S.landmarks
-      ? `<div class="news"><span><b>New:</b> ${fmt(S.landmarks)} landmark books and classic papers were added by hand, each with a line on what it contributed. In any list, the <b>Books</b> filter shows just the books.</span><button type="button" class="pill dark" data-seen="1">Got it</button></div>`
+      ? `<div class="news"><span><b>New:</b> ${fmt(S.landmarks)} landmark books and classic papers were added, each with a line on what it contributed. In any list, the <b>Books</b> filter shows just the books.</span><button type="button" class="pill dark" data-seen="1">Got it</button></div>`
       : '';
   let cont = '<p class="blurb">Every paper on this path has all four steps ticked.</p>';
   if (i >= 0) {
@@ -1180,7 +1189,7 @@ function viewClick(e) {
   const el = e.target.closest('button');
   if (!el || !$('view').contains(el)) return;
   const d = el.dataset, row = el.closest('[data-id]');
-  if (d.seen) { store.set(SEEN_KEY, 1); store.set(SEEN_LM_KEY, 1); render(); return; }
+  if (d.seen) { store.set(SEEN_KEY, 1); store.set(SEEN_LM_KEY, 1); store.set(SEEN_SCI_KEY, 1); render(); return; }
   if (d.home) return go({ mode: 'home' });
   if (d.next) return go({ mode: 'next' });
   if (d.more) { S.shown += PAGE; render(); return; }
@@ -1294,7 +1303,8 @@ function bind() {
 }
 
 /* ---------- start ---------- */
-const DATA_V = '3';      // bump when data/economics.json is rebuilt, so browsers fetch the new copy
+const DATA_V = '4';      // bump when data/economics.json is rebuilt, so browsers fetch the new copy
+const SCI_V = '1';       // the same for data/sciences.json
 async function start() {
   if (!$('view') || !$('navTree')) {
     // This script arrived before the page that goes with it (an old copy of index.html is cached).
@@ -1305,9 +1315,10 @@ async function start() {
   }
   bind();
   loadCache();
-  const [cat, eco, learn, plan, sums, dls, cites] = await Promise.all([
+  const [cat, eco, sci, learn, plan, sums, dls, cites] = await Promise.all([
     fetchStatic('data/catalog.json', { papers: [] }, false),
     fetchStatic(`data/economics.json?v=${DATA_V}`, { topics: [] }, false),
+    fetchStatic(`data/sciences.json?v=${SCI_V}`, { topics: [] }, false),
     fetchStatic('data/learn.json', { guides: {} }),
     fetchStatic('data/plan.json', null),
     fetchStatic('data/summaries.json', { s: {} }),
@@ -1316,15 +1327,22 @@ async function start() {
   ]);
   const base = cat.papers || [];
   const counts = cites.c || {};
-  const landmarkNotes = eco.notes || {};   // one-line notes for landmarks that live in catalog.json
-  base.forEach((p, i) => { p.o = i; if (counts[p.id]) p.c = counts[p.id]; if (!p.n && landmarkNotes[p.id]) p.n = landmarkNotes[p.id]; });
+  // One-line notes for landmarks whose paper is listed in another file (catalog.json, or economics for a science landmark).
+  const notes = Object.assign({}, eco.notes || {}, sci.notes || {});
+  base.forEach((p, i) => { p.o = i; if (counts[p.id]) p.c = counts[p.id]; });
   const known = new Set(base.map((p) => p.id));
-  const extra = unpackCatalog(eco, 1e5);
-  S.catalog = base.concat(extra.papers.filter((p) => !known.has(p.id)));
+  const extra = unpackCatalog(eco, 1e5), more = unpackCatalog(sci, 5e5);
+  const ecoPapers = extra.papers.filter((p) => !known.has(p.id));
+  ecoPapers.forEach((p) => known.add(p.id));
+  const sciPapers = more.papers.filter((p) => !known.has(p.id));
+  S.catalog = base.concat(ecoPapers, sciPapers);
+  S.catalog.forEach((p) => { if (!p.n && notes[p.id]) p.n = notes[p.id]; });
   S.added = S.catalog.length - base.length;
-  S.landmarks = extra.papers.filter((p) => p.n).length + Object.keys(landmarkNotes).length;
-  S.xrefs = extra.xrefs;
-  S.meta = { groups: eco.groups || [], areas: eco.areas || [] };
+  S.landmarks = ecoPapers.filter((p) => p.n).length + Object.keys(eco.notes || {}).length;
+  S.sciAdded = sciPapers.length;
+  S.sciLandmarks = sciPapers.filter((p) => p.n).length + Object.keys(sci.notes || {}).length;
+  S.xrefs = extra.xrefs.concat(more.xrefs);
+  S.meta = { groups: (eco.groups || []).concat(sci.groups || []), areas: (eco.areas || []).concat(sci.areas || []) };
   S.guides = learn.guides || {};
   S.plan = plan;
   S.summaries = sums.s || {};
@@ -1333,7 +1351,7 @@ async function start() {
   const V = S.view, fromHash = readHash();
   if (fromHash && 'q' in fromHash) $('search').value = fromHash.q;
   else if (fromHash) Object.assign(V, fromHash);
-  else if (!store.get(SEEN_KEY)) V.mode = 'home';          // show the overview once after the expansion
+  else if (!store.get(SEEN_SCI_KEY) || !store.get(SEEN_KEY)) V.mode = 'home';   // show the overview once after an expansion
   if (!['home', 'next', 'list'].includes(V.mode)) V.mode = 'home';
   if (V.field && !fieldTree().has(V.field)) Object.assign(V, { field: null, area: null, topic: null });
   // Views saved before areas existed: work out the area from the topic.

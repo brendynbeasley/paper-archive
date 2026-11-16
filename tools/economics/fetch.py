@@ -16,7 +16,7 @@ an anthology), and the first pull misses them.
 Nothing here writes to the site. tools/economics/build.py turns the corpus into
 data/economics.json.
 """
-import json, os, sys, threading, time, urllib.error, urllib.parse, urllib.request
+import json, os, re, sys, threading, time, urllib.error, urllib.parse, urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -71,6 +71,10 @@ def get(path, params):
                 body = e.read().decode('utf-8', 'replace')[:300]
                 if 'per second' in body.lower():           # too fast, not out of allowance
                     time.sleep(1.5)
+                    continue
+                m = re.search(r'"retryAfter":\s*([\d.]+)', body)
+                if m and 'temporarily' in body.lower():     # a busy server: wait as asked, then try again
+                    time.sleep(min(float(m.group(1)) + 1, 120))
                     continue
                 if 'budget' in body.lower() or 'credit' in body.lower() or 'limit' in body.lower():
                     print('  allowance used up for today:', body, flush=True)

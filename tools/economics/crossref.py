@@ -38,11 +38,15 @@ def save():
         os.replace(tmp, CACHE)
 
 
+GAP = 1.05          # seconds between requests: Crossref allows anonymous clients about one a second
+
+
 def _get(url):
-    for attempt in range(4):
-        with _lock:                                   # at most about five requests a second
+    tries = 0
+    while tries < 4:
+        with _lock:                                   # at most about one request a second
             wait = _next[0] - time.time()
-            _next[0] = max(time.time(), _next[0]) + 0.2
+            _next[0] = max(time.time(), _next[0]) + GAP
         if wait > 0:
             time.sleep(wait)
         try:
@@ -52,9 +56,14 @@ def _get(url):
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 return {}
-            time.sleep(2 ** attempt)
+            if e.code == 429:                         # too fast: wait and try again, without counting it as a failure
+                time.sleep(3)
+                continue
+            time.sleep(2 ** tries)
+            tries += 1
         except Exception:
-            time.sleep(2 ** attempt)
+            time.sleep(2 ** tries)
+            tries += 1
     return None
 
 

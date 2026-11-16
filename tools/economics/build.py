@@ -1,5 +1,5 @@
 """Build data/economics.json: the most-cited papers of each topic in the economics taxonomy,
-plus the hand-picked landmark books and classics.
+plus the landmark books and classics.
 
 Usage: python3 tools/economics/build.py            (after tools/economics/fetch.py)
 
@@ -19,7 +19,7 @@ Three hand-kept files steer the result:
                    "link" (empty = none), "tp" the topic it belongs in, written "Area > Topic".
                    An entry keyed by a catalog.json id (mp0001) controls that paper's extra
                    listing instead: "tp" names the topic, and an empty "tp" means none.
-  landmarks.json   books and classic papers added by hand, each with a one-line note
+  landmarks.json   books and classic papers chosen individually, each with a one-line note
                    (see landmarks.py).
 """
 import glob
@@ -289,8 +289,7 @@ def main():
 
     clf = classify.Classifier()
     clf.fit(rows)
-    extra_file = os.path.join(WORK, 'extra_fields.json')            # other fields built by their own scripts
-    extra = json.load(open(extra_file, encoding='utf-8')) if os.path.exists(extra_file) else {}
+    extra = {}            # econophysics, once merged in here, is built with the other sciences (tools/sciences)
     topics = [(T.FIELD, area, topic) for _, area, topic in clf.topics] + \
              [(t['f'], t.get('ar', ''), t['tp']) for t in extra.get('topics', [])]
     topic_index = {f'{ar or f} > {tp}': i for i, (f, ar, tp) in enumerate(topics)}
@@ -298,7 +297,7 @@ def main():
     cat_by_id = {p['id']: p for p in cat}
     by_doi, by_title = catalog_index(cat)
 
-    # Hand-picked landmarks: where each goes, and which downloaded records they replace.
+    # Landmarks: where each goes, and which downloaded records they replace.
     lms, found = landmarks.load()
     lm_ids = {found[L['k']]['id'] for L in lms if found.get(L['k'], {}).get('id')}
     lm_titles = {(landmarks.tkey(L['t']), landmarks.surname(L['a'])) for L in lms
@@ -410,6 +409,17 @@ def main():
         for also in L.get('also', []):
             items[topic_index[also]].append((stars, rank, entry if isinstance(entry, str) else entry[0]))
 
+    # Science landmarks (tools/sciences) that economics topics list too: a pointer to the science entry.
+    sci_list = os.path.join(ROOT, 'tools', 'sciences', 'sci_landmarks.json')
+    if os.path.exists(sci_list):
+        sfound = json.load(open(os.path.join(ROOT, 'tools', 'sciences', 'sci_landmarks_found.json'), encoding='utf-8'))
+        for L in json.load(open(sci_list, encoding='utf-8')):
+            for also in L.get('econ_also', []):
+                if also in topic_index:
+                    F = sfound.get(L['k'], {})
+                    rank = strength(F['c'], int(F.get('y') or L['y'])) if F.get('c') else -1
+                    items[topic_index[also]].append((L.get('s', 2), rank, F.get('ex') or F.get('id') or L['k']))
+
     topics_out = []
     for ti, (f, ar, tp) in enumerate(topics):
         seen, entries = set(), []
@@ -427,7 +437,7 @@ def main():
     areas += extra.get('areas', [])
     out = {'v': 2, 'built': date.today().isoformat(),
            'source': 'OpenAlex (openalex.org): most-cited papers of about 220 economics journals and handbook series, '
-                     'plus hand-picked landmark books and classics',
+                     'plus individually chosen landmark books and classics',
            'cols': ['id', 't', 'a', 'y', 'v', 'link', 'c', 's', 'pdf', 'n', 'k'],
            'groups': [{'name': n, 'blurb': b} for n, b in T.GROUPS], 'areas': areas, 'topics': topics_out,
            'notes': notes}

@@ -8,7 +8,7 @@ works that OpenAlex places in "Economics, Econometrics and Finance" (50 requests
 work/economics/pool/. Nothing from the pool enters the archive by itself. It is used for two
 things:
 
-  * landmarks.py looks a hand-picked landmark up here first, to get its OpenAlex id, DOI and
+  * landmarks.py looks a landmark up here first, to get its OpenAlex id, DOI and
     citation count;
   * `python3 tools/economics/pool.py gaps` lists the most-cited works that are not in the
     archive, which is how the landmark list was checked for omissions.
