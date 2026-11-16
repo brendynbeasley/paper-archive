@@ -786,8 +786,8 @@ function weekPanel() {
     <div class="goalmini">${STATUSES.map(([s]) => goalBar(s, done[s], +G[s] || 0)).join('')}</div></section>`;
 }
 function howto() {
-  const what = ['Print the paper.', 'Read it, as deeply as it deserves.', 'Write your notes on it by hand.', 'Research it and link your write-up.', 'Make flashcards of what matters.'];
-  return `<ul class="howto">${STATUSES.map(([s, label], n) => `<li><span class="st ${s}" aria-pressed="true">${ICONS[s]}</span><span><b>${label}.</b> ${what[n]}</span></li>`).join('')}</ul>`;
+  const what = ['Print it', 'Read it, as deeply as it deserves', 'Write notes on it by hand', 'Research it, link the write-up', 'Make flashcards of what matters'];
+  return `<ol class="howto compact">${STATUSES.map(([s, label], n) => `<li><span class="st ${s}" aria-pressed="true">${ICONS[s]}</span><span><b>${label}</b> ${what[n]}</span></li>`).join('')}</ol>`;
 }
 
 /* ---------- cards: fields, areas, topics ---------- */
@@ -833,24 +833,66 @@ function fieldSections(f) {
 }
 
 /* ---------- overview ---------- */
-function activity() {
-  const days = new Map();
-  for (const g of Object.values(S.progress.p)) for (const [s] of STATUSES) if (g[s]) days.set(g[s], (days.get(g[s]) || 0) + 1);
-  return days;
-}
-function heatmap(days) {
-  const now = new Date(), cells = [];
-  const start = new Date(now); start.setDate(now.getDate() - now.getDay() - 25 * 7);
-  let max = 1;
-  for (let d = new Date(start); d <= now; d.setDate(d.getDate() + 1)) {
-    const key = localDate(d);
-    const n = days.get(key) || 0; max = Math.max(max, n); cells.push([key, n]);
+// Progress over the life of the archive: a square for every day (shaded by how many steps were
+// ticked), and under it, how many papers had reached each step by the end of each week. It always
+// shows at least a year, and grows to the left as the archive gets older.
+function progressGraph() {
+  const t = today(), evs = events().filter((e) => S.byId.has(e.id));
+  const days = new Map(), weekSums = new Map();
+  for (const e of evs) {
+    days.set(e.d, (days.get(e.d) || 0) + 1);
+    const k = weekStart(e.d); weekSums.set(k, (weekSums.get(k) || 0) + 1);
   }
-  const week = cells.slice(-7).reduce((t, [, n]) => t + n, 0), todayN = cells[cells.length - 1][1];
-  let streak = 0; for (let i = cells.length - 1; i >= 0 && (cells[i][1] || i === cells.length - 1); i--) if (cells[i][1]) streak++;
-  return `<div class="heat" role="img" aria-label="Steps ticked per day over the last 26 weeks">${cells.map(([k, n]) => `<i data-l="${n ? Math.max(1, Math.ceil((4 * n) / max)) : 0}" title="${k}: ${n} step${n === 1 ? '' : 's'}"></i>`).join('')}</div>
-    <div class="heatnote"><b>${fmt(todayN)}</b> step${todayN === 1 ? '' : 's'} today · <b>${fmt(week)}</b> in the last 7 days${streak > 1 ? ` · <b>${streak}</b>-day streak` : ''}</div>`;
+  const firstDay = evs.length ? evs[evs.length - 1].d : t;          // events() is newest first
+  const yearAgo = weekStart(addDays(t, -7 * 51));
+  const start = firstDay < yearAgo ? weekStart(firstDay) : yearAgo;
+  const nweeks = Math.round((parseDay(weekStart(t)) - parseDay(start)) / 6048e5) + 1;
+  const maxDay = Math.max(1, ...days.values());
+  let cells = '', months = '', lastMonth = -1;
+  for (let w = 0; w < nweeks; w++) {
+    const wd = addDays(start, 7 * w), m = parseDay(wd).getMonth();
+    months += `<span>${m !== lastMonth ? esc(parseDay(wd).toLocaleDateString('en-US', { month: 'short' })) : ''}</span>`;
+    lastMonth = m;
+    for (let d = 0; d < 7; d++) {
+      const day = addDays(wd, d);
+      if (day > t) { cells += '<i class="x"></i>'; continue; }
+      const n = days.get(day) || 0;
+      cells += `<i data-l="${n ? Math.max(1, Math.ceil((4 * n) / maxDay)) : 0}" title="${esc(dayLabel(day, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }))}: ${n ? plural(n, 'step') : 'nothing'}"></i>`;
+    }
+  }
+  const dayNames = [0, 1, 2, 3, 4, 5, 6].map((d) => (d % 2 === 0 && d < 6 ? parseDay(addDays(start, d)).toLocaleDateString('en-US', { weekday: 'short' }) : ''));
+  // How many papers had reached each step by the end of each week.
+  const cum = STATUSES.map(([s]) => {
+    const dates = evs.filter((e) => e.s === s).map((e) => e.d).sort(), out = [];
+    let k = 0;
+    for (let w = 0; w < nweeks; w++) {
+      const end = addDays(start, 7 * w + 6);
+      while (k < dates.length && dates[k] <= end) k++;
+      out.push(k);
+    }
+    return out;
+  });
+  const top = Math.max(1, ...cum.map((c) => c[nweeks - 1]));
+  const pts = (c) => c.map((v, w) => `${(w + 0.5).toFixed(2)},${(97 - (90 * v) / top).toFixed(2)}`).join(' ');
+  const svg = `<svg class="cum" viewBox="0 0 ${nweeks} 100" preserveAspectRatio="none" role="img" aria-label="Papers that have reached each step, week by week">
+      ${cum.map((c, i) => `<polygon points="0.5,97 ${pts(c)} ${(nweeks - 0.5).toFixed(2)},97" style="fill:var(--${STATUSES[i][0]})"/><polyline points="${pts(c)}" style="stroke:var(--${STATUSES[i][0]})"/>`).join('')}</svg>`;
+  let streak = 0;
+  for (let d = days.has(t) ? t : addDays(t, -1); days.has(d); d = addDays(d, -1)) streak++;
+  const best = Math.max(0, ...weekSums.values());
+  const stats = [`<span><b>${fmt(evs.length)}</b> steps</span>`, `<span><b>${fmt(finished().length)}</b> papers finished</span>`, `<span><b>${fmt(days.size)}</b> active days</span>`,
+    `<span><b>${fmt(best)}</b> best week</span>`, streak ? `<span><b>${streak}</b>-day streak</span>` : ''].join('');
+  return `<section class="panel pgpanel"><div class="pghead"><div><div class="eyebrow">Progress over time</div>
+      <b class="pgtitle">${evs.length ? `Since ${esc(dayLabel(firstDay, { month: 'long', day: 'numeric', year: 'numeric' }))}` : 'Every step you tick fills in a square'}</b></div><div class="pgstats">${stats}</div></div>
+    <div class="hscroll"><div class="hinner" style="min-width:${32 + nweeks * 12}px">
+      <div class="hmonths" aria-hidden="true">${months}</div>
+      <div class="hdays" aria-hidden="true">${dayNames.map((n) => `<span>${n}</span>`).join('')}</div>
+      <div class="hgrid" role="img" aria-label="Steps ticked each day">${cells}</div>
+      <div class="hcum">${svg}</div>
+    </div></div>
+    <div class="pglegend"><span class="pgsteps">${STATUSES.map(([s, l], i) => `<span><i style="background:var(--${s})"></i>${l} <b>${fmt(cum[i][nweeks - 1])}</b></span>`).join('')}</span>
+      <span class="pgheat">Less <i data-l="0"></i><i data-l="1"></i><i data-l="2"></i><i data-l="3"></i><i data-l="4"></i> More</span></div></section>`;
 }
+const scrollGraphs = () => $('view').querySelectorAll('.hscroll').forEach((el) => { el.scrollLeft = el.scrollWidth; });
 function newsHtml() {
   const seen = (k) => store.get(k);
   if (!seen(SEEN_V5_KEY)) return `<div class="news"><span><b>New:</b> a fifth step, <b>Flashcards</b>; weekly goals with a <b>This week</b> planner; a <b>Progress</b> page; and ${SHARED ? 'saving that works on every device, no sign-in needed' : 'everything you tick saved in this browser until shared saving is switched on'}.</span><button type="button" class="pill dark" data-seen="1">Got it</button></div>`;
@@ -870,14 +912,15 @@ function renderHome() {
   const tree = fieldTree(), all = S.rows.filter((r) => r.main);
   let areas = 0, topics = 0;
   for (const F of tree.values()) for (const [ar, A] of F.areas) { if (ar && A.n) areas++; topics += [...A.topics.values()].filter((c) => c.n).length; }
-  const c = stepCounts(all), days = activity();
+  const c = stepCounts(all);
   let h = `${newsHtml()}<section class="welcome"><div class="eyebrow">A public reading archive</div>
     <h1>${fmt(S.papers.length)} papers across <em>${areas} areas</em> and ${fmt(topics)} topics</h1>
     ${segHtml(c, all.length)}
     <div class="statgrid">${STATUSES.map(([s, label], n) => `<div class="stat"><b>${fmt(c[n])}</b><span><i class="k" style="background:var(--${s})"></i>${label}</span></div>`).join('')}<div class="stat"><b>${fmt(c[NSTEP - 1])}</b><span>Finished, of ${fmt(all.length)}</span></div></div></section>`;
   h += weekPanel();
   h += `<div class="duo"><div class="panel"><div class="eyebrow">Next up</div>${nextCard()}</div>
-    <div class="panel"><div class="eyebrow">${days.size ? 'Your last 26 weeks' : 'Five steps per paper, in order'}</div>${days.size ? heatmap(days) : howto()}</div></div>`;
+    <div class="panel"><div class="eyebrow">Five steps per paper, in order</div>${howto()}</div></div>`;
+  h += progressGraph();
   const cont = inProgress().slice(0, 6), recent = events().filter((e) => S.byId.has(e.id)).slice(0, 8);
   if (cont.length || recent.length) {
     h += `<div class="duo"><div class="panel"><div class="eyebrow">Continue where you left off</div>${cont.length ? `<ol class="tasks">${cont.map((id) => taskRow(id, STATUSES[stepState(id).next][0])).join('')}</ol>` : '<p class="blurb small">Nothing half-done. Start the next paper from Next up.</p>'}</div>
@@ -890,6 +933,7 @@ function renderHome() {
     h += F.n ? fieldSections(f) : `<button type="button" class="card empty-card" style="--c:${fieldColor(f)}" data-f="${esc(f)}" data-a="" data-t=""><h3>Start this shelf</h3><p>Add a paper, or paste a list, and it will appear here.</p></button>`;
   }
   $('view').innerHTML = h;
+  scrollGraphs();
 }
 
 /* ---------- This week: goals, the plan, and what's done ---------- */
@@ -981,11 +1025,13 @@ function renderProgress() {
       <p class="blurb">Every step ticked in this archive, by week, by field and by paper. The archive is public: anyone with the link sees this page.</p>
       ${segHtml(c, all.length)}
       <div class="statgrid">${STATUSES.map(([s, label], n) => `<div class="stat"><b>${fmt(c[n])}</b><span><i class="k" style="background:var(--${s})"></i>${label}</span></div>`).join('')}<div class="stat"><b>${fmt(fin.length)}</b><span>Finished</span></div><div class="stat"><b>${fmt(open.length)}</b><span>In progress</span></div></div></section>
+    ${progressGraph()}
     <h2 class="nexth">The last 12 weeks</h2><div class="panel">${chart}<div class="legend chartlegend">${STATUSES.map(([s, l]) => `<span><i style="background:var(--${s})"></i>${l}</span>`).join('')}</div></div>
     <h2 class="nexth">By field</h2><div class="ptable">${head(cols)}${fieldRows}</div>
     ${areaRows ? `<h2 class="nexth">Areas you’ve worked in</h2><div class="ptable">${head(cols)}${areaRows}</div>` : ''}
     <h2 class="nexth">In progress <small>${fmt(open.length)}</small></h2>${open.length ? `<div class="panel"><ol class="tasks">${open.slice(0, 100).map((id) => taskRow(id, STATUSES[stepState(id).next][0])).join('')}</ol></div>` : '<div class="empty"><p>Nothing half-done.</p></div>'}
     <h2 class="nexth">Finished papers <small>${fmt(fin.length)}</small></h2>${fin.length ? `<div class="panel"><ol class="evlist finlist">${finRows}</ol></div>` : '<div class="empty"><p>No paper has all five steps yet. The first one will show up here, with its research and flashcards.</p></div>'}`;
+  scrollGraphs();
 }
 
 /* ---------- Flashcards: study the cards made for each paper ---------- */
