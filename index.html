@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Paper Archive</title>
-<meta name="description" content="A personal archive of economics papers: printed, read, noted, researched.">
+<meta name="description" content="A public reading archive of economics, mathematics and statistics papers: printed, read, noted, researched and made into flashcards.">
 <meta name="theme-color" content="#f6f3ec" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#16150f" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231d1b16'/%3E%3Crect x='7' y='7' width='8' height='8' rx='2' fill='%238b5cf6'/%3E%3Crect x='17' y='7' width='8' height='8' rx='2' fill='%232563eb'/%3E%3Crect x='7' y='17' width='8' height='8' rx='2' fill='%23f59e0b'/%3E%3Crect x='17' y='17' width='8' height='8' rx='2' fill='%2310b981'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
-<link rel="stylesheet" href="styles.css?v=3">
+<link rel="stylesheet" href="styles.css?v=4">
 <script>/* apply the saved theme before first paint */try{var t=localStorage.getItem('pa-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
 <body>
@@ -43,11 +43,12 @@
   <main class="main" id="main" tabindex="-1">
     <div class="savebanner" id="saveBanner" hidden>
       <span id="saveBannerText">Your changes are only saved in this browser.</span>
-      <button type="button" class="pill dark" id="saveBannerBtn">Connect GitHub</button>
+      <button type="button" class="pill dark" id="saveBannerBtn">How saving works</button>
     </div>
     <div id="view"><p class="loading">Opening the archive…</p></div>
   </main>
 </div>
+<nav class="tabbar" id="tabbar" aria-label="Views"></nav>
 
 <!-- Edit / add paper -->
 <dialog id="paperDlg" aria-labelledby="paperDlgTitle">
@@ -72,8 +73,19 @@
       <label>Topic<input id="pTopic" list="topicList" required></label>
     </div>
     <div class="fields" data-pane="edit">
+      <div class="timeline" id="pSteps" aria-label="Steps done"></div>
       <label>Notes<textarea id="pNotes" rows="3"></textarea></label>
       <label>Research link <span class="hint">your repo or write-up</span><input id="pResearch" type="url" placeholder="https://github.com/…"></label>
+      <div class="cardsed" id="pCardsWrap">
+        <div class="cardsed-head"><b>Flashcards</b><span class="hint" id="pCardsCount"></span></div>
+        <ol class="cardlist" id="pCards"></ol>
+        <div class="row2">
+          <label>Question<textarea id="pQ" rows="2" placeholder="What does the paper ask?"></textarea></label>
+          <label>Answer<textarea id="pA" rows="2"></textarea></label>
+        </div>
+        <div><button type="button" class="pill" id="pAddCard">+ Add card</button></div>
+        <label>Deck link <span class="hint">optional: Anki, Quizlet or any page</span><input id="pDeck" type="url" placeholder="https://…"></label>
+      </div>
     </div>
     <details class="more-details" data-pane="one">
       <summary>More details</summary>
@@ -112,28 +124,39 @@
 <dialog id="setDlg" aria-labelledby="setDlgTitle">
   <form method="dialog" id="setForm">
     <h2 id="setDlgTitle">Settings</h2>
-    <p class="hint" id="setStatus"></p>
-    <label>GitHub token <span class="hint">needed once per device to save changes</span>
-      <input id="sToken" type="password" autocomplete="off" placeholder="github_pat_…">
-    </label>
-    <p class="hint"><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create a token</a>: only this repo, Contents set to read and write. It stays in this browser.</p>
+    <div class="savestate" id="setStatus"></div>
+    <fieldset class="goalset" id="goalSet">
+      <legend>Weekly goals <span class="hint">papers per week, for each step</span></legend>
+      <div class="goalinputs">
+        <label><span><i class="k" style="background:var(--pr)"></i>Print</span><input id="gPr" type="number" min="0" max="200" inputmode="numeric"></label>
+        <label><span><i class="k" style="background:var(--rd)"></i>Read</span><input id="gRd" type="number" min="0" max="200" inputmode="numeric"></label>
+        <label><span><i class="k" style="background:var(--nt)"></i>Notes</span><input id="gNt" type="number" min="0" max="200" inputmode="numeric"></label>
+        <label><span><i class="k" style="background:var(--rs)"></i>Research</span><input id="gRs" type="number" min="0" max="200" inputmode="numeric"></label>
+        <label><span><i class="k" style="background:var(--fl)"></i>Flashcards</span><input id="gFl" type="number" min="0" max="200" inputmode="numeric"></label>
+      </div>
+      <label class="inline">Weeks start on <select id="gWs"><option value="1">Monday</option><option value="0">Sunday</option></select></label>
+    </fieldset>
     <details class="more-details">
-      <summary>Repository</summary>
+      <summary>Advanced: save with your own GitHub token</summary>
       <div class="fields">
+        <label>GitHub token <span class="hint">only needed if the save relay is not connected</span>
+          <input id="sToken" type="password" autocomplete="off" placeholder="github_pat_…">
+        </label>
+        <p class="hint"><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create a token</a>: only this repo, Contents set to read and write. It stays in this browser.</p>
         <div class="row3">
           <label>User<input id="sOwner" autocomplete="off"></label>
           <label>Repo<input id="sRepo" autocomplete="off"></label>
           <label>Branch<input id="sBranch" autocomplete="off" placeholder="main"></label>
         </div>
         <div class="dlgfoot">
-          <button class="linkbtn" type="button" id="sExport">Download a backup</button>
+          <button class="pill" type="button" id="sTest">Test token</button>
           <button class="linkbtn danger" type="button" id="sForget">Remove token from this device</button>
         </div>
       </div>
     </details>
     <p class="formerr" id="setMsg" hidden></p>
     <div class="dlgfoot">
-      <button class="pill" type="button" id="sTest">Test</button>
+      <button class="linkbtn" type="button" id="sExport">Download a backup</button>
       <span class="grow"></span>
       <button class="pill" value="cancel" formnovalidate>Close</button>
       <button class="pill primary" value="save">Save</button>
@@ -171,6 +194,6 @@
 <datalist id="topicList"></datalist>
 <datalist id="subList"></datalist>
 <div id="toast" class="toast" role="status" hidden></div>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

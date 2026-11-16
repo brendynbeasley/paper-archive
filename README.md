@@ -1,6 +1,6 @@
 # Paper Archive
 
-A personal archive for tracking papers. Every paper has four buttons, **Printed**, **Read**, **Notes** and **Researched**, and each one records the date you pressed it. The site runs on GitHub Pages and saves your progress back into this repo, so every device that opens the site sees the same archive.
+A public reading archive for tracking papers. Every paper goes through five steps, **Printed → Read → Notes → Researched → Flashcards**, and each button records the date you pressed it. You set weekly goals for each step, and **This week** lines up what to do to meet them. The site runs on GitHub Pages and saves every click back into this repo, so any device that opens it, yours or anyone else's, sees the same archive and can keep working on it.
 
 Papers are organised in three levels: **field → area → topic**. The archive holds about 67,400 works:
 
@@ -59,12 +59,22 @@ About 1,480 papers from the monopoly bibliography also belong in one of the new 
 
 1. Create a new **public** repo on GitHub, for example `paper-archive`, and push this folder to it.
 2. In the repo, go to **Settings → Pages → Build and deployment**. Set the source to **Deploy from a branch**, pick `main` and `/ (root)`, then save. After about a minute the site is live at `https://<your-username>.github.io/paper-archive/`.
-3. Create a token for editing: go to **GitHub → Settings → Developer settings → Fine-grained tokens → Generate new token**.
-   - Repository access: **Only select repositories** → `paper-archive`
-   - Permissions → Repository → **Contents: Read and write**
-4. Open the site, click **Settings**, paste the token, then click **Test connection** and **Save**.
+3. Switch on saving from every device, below. It takes about five minutes, once.
 
-Do step 4 once on each device you want to edit from. Anyone with the link can view the site without a token.
+### Saving from every device
+
+A static site cannot write to its repo by itself, and asking for a GitHub token on every phone and laptop is a chore. So a tiny relay holds one token and lets the site read and write exactly two files, `data/progress.json` and `data/library.json`, and nothing else. After that, clicking a button is all it takes, on any device, with no sign-in. The relay is a free Cloudflare Worker (the free plan allows 100,000 requests a day, far more than this needs), and its whole code is `sync/worker.js`.
+
+1. **Make a token.** On GitHub go to **Settings → Developer settings → Fine-grained tokens → Generate new token**. Name it `paper-archive relay`, set **Repository access → Only select repositories → `paper-archive`**, and under **Permissions → Repository** set **Contents: Read and write**. Copy the token.
+2. **Make the Worker.** Sign in at [dash.cloudflare.com](https://dash.cloudflare.com) (a free account), open **Workers & Pages → Create → Create Worker**, name it `paper-archive-sync` and click **Deploy**. Then click **Edit code**, replace everything with the contents of `sync/worker.js`, and click **Deploy** again.
+3. **Give it the token.** In the Worker's **Settings → Variables and Secrets**, click **Add**, choose type **Secret**, name it `GITHUB_TOKEN`, paste the token and save. The token lives only there; it is never in the repo or in anyone's browser.
+4. **Point the site at it.** Copy the Worker's address (it looks like `https://paper-archive-sync.<your-name>.workers.dev`), put it between the quotes of `const SYNC_URL = '';` at the top of `app.js`, then commit and push.
+
+That's it. Open the site on any device and tick something: the status at the top right says **Saved · on every device** within a couple of seconds, and the change shows up as a commit in the repo. Whatever a browser saved before the relay existed is pushed the first time that browser opens the site.
+
+If you use a different repo name or GitHub account, change `OWNER` and `REPO` at the top of `sync/worker.js`, and add your site's address to `ORIGINS` there.
+
+Without the relay the site still works: changes are kept in the browser, and a GitHub token under **Settings → Advanced** saves from that one device.
 
 ## How it saves
 
@@ -74,22 +84,26 @@ Do step 4 once on each device you want to edit from. Anyone with the link can vi
 | `data/economics.json` | Every other area of economics | `tools/economics/build.py` |
 | `data/sciences.json` | Econophysics, mathematics and statistics | `tools/sciences/sci_build.py` |
 | `data/citations.json` | Citation counts for the papers in `catalog.json` | `tools/economics/cites.py` |
-| `data/library.json` | Papers you add, edits (links, notes, research links, moves), new fields and topics | The app |
-| `data/progress.json` | Printed / read / notes / researched dates for each paper | The app |
+| `data/library.json` | Papers you add, edits (links, notes, research links, flashcards, moves), weekly goals, new fields and topics | The app |
+| `data/progress.json` | The date of each of the five steps, for each paper | The app |
+| `sync/worker.js` | The save relay (runs on Cloudflare, not on GitHub Pages) | You, once |
 
-Each change is committed to the repo about two seconds after you click. Quick clicks are batched into one commit, and the commit message lists them, for example `Read: A Theory of Oligopoly`. Your git history is therefore a dated log of everything you've done.
+Each change is committed to the repo a second or two after you click. Quick clicks are batched into one commit, and the commit message lists them, for example `Read: A Theory of Oligopoly`. Your git history is therefore a dated log of everything you've done.
 
-If two devices save at the same moment, the app merges both sets of changes. If you're offline, changes are kept in the browser and pushed the next time you open the site.
+If two devices save at the same moment, the app merges both sets of changes. If you're offline, changes are kept in the browser and pushed as soon as you're back. An open page also picks up what other devices saved, once a minute.
 
-The token is stored only in the browser of the device where you entered it. It is never committed.
+## Public by design
 
-## Privacy
-
-The repo, and so your progress and notes, is public. GitHub Pages on a private repo needs a paid GitHub plan. The app works the same way with a private repo, but then viewing also needs a token.
+Anyone with the link can see everything: what's been printed, read, noted, researched and turned into flashcards, week by week, with the research links and the cards. Anyone can also click the buttons, and that is intended. Every change is a commit, so nothing is ever lost: to undo a change, revert its commit on GitHub, or restore `data/progress.json` or `data/library.json` from an earlier commit. The relay only accepts files that look like the archive's own, so a stray request cannot break the site or touch its code.
 
 ## Finding your way around
 
-- **Overview** shows every field and area as a card: how many papers it holds, how many you have read, and a small chart of when its papers were published. It also shows your totals and, once you have ticked something, your last 26 weeks of activity.
+- **Overview** is the front page: totals for each step, this week's goals, the next paper to work on, your last 26 weeks of activity, papers you've started but not finished, and what was done most recently. Below that, every field and area is a card showing its papers, topics and must-reads, how many have been started and finished, the date of the last step, and the next must-read to start.
+- **This week** shows the week's goal for each step and how far along it is, a bar for each day, and the plan: exactly which papers to print, read, write notes on, research and make flashcards for this week to meet the goals, with a button on each. The arrows step back to past weeks (what was done) and forward to the next few (what's lined up).
+- **Next up** is one paper at a time, in order (below).
+- **Progress** is the public record: a chart of the last 12 weeks against the goals, progress by field and by area, papers in progress, and every finished paper with its research link and flashcards.
+- **Flashcards** lets you study the cards made for each paper: click or press space to flip, arrow keys to move, and shuffle. Study every field at once or one at a time.
+- On a phone these five pages sit in a tab bar at the bottom; the menu at the top left opens the fields.
 - The **sidebar** lists the fields. Click one to open its areas, and an area to open its topics. The box at the top of the sidebar finds an area or topic by name.
 - **Search** (press `/`) looks through every paper's title, authors, year and journal, ignoring accents. The best matches come first.
 - In any list you can filter by progress (not started, in progress, done), by stars, to **Books**, or to papers with a **Free copy**, and sort by list order, most cited, newest, oldest, author or recently ticked.
@@ -100,7 +114,7 @@ The repo, and so your progress and notes, is public. GitHub Pages on a private r
 - **Add → One paper** for a single entry.
 - **Add → Paste a list** for many papers at once, one per line: `Title | Authors | Year | Link`.
 - **+ New field**, **+ New area** and **+ New topic** in the sidebar create groups. An area is optional: a topic can sit directly under a field.
-- **⋯** on any paper sets or fixes its link, a research link (for example the repo where you did the research), notes, or moves it to another field, area or topic.
+- **⋯** on any paper shows the dates of its five steps and sets or fixes its link, a research link (for example the repo where you did the research), notes and flashcards, or moves it to another field, area or topic.
 
 ## Next up
 
@@ -110,11 +124,17 @@ The repo, and so your progress and notes, is public. GitHub Pages on a private r
 - **An area or topic:** any area, or one topic in it, with its must-reads first.
 - **Everything, oldest first:** every paper in the archive, by year.
 
-For each paper, the steps go in order: **Printed → Read → Notes → Researched**. Only the next step can be ticked and only the latest one can be undone, both here and in the full lists. When the fourth step is done, the next paper comes up. The Researched step takes the link to your research repo.
+For each paper, the steps go in order: **Printed → Read → Notes → Researched → Flashcards**. Only the next step can be ticked and only the latest one can be undone, both here and in the full lists. When the fifth step is done, the next paper comes up. The Researched step takes the link to your research repo; the Flashcards step lets you write the cards (a question and an answer each) right there, or link a deck from Anki, Quizlet or anywhere else.
+
+The same path drives **This week**: papers you've started come first, then the next papers on the path you follow here.
+
+## Weekly goals
+
+**Settings → Weekly goals** sets how many papers a week you want to get through each step, for example 5 printed, 5 read, 5 with notes, 3 researched and 3 with flashcards, and whether weeks start on Monday or Sunday. The goals are saved with the archive, so every device uses the same ones. **This week** turns them into a list: what's left to print, read, note, research and make cards for, paper by paper. A paper printed early in the week shows up again later that week for reading, and so on.
 
 ## Saving
 
-Every click saves to the browser at once, then to GitHub about two seconds later. It also saves straight away when you switch tabs, lock your phone or close the page, and the site warns you if you try to close it mid-save. Until a token is set on a device, a yellow banner says how many changes are only in that browser. Once you add the token, they're pushed automatically.
+Every click saves to the browser at once, then to the repo a second or two later. It also saves straight away when you switch tabs, lock your phone or close the page, and the site warns you if you try to close it mid-save. The dot at the top right shows where things stand. Until the relay is set up, a yellow banner says how many changes are only in that browser; once it is, they're pushed automatically.
 
 ## Stars and citation counts
 
